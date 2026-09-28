@@ -36,9 +36,7 @@ Two tool groups (understanding only — artifact generation lives in the CLI):
    ``visualize_project``) — answer *project-wide* questions in one call from the
    persisted, path-keyed facts index (``lvkit.index``). The ``query`` tool is
    read-only SQL over a curated view layer — it returns the *answer* (a
-   ``GROUP BY`` histogram), not the source rows, and REPLACES the old
-   per-question read tools (``find_terminals``/``find_constants``/…, retired
-   2026-08-08) AND the former graph-op tools: the call graph is now the ``node``
+   ``GROUP BY`` histogram), not the source rows. The call graph is the ``node``
    view's ``kind='vi'`` slice (``callee_path``), so callers/callees are one-hop
    selects and blast radius a recursive CTE (``vi.callers_count`` /
    ``vi.impact_score`` give the counts). No per-VI round trips. A per-project
@@ -47,7 +45,8 @@ Two tool groups (understanding only — artifact generation lives in the CLI):
    working across several repos in one session.
 
 2. **Deep single-VI** (``describe`` for prose, ``read_vi`` for the structured
-   netlist) — full dataflow detail for ONE VI, loaded live on demand (XML
+   netlist, ``read_ctl`` for a ``.ctl`` control's structure) — full detail for ONE
+   VI or control, loaded live on demand (XML
    already cached). The Serena split: bulk/navigation off the index, depth on
    demand. An AI CONVERTS a VI by understanding it here and writing idiomatic
    Python itself — lvkit's deterministic AST generator is a CLI/oracle tool, not
@@ -79,19 +78,6 @@ from ...cache_paths import _project_root_for
 from ...graph import InMemoryVIGraph, load_vi_by_path
 from ...graph.netlist import netlist_to_dict
 from ...index import sql as isql
-from ...index.build import (
-    build_index,
-    build_lvproj_membership,
-    refresh_index,
-    warm_all_loaded,
-)
-from ...index.model import VIFacts
-from ...index.project import resolve_project
-from ...index.store import db_path as store_db_path
-from ...index.store import delete as store_delete
-from ...index.store import load as store_load
-from ...index.store import save as store_save
-from ...index.store import save_lvproj_members as store_save_lvproj_members
 from ...load_mode import LoadMode
 from ...output_cache import (
     cached_diff,
@@ -119,7 +105,7 @@ _DEFAULT_ROOTS: list[str] = []
 def _default_roots() -> list[str]:
     """Fallback search roots for a client that sends NO usable root — notably
     Claude Desktop, whose cwd isn't your VIs. In order: the folders passed to
-    ``lvkit mcp <dir>...`` (a CLI/automation affordance), else the legacy single
+    ``lvkit mcp <dir>...`` (a CLI/automation affordance), else the single
     ``LVKIT_PROJECT_ROOT`` env, else cwd. A client that sends a workspace root
     (Claude Code / VS Code — cwd IS the repo) takes precedence over these (see
     ``_resolve_project``/``_resolve_target``)."""
@@ -202,7 +188,14 @@ from .index_tools import (  # noqa: E402
     query_schema,
 )
 from .resolvers import _configure_resolvers_for_vi  # noqa: E402
-from .vi_tools import _load_one, diff, read_vi, render, unresolved  # noqa: E402
+from .vi_tools import (  # noqa: E402
+    _load_one,
+    diff,
+    read_ctl,
+    read_vi,
+    render,
+    unresolved,
+)
 
 # ===== Entry points =====
 
@@ -237,8 +230,9 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    # stdlib / third-party re-exports (mechanical preservation of the
-    # pre-split module's importable surface)
+    # stdlib / third-party re-exports -- kept importable from this facade
+    # because submodules and tests reach them here (e.g. `from
+    # lvkit.mcp.server import Path`), not just from their own libraries.
     "asyncio",
     "os",
     "re",
@@ -259,17 +253,6 @@ __all__ = [
     "load_vi_by_path",
     "netlist_to_dict",
     "isql",
-    "build_index",
-    "build_lvproj_membership",
-    "refresh_index",
-    "warm_all_loaded",
-    "VIFacts",
-    "resolve_project",
-    "store_db_path",
-    "store_delete",
-    "store_load",
-    "store_save",
-    "store_save_lvproj_members",
     "LoadMode",
     "cached_diff",
     "cached_render",
@@ -304,6 +287,7 @@ __all__ = [
     # deep single-VI tools
     "_load_one",
     "read_vi",
+    "read_ctl",
     "render",
     "diff",
     "unresolved",

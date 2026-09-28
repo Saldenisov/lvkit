@@ -125,6 +125,202 @@ def test_unmodelled_control_returns_none():
     )
 
 
+def test_array_of_clusters_exposes_element_fields():
+    """An ``indArr`` whose element ddo is a ``stdClust`` exposes the element
+    cluster's fields as the array control's ``children`` (so a view can render one
+    typed column per field), the same way a standalone cluster does. The
+    element cluster's fields live under its own ``ddoList``/``paneHierarchy/
+    zPlaneList`` -- the shape a real FPHb heap always uses (see
+    ``test_fp_cluster_preserves_nested_cluster``)."""
+    from lvkit.parser.vi import _parse_ddo
+
+    arr = ET.fromstring(
+        '<ddo class="indArr" uid="1">'
+        "  <bounds>(0,0,100,200)</bounds><objFlags>0</objFlags>"
+        '  <ddo class="stdClust" uid="2">'
+        "    <bounds>(0,0,60,100)</bounds><objFlags>0</objFlags>"
+        '    <ddoList elements="3"><SL__arrayElement uid="3"/>'
+        '<SL__arrayElement uid="4"/><SL__arrayElement uid="5"/></ddoList>'
+        '    <paneHierarchy class="pane"><zPlaneList>'
+        '      <SL__arrayElement class="stdString" uid="3">'
+        "        <bounds>(0,0,17,60)</bounds><objFlags>0</objFlags>"
+        "      </SL__arrayElement>"
+        '      <SL__arrayElement class="stdNum" uid="4">'
+        "        <bounds>(0,0,17,60)</bounds><objFlags>0</objFlags>"
+        "      </SL__arrayElement>"
+        '      <SL__arrayElement class="stdBool" uid="5">'
+        "        <bounds>(0,0,17,60)</bounds><objFlags>0</objFlags>"
+        "      </SL__arrayElement>"
+        "    </zPlaneList></paneHierarchy>"
+        "  </ddo>"
+        "</ddo>"
+    )
+    ctrl = _parse_ddo(arr, "1", set())
+    assert ctrl is not None and ctrl.control_type == "indArr"
+    assert [c.control_type for c in ctrl.children] == [
+        "stdString", "stdNum", "stdBool",
+    ]
+
+
+def test_fp_cluster_geom_from_real_pane_hierarchy():
+    """A front-panel stdClust's REAL field geometry (layout._cluster_field_geoms,
+    already proven on block-diagram cluster CONSTANTS) decodes unmodified from a
+    front-panel cluster CONTROL's ddo too -- verified end to end against a real
+    corpus .ctl this session (AC Current Source Settings.ctl: a 6-field root
+    cluster + nested clusters all decoded correctly). Two fields side by side
+    (field B to the right of field A) must come out with field B's value_rect
+    strictly to the right of field A's -- this is what a faithful front-panel
+    renderer needs to place children correctly, the gap that made
+    scripts/panelgen/panel_gen.py auto-flow cluster children instead."""
+    from lvkit.parser.vi import _parse_ddo
+
+    def _field(uid: str, cls: str, bounds: str, label: str) -> str:
+        return (
+            f'<SL__arrayElement class="{cls}" uid="{uid}">'
+            f"<bounds>{bounds}</bounds><objFlags>0</objFlags>"
+            '<partsList><SL__arrayElement class="label" uid="{uid}0">'
+            f"<objFlags>0</objFlags><partID>16</partID>"
+            f'<textRec class="textHair"><text>"{label}"</text>'
+            "</textRec></SL__arrayElement></partsList>"
+            "</SL__arrayElement>"
+        ).format(uid=uid)
+
+    clust = ET.fromstring(
+        '<ddo class="stdClust" uid="1"><bounds>(0,0,100,200)</bounds>'
+        "<objFlags>0</objFlags>"
+        '<ddoList elements="2"><SL__arrayElement uid="2"/>'
+        '<SL__arrayElement uid="3"/></ddoList>'
+        '<paneHierarchy class="pane"><bounds>(0,0,100,200)</bounds><zPlaneList>'
+        + _field("2", "stdNum", "(10,10,50,60)", "Field A")
+        + _field("3", "stdBool", "(10,110,50,160)", "Field B")
+        + "</zPlaneList></paneHierarchy></ddo>"
+    )
+    ctrl = _parse_ddo(clust, "1", set())
+    assert ctrl is not None and ctrl.cluster_geom is not None
+    geom = ctrl.cluster_geom
+    assert [f.name for f in geom.fields] == ["Field A", "Field B"]
+    field_a, field_b = geom.fields
+    # field B's box starts to the RIGHT of field A's box (x1: left, matching the
+    # source bounds' left-to-right order) -- proves real relative placement
+    # survived, not a guessed/flowed layout.
+    assert field_b.value_rect[0] > field_a.value_rect[2]
+
+
+def test_fp_array_of_typedef_wrapped_cluster_gets_geom():
+    """An indArr whose element is a NAMED typedef (a `.ctl`) wrapping a cluster
+    -- e.g. a real corpus case, "Scope Time/Div Settings" typed as
+    TIMECONTROL.ctl -- must be unwrapped the SAME way a top-level typeDef
+    control is, so both children AND cluster_geom populate from the REAL
+    wrapped stdClust, not the inert typeDef wrapper. Regression guard: before
+    this fix, a typedef-wrapped array element silently produced no children
+    and no geom at all."""
+    from lvkit.parser.vi import _parse_ddo
+
+    field_label = (
+        '<partsList><SL__arrayElement class="label" uid="30">'
+        "<objFlags>0</objFlags><partID>16</partID>"
+        '<textRec class="textHair"><text>"Value"</text>'
+        "</textRec></SL__arrayElement></partsList>"
+    )
+    arr = ET.fromstring(
+        '<ddo class="indArr" uid="1">'
+        "  <bounds>(0,0,100,200)</bounds><objFlags>0</objFlags>"
+        '  <ddo class="typeDef" uid="9">'
+        '    <ddo class="stdClust" uid="2">'
+        "      <bounds>(0,0,60,100)</bounds><objFlags>0</objFlags>"
+        '      <ddoList elements="1"><SL__arrayElement uid="3"/></ddoList>'
+        '      <paneHierarchy class="pane"><bounds>(0,0,60,100)</bounds>'
+        "<zPlaneList>"
+        '        <SL__arrayElement class="stdNum" uid="3">'
+        f"          <bounds>(0,0,17,60)</bounds><objFlags>0</objFlags>{field_label}"
+        "        </SL__arrayElement>"
+        "      </zPlaneList></paneHierarchy>"
+        "    </ddo>"
+        "  </ddo>"
+        "</ddo>"
+    )
+    ctrl = _parse_ddo(arr, "1", set())
+    assert ctrl is not None and ctrl.control_type == "indArr"
+    assert [c.control_type for c in ctrl.children] == ["stdNum"]
+    assert ctrl.cluster_geom is not None
+    assert len(ctrl.cluster_geom.fields) == 1
+
+
+def test_fp_cluster_preserves_nested_cluster():
+    """A cluster field that is itself a cluster stays nested in the FP-control
+    tree (ParsedFPControl.children), rather than flattening its inner fields up
+    into the parent -- _parse_cluster_fields walks direct ddoList fields, not all
+    descendants. (Guards the vi.py path, distinct from the fp_heap_type one that
+    ``test_nested_cluster_does_not_leak_parent_fields`` covers.)"""
+    from lvkit.parser.vi import _parse_ddo
+
+    clust = ET.fromstring(
+        '<ddo class="stdClust" uid="1"><bounds>(0,0,80,120)</bounds>'
+        "<objFlags>0</objFlags>"
+        '<ddoList elements="2"><SL__arrayElement uid="2"/>'
+        '<SL__arrayElement uid="3"/></ddoList>'
+        '<paneHierarchy class="pane"><zPlaneList>'
+        '<SL__arrayElement class="stdNum" uid="2"><bounds>(0,0,17,40)</bounds>'
+        "<objFlags>0</objFlags></SL__arrayElement>"
+        '<SL__arrayElement class="stdClust" uid="3"><bounds>(0,0,40,80)</bounds>'
+        "<objFlags>0</objFlags>"
+        '<ddoList elements="1"><SL__arrayElement uid="4"/></ddoList>'
+        '<paneHierarchy class="pane"><zPlaneList>'
+        '<SL__arrayElement class="stdBool" uid="4"><bounds>(0,0,17,40)</bounds>'
+        "<objFlags>0</objFlags></SL__arrayElement>"
+        "</zPlaneList></paneHierarchy></SL__arrayElement>"
+        "</zPlaneList></paneHierarchy></ddo>"
+    )
+    ctrl = _parse_ddo(clust, "1", set())
+    assert ctrl is not None
+    kinds = [(c.control_type, [g.control_type for g in c.children])
+             for c in ctrl.children]
+    assert kinds == [("stdNum", []), ("stdClust", ["stdBool"])]
+
+
+def test_enum_control_exposes_option_labels():
+    """An enum/ring control exposes its option labels (from its multiLabel buffer)
+    as ``enum_values`` -- an enum is a fixed value set, rendered as a dropdown."""
+    from lvkit.parser.vi import _parse_ddo
+
+    ring = ET.fromstring(
+        '<ddo class="stdRing" uid="1">'
+        "  <bounds>(0,0,20,80)</bounds><objFlags>0</objFlags>"
+        "  <partsList>"
+        '    <SL__arrayElement class="multiLabel" uid="2">'
+        '      <buf>(3)"No Op""Increment""Reset"</buf>'
+        "    </SL__arrayElement>"
+        "  </partsList>"
+        "</ddo>"
+    )
+    ctrl = _parse_ddo(ring, "1", set())
+    assert ctrl is not None
+    assert ctrl.enum_values == ["No Op", "Increment", "Reset"]
+
+
+def test_array_of_enum_exposes_element_options():
+    """An array whose element is an enum exposes the element's option labels as the
+    array control's ``enum_values`` (so its cells become dropdowns)."""
+    from lvkit.parser.vi import _parse_ddo
+
+    arr = ET.fromstring(
+        '<ddo class="indArr" uid="1">'
+        "  <bounds>(0,0,100,200)</bounds><objFlags>0</objFlags>"
+        '  <ddo class="stdRing" uid="2">'
+        "    <bounds>(0,0,20,80)</bounds>"
+        "    <partsList>"
+        '      <SL__arrayElement class="multiLabel" uid="3">'
+        '        <buf>(2)"A""B"</buf>'
+        "      </SL__arrayElement>"
+        "    </partsList>"
+        "  </ddo>"
+        "</ddo>"
+    )
+    ctrl = _parse_ddo(arr, "1", set())
+    assert ctrl is not None and ctrl.control_type == "indArr"
+    assert ctrl.enum_values == ["A", "B"]
+
+
 # --- end-to-end on a real LabVIEW 8.2 VI (no VCTP) --------------------------
 
 pytestmark_samples = pytest.mark.needs_samples
@@ -164,3 +360,63 @@ def test_lv82_ring_and_clusters_resolve_end_to_end():
     assert "Error" in labels, labels
     # No structured terminal is left as the bare family word.
     assert "ring" not in labels and "cluster" not in labels, labels
+
+
+_TEST_SETTINGS_CTL = (
+    _SAMPLES / "ni-labview-icon-editor" / "vi.lib" / "LabVIEW Icon API"
+    / "API_Test Settings.ctl"
+)
+
+
+@pytest.mark.needs_samples
+@pytest.mark.skipif(
+    not _TEST_SETTINGS_CTL.exists(), reason="ni-labview-icon-editor sample absent"
+)
+def test_ctl_typedef_loads_real_front_panel_geometry():
+    """load_typedef attaches the .ctl's OWN front-panel geometry to its graph
+    node (front-panel renderer, part 2) -- verified end to end on a real
+    corpus .ctl with genuine nested-cluster structure (a "Text color" field
+    that is itself a nested cluster of 4 sub-fields)."""
+    from lvkit.graph.core import InMemoryVIGraph
+
+    g = InMemoryVIGraph()
+    key = g.load_typedef(str(_TEST_SETTINGS_CTL))
+    node = g._dep_graph.nodes[key]
+    fp = node.get("front_panel")
+    assert fp is not None and fp.controls
+    root = fp.controls[0]
+    assert root.control_type == "stdClust"
+    assert root.cluster_geom is not None
+    field_names = {f.name for f in root.cluster_geom.fields}
+    assert {"Font", "Size", "Text color"} <= field_names
+    # The nested cluster field's OWN geometry recurses too.
+    nested_field = next(f for f in root.cluster_geom.fields if f.name == "Text color")
+    assert nested_field.nested is not None
+    assert len(nested_field.nested.fields) == 4
+
+
+_LIST_VI_HIERARCHY = (
+    _SAMPLES / "OpenG" / "extracted" / "File Group 0" / "user.lib" / "_OpenG.lib"
+    / "appcontrol" / "appcontrol.llb" / "List VI Hierarchy__ogtk.vi"
+)
+
+
+@pytest.mark.needs_samples
+@pytest.mark.skipif(not _LIST_VI_HIERARCHY.exists(), reason="OpenG sample absent")
+def test_vi_node_carries_its_own_front_panel():
+    """A top-level VI's graph node carries its FULL front panel (every
+    control, not just the subset wired to the connector pane) -- front-panel
+    renderer, part 3. Before this change, _add_vi_to_graph already received
+    the parsed ParsedFrontPanel (used internally to build FPTerminal) but
+    never attached it to the VINode itself, so nothing downstream of the
+    graph could read a VI's own panel layout."""
+    from lvkit.graph import load_vi_by_path
+    from lvkit.graph.loading import LoadMode
+    from lvkit.graph.models import VINode
+
+    g, name = load_vi_by_path(str(_LIST_VI_HIERARCHY), LoadMode.NONE)
+    node = g._graph.nodes[name]["node"]
+    assert isinstance(node, VINode)
+    assert node.front_panel is not None
+    assert len(node.front_panel.controls) >= 1
+    assert all(c.bounds != (0, 0, 100, 200) for c in node.front_panel.controls)

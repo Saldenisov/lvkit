@@ -8,6 +8,7 @@ from typing import NoReturn
 
 from lvkit.graph.models import VINode
 from lvkit.models import LVTypeKind, Terminal
+from lvkit.parser.constants import VI_NAME_MERGE_ERRORS
 from lvkit.primitive_resolver import TerminalResolutionNeeded
 from lvkit.vilib_resolver import (
     ResolutionContext,
@@ -17,7 +18,7 @@ from lvkit.vilib_resolver import (
     get_resolver,
 )
 
-from ..ast_utils import to_function_name, to_module_name, to_var_name
+from ..ast_utils import parse_expr, to_function_name, to_module_name, to_var_name
 from ..context import CodeGenContext
 from ..fragment import CodeFragment
 from ..unresolved import emit_soft_unresolved
@@ -27,6 +28,20 @@ def generate(node: VINode, ctx: CodeGenContext) -> CodeFragment:
     """Generate code for a SubVI call."""
     subvi_name = node.name or ""
     if not subvi_name:
+        return CodeFragment.empty()
+
+    # Merge Errors' vi.lib WRAPPER VI (see VI_NAME_MERGE_ERRORS) is a
+    # structural signal, not a code node -- same as the raw primitive (prim
+    # 2147, primitive.py). Its real .vi body is never present in a downstream
+    # search path (it's an NI vi.lib file, not something a user owns), so it
+    # can never be resolved as an ordinary SubVI/vilib call; and even if it
+    # were, calling it as a function returning an error-cluster VALUE would be
+    # the wrong, non-idiomatic shape -- LabVIEW error clusters become Python
+    # exceptions, and sequential dataflow already raises before this node is
+    # ever reached (mirroring the primitive's own semantics). The genuinely
+    # parallel-branch case is handled by classify_error_node's MERGE
+    # classification, which the held-error-model tier wrapping already covers.
+    if subvi_name == VI_NAME_MERGE_ERRORS:
         return CodeFragment.empty()
 
     # Dynamic dispatch → obj.method(args) / super().method(args)
@@ -537,22 +552,16 @@ def _build_output_bindings(
 
 
 def _to_ast_value(value: str) -> ast.expr:
-    """Convert a value string to AST expression."""
-    if value == "None":
-        return ast.Constant(value=None)
-    # Check if it's a number
-    try:
-        int_val = int(value)
-        return ast.Constant(value=int_val)
-    except ValueError:
-        pass
-    try:
-        float_val = float(value)
-        return ast.Constant(value=float_val)
-    except ValueError:
-        pass
-    # It's a variable reference
-    return ast.Name(id=value, ctx=ast.Load())
+    """Parse an argument value string into a real AST expression.
+
+    Parsing (rather than wrapping the whole string in a single ``ast.Name``) is
+    what makes a dotted access like ``result.field`` an actual ``Attribute``
+    node over ``Name('result')``. Otherwise the load of ``result`` is hidden
+    inside an opaque name id, and dead-code elimination then wrongly drops
+    ``result``'s assignment as unused, leaving the consumer referencing an
+    unbound name.
+    """
+    return parse_expr(value)
 
 
 def _generate_dynamic_dispatch(node: VINode, ctx: CodeGenContext) -> CodeFragment:

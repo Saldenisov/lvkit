@@ -40,6 +40,7 @@ from .models import (
 from .models import (
     PrimitiveNode as GraphPrimitiveNode,
 )
+from .node_kinds import NodeType
 
 # Map operation kind (the coarse op-kind string from _graph_node_to_op_kind)
 # to its human-readable display label. Distinct key space from
@@ -138,6 +139,7 @@ from .construction import ConstructionMixin  # noqa: E402
 from .loading import LoadingMixin  # noqa: E402
 from .operations import OperationsMixin  # noqa: E402
 from .queries import QueryMixin  # noqa: E402
+from .typedef import TypedefMixin  # noqa: E402
 
 
 class InMemoryVIGraph(
@@ -146,6 +148,7 @@ class InMemoryVIGraph(
     QueryMixin,
     OperationsMixin,
     AnalysisMixin,
+    TypedefMixin,
 ):
     """In-memory VI graph using a single unified NetworkX MultiDiGraph.
 
@@ -420,7 +423,7 @@ class InMemoryVIGraph(
             if (
                 cand is not None
                 and cand not in self._stubs
-                and self._dep_graph.nodes[cand].get("node_type") == "class"
+                and self._dep_graph.nodes[cand].get("node_type") == NodeType.CLASS
             ):
                 return cand
         return None
@@ -511,6 +514,24 @@ class InMemoryVIGraph(
             if t.id == terminal_id:
                 t.var_name = var_name
                 return
+
+    def clear_var_names(self, vi_name: str) -> None:
+        """Clear the Python ``var_name`` scratch state on every terminal of a
+        VI's nodes.
+
+        ``var_name`` is generation-time scratch that codegen writes onto the
+        graph's terminals. Clearing it before a build makes code generation
+        IDEMPOTENT: a second ``build_module`` over the same graph starts from the
+        same clean state as the first and produces identical output, instead of
+        resolving through a prior run's stale bindings. A no-op on a freshly
+        loaded graph (the normal single-generation path)."""
+        resolved = self.resolve_vi_name(vi_name)
+        for node_id in self._vi_nodes.get(resolved, set()):
+            gnode = self._graph.nodes.get(node_id, {}).get("node")
+            if gnode is None:
+                continue
+            for t in gnode.terminals:
+                t.var_name = None
 
     def get_graph_node(self, node_id: str) -> AnyGraphNode | None:
         """Get the typed graph node for a node_id."""

@@ -264,10 +264,11 @@ def main() -> int:
         "--refresh",
         action="store_true",
         help=(
-            "Incrementally refresh an existing index: rebuild only VIs whose "
-            "content hash changed (or that were added), drop deleted ones, and "
-            "leave the rest untouched. Falls back to a full build if the repo "
-            "has never been indexed."
+            "Incrementally refresh an existing index: rebuild only VIs and .ctl "
+            "controls whose content hash changed (or that were added), plus VIs "
+            "that use a changed control; drop deleted ones and leave the rest "
+            "untouched. Falls back to a full build if the repo has never been "
+            "indexed."
         ),
     )
 
@@ -289,7 +290,9 @@ def main() -> int:
         nargs="?",
         help=(
             "A single read-only SELECT/WITH over the curated views "
-            "(vi, terminal, constant, node, type_use, class_fact, lvproj). "
+            "(vi, terminal, constant, node, type_use, type, type_field, type_item, "
+            "vi_used_type, typedef, typedef_field, typedef_ref, typedef_use, "
+            "typedef_type, class_fact, lvproj). "
             'Omit when using --schema. Example: "SELECT name, COUNT(*) AS n '
             "FROM terminal WHERE type_descriptor='Error' AND direction='output' "
             'GROUP BY name ORDER BY n DESC".'
@@ -341,11 +344,11 @@ def main() -> int:
     # Describe command - human-readable VI description
     desc_parser = subparsers.add_parser(
         "describe",
-        help="Describe a VI's purpose, signature, and structure",
+        help="Describe a VI's purpose, signature and structure, or a .ctl's type",
     )
     desc_parser.add_argument(
         "input_path",
-        help="Path to .vi file",
+        help="Path to a .vi file, or a .ctl control",
     )
     desc_parser.add_argument(
         "--search-path",
@@ -368,7 +371,8 @@ def main() -> int:
             "Health, connector-pattern/pane-slot annotations, typed "
             "terminals); with --format lvnet, also inline each direct "
             "SubVI's connector-pane interface and a trailing `types :` "
-            "appendix, making the render type-rehydratable."
+            "appendix, making the render type-rehydratable. For a .ctl, "
+            "adds file paths (text) or the `types :` footnote (lvnet)."
         ),
     )
     desc_parser.add_argument(
@@ -383,7 +387,8 @@ def main() -> int:
             "render type-rehydratable — also the git-textconv form, see "
             "`lvkit setup --git-textconv`); 'json' emits the canonical netlist "
             "IR — the same structured payload the MCP read_vi tool returns — "
-            "for a program to parse."
+            "for a program to parse. For a .ctl: 'lvnet' prints its `typedef` "
+            "document and 'json' its structure (the MCP read_ctl payload)."
         ),
     )
     _add_project_root_arg(desc_parser)
@@ -437,11 +442,11 @@ def main() -> int:
     # Docs command - generate HTML documentation
     docs_parser = subparsers.add_parser(
         "docs",
-        help="Generate HTML documentation for VI files",
+        help="Generate HTML documentation for VIs and .ctl type definitions",
     )
     docs_parser.add_argument(
         "input_path",
-        help="Path to .vi, .lvlib, .lvclass, or directory",
+        help="Path to .vi, .ctl, .lvlib, .lvclass, or directory",
     )
     docs_parser.add_argument(
         "output_dir",
@@ -700,14 +705,14 @@ def main() -> int:
     # Render command - faithful block-diagram SVG
     render_parser = subparsers.add_parser(
         "render",
-        help="Render a VI's block diagram to a faithful SVG",
+        help="Render a VI's block diagram or a .ctl's front panel to a faithful SVG",
     )
     render_parser.add_argument(
         "input_path",
         help=(
-            "Path to a .vi file (or _BDHb.xml heap), OR a directory — a "
-            "directory renders every .vi under it into the cache (a fast "
-            "'warm' pass; already-fresh VIs are skipped)."
+            "Path to a .vi file (or _BDHb.xml heap) or a .ctl control, OR a "
+            "directory — a directory renders every .vi and .ctl under it into "
+            "the cache (a fast 'warm' pass; already-fresh files are skipped)."
         ),
     )
     render_parser.add_argument(
@@ -943,45 +948,24 @@ def cmd_index(args: argparse.Namespace) -> int:
     """Handle the index command - build/refresh the facts index for a repo."""
     import time
 
-    from .index.build import build_index, build_lvproj_membership, refresh_index
-    from .index.project import resolve_project
-    from .index.store import delete as delete_index
-    from .index.store import load as load_index
-    from .index.store import save, save_lvproj_members
+    from .index.build import sync_index
+    from .index.project import resolve_project_files
 
     start = time.monotonic()
-    project_root, vi_paths = resolve_project(Path(args.input_path))
-
-    stored = load_index(project_root) if getattr(args, "refresh", False) else []
-    if stored:
-        rr, merged = refresh_index(project_root, vi_paths, stored)
-        delete_index(project_root, rr.deleted)
-        save(project_root, merged)
-        save_lvproj_members(project_root, build_lvproj_membership(project_root))
-        print(
-            json.dumps(
-                {
-                    "rebuilt": len(rr.rebuilt),
-                    "deleted": len(rr.deleted),
-                    "total": rr.total,
-                    "ms": round((time.monotonic() - start) * 1000),
-                }
-            )
-        )
-        return 0
-
-    result = build_index(project_root, vi_paths)
-    save(project_root, result.facts)
-    save_lvproj_members(project_root, result.lvproj_members)
-    print(
-        json.dumps(
-            {
-                "vis": len(result.facts),
-                "collisions": result.collisions,
-                "ms": round((time.monotonic() - start) * 1000),
-            }
-        )
+    project_root, vi_paths, ctl_paths = resolve_project_files(Path(args.input_path))
+    done = sync_index(project_root, vi_paths, ctl_paths, rebuild=not args.refresh)
+    summary: dict[str, int] = (
+        {
+            "rebuilt": len(done.refresh.rebuilt),
+            "deleted": len(done.refresh.deleted),
+            "total": done.refresh.total,
+        }
+        if done.refresh is not None
+        else {"vis": len(done.facts), "collisions": done.collisions}
     )
+    summary["controls"] = done.controls.controls
+    summary["ms"] = round((time.monotonic() - start) * 1000)
+    print(json.dumps(summary))
     return 0
 
 
@@ -1044,14 +1028,14 @@ def cmd_graph_op(args: argparse.Namespace) -> int:
     columns)."""
     from dataclasses import asdict
 
-    from .index.build import ensure_fresh_index
-    from .index.project import resolve_project
+    from .index.build import sync_index
+    from .index.project import resolve_project_files
     from .index.query import blast_radius, get_callees, get_callers
     from .index.store import load as store_load
 
-    project_root, vi_paths = resolve_project(Path(args.project))
+    project_root, vi_paths, ctl_paths = resolve_project_files(Path(args.project))
     if not args.no_refresh:
-        ensure_fresh_index(project_root, vi_paths)
+        sync_index(project_root, vi_paths, ctl_paths)
     facts = store_load(project_root)
     if not facts:
         print(
@@ -1086,9 +1070,9 @@ def cmd_query(args: argparse.Namespace) -> int:
     from dataclasses import asdict
 
     from .index import sql as isql
-    from .index.project import resolve_project
+    from .index.project import resolve_project_files
 
-    project_root, vi_paths = resolve_project(Path(args.input_path))
+    project_root, vi_paths, ctl_paths = resolve_project_files(Path(args.input_path))
 
     if args.schema:
         views = isql.describe_schema()
@@ -1110,9 +1094,9 @@ def cmd_query(args: argparse.Namespace) -> int:
     # `--no-refresh` skips this to query the stored index as-is (fast, but may
     # be stale if a VI changed since the last build).
     if not args.no_refresh:
-        from .index.build import ensure_fresh_index
+        from .index.build import sync_index
 
-        ensure_fresh_index(project_root, vi_paths)
+        sync_index(project_root, vi_paths, ctl_paths)
 
     try:
         res = isql.run_query(project_root, args.sql)
@@ -1138,6 +1122,24 @@ def cmd_query(args: argparse.Namespace) -> int:
     return 0
 
 
+def _describe_ctl(args: argparse.Namespace, input_path: Path) -> int:
+    """``describe`` on a ``.ctl`` control: the text page, or ``--format json``."""
+    from .graph.describe_typedef import describe_ctl_file
+
+    try:
+        out = describe_ctl_file(
+            input_path,
+            fmt=getattr(args, "format", "text"),
+            verbose=args.verbose,
+            search_paths=_auto_search_paths(args.search_paths, input_path) or None,
+        )
+    except (ValueError, FileNotFoundError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    print(out if isinstance(out, str) else json.dumps(out, indent=2))
+    return 0
+
+
 def cmd_describe(args: argparse.Namespace) -> int:
     """Handle the describe command - human-readable VI description."""
     from .graph.describe import describe_vi
@@ -1146,6 +1148,8 @@ def cmd_describe(args: argparse.Namespace) -> int:
     if not input_path.exists():
         print(f"Error: Path not found: {input_path}", file=sys.stderr)
         return 1
+    if input_path.suffix.lower() == ".ctl":
+        return _describe_ctl(args, input_path)
 
     _configure_resolvers(args)
 
@@ -1454,7 +1458,7 @@ def _render_build_kw(
     theme_mode: ThemeMode,
     ref: str | None,
 ) -> dict[str, object]:
-    """The ``render_vi_body`` build kwargs from CLI args (library roots, search
+    """The ``render_body`` build kwargs from CLI args (library roots, search
     paths, load mode, theme, title ref). The actual build/import happens inside
     ``cached_render`` on a miss — a cache hit never reaches it."""
     vilib_root, userlib_root = _parse_library_roots(args)
@@ -1487,8 +1491,9 @@ def _emit_render(args: argparse.Namespace, input_path: Path, body: str) -> int:
 
 
 def cmd_render(args: argparse.Namespace) -> int:
-    """Handle the render command — faithful, graph-driven block-diagram SVG, or
-    (``--format html``) a self-contained single-VI viewer page. A cached output
+    """Handle the render command — faithful, graph-driven block-diagram SVG (or,
+    for a ``.ctl``, its front panel), or (``--format html``) a self-contained
+    single-file viewer page. A cached output
     for unchanged inputs is reused verbatim, skipping the build."""
     input_path = Path(args.input_path)
     if not input_path.exists():
@@ -1545,15 +1550,23 @@ def cmd_render(args: argparse.Namespace) -> int:
     return _emit_render(args, input_path, body)
 
 
+# The file kinds ``lvkit render`` draws: a VI's block diagram, a control's front panel.
+_RENDERABLE = (".vi", ".ctl")
+
+
 def _cmd_render_dir(args: argparse.Namespace, root: Path) -> int:
-    """Render every ``.vi`` under ``root`` into the cache (a 'warm' pass in one
-    process — the ~250 ms import is paid once, not once per VI). Already-fresh
-    slots are skipped. With -o, also export a mirrored HTML/SVG tree there."""
+    """Render every ``.vi`` and ``.ctl`` under ``root`` into the cache (a 'warm'
+    pass in one process — the ~250 ms import is paid once, not once per file).
+    Already-fresh slots are skipped. With -o, also export a mirrored HTML/SVG tree
+    there: ``Foo.vi`` -> ``Foo.svg``, ``Foo.ctl`` -> ``Foo.ctl.svg`` (so a VI and a
+    control sharing a stem don't collide)."""
     from .output_cache import cached_render, lookup_render
 
-    vis = sorted(p for p in root.rglob("*.vi") if p.is_file())
+    vis = sorted(
+        p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in _RENDERABLE
+    )
     if not vis:
-        print(f"No .vi files under {root}")
+        print(f"No .vi or .ctl files under {root}")
         return 0
     theme_mode = _theme_mode(args)
     options = _render_options_tag(args, theme_mode, None)  # no per-VI ref in batch
@@ -1590,13 +1603,18 @@ def _cmd_render_dir(args: argparse.Namespace, root: Path) -> int:
                 continue
             rendered += 1
         if outdir is not None:
-            dest = outdir / vi.relative_to(root).with_suffix(f".{ext}")
+            rel = vi.relative_to(root)
+            dest = outdir / (
+                rel.with_name(f"{rel.name}.{ext}")
+                if vi.suffix.lower() == ".ctl"
+                else rel.with_suffix(f".{ext}")
+            )
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(body, encoding="utf-8")
 
     where = f" → {outdir}" if outdir is not None else " → cached"
     tail = f", {failed} failed" if failed else ""
-    print(f"{len(vis)} VIs — {rendered} rendered, {fresh} already fresh{tail}{where}")
+    print(f"{len(vis)} files — {rendered} rendered, {fresh} already fresh{tail}{where}")
     return 1 if failed and rendered == 0 and fresh == 0 else 0
 
 
@@ -2114,19 +2132,20 @@ def _visualize_deps(
     )
     net.set_options(_GRAPH_OPTIONS)
 
+    from .graph.node_kinds import NodeType, node_type_of  # local: light startup
+
     dep = graph._dep_graph
-    stubs = graph._stubs
 
     for node_id in dep.nodes:
         attrs = dep.nodes[node_id]
-        node_type = attrs.get("node_type", "vi")
-        is_stub = node_id in stubs
+        node_type = node_type_of(attrs)
+        is_stub = graph.is_stub(node_id)
 
         colors = {
-            "vi": "#4CAF50",
-            "library": "#FF9800",
-            "class": "#2196F3",
-            "typedef": "#9C27B0",
+            NodeType.VI: "#4CAF50",
+            NodeType.LIBRARY: "#FF9800",
+            NodeType.CLASS: "#2196F3",
+            NodeType.TYPEDEF: "#9C27B0",
         }
         color = "#999" if is_stub else colors.get(node_type, "#666")
 

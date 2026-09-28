@@ -103,8 +103,9 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     node_type = getattr(node, "node_type", None)
     if node_type and node_type != "prim":
         resolved = resolver.resolve_by_node_type(node_type)
-        # Fall through if node_type resolved but has no code
-        if resolved and not resolved.python_code:
+        # Fall through if node_type resolved but has no code -- unless it carries
+        # an ``op`` tag, whose generator-owned handler supplies python_code below.
+        if resolved and not resolved.python_code and not resolved.op:
             resolved = None
     if not resolved and prim_id is not None:
         resolved = resolver.resolve(prim_id=prim_id)
@@ -112,8 +113,8 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
         # A node class captured GENERICALLY (not in the handled allowlist —
         # e.g. decimate, interLeave, extFunc, exprNode) reaches here with no
         # primResID. Fail loudly via _emit_unknown rather than silently drop it
-        # to empty code. Known-but-unimplemented classes (concat, …) keep prior
-        # behavior — their missing handler is a separate, pre-existing gap.
+        # to empty code. A class in OPERATION_NODE_CLASSES that still lacks a
+        # handler keeps prior behavior rather than being flagged unknown.
         is_generic_unknown = bool(
             prim_id is None
             and node_type
@@ -123,6 +124,17 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
         if prim_id is None and not is_generic_unknown:
             return CodeFragment.empty()
         return _emit_unknown(node, prim_id or 0, ctx)
+
+    # Generator-owned op handler: a neutral ``op`` tag in the data maps to a
+    # Python emission template here (codegen/nodes/ops/), keeping target-language
+    # translations in the generator instead of as strings in the data file. Only
+    # fires when the data carries no python_code, so existing JSON templates win.
+    if resolved.op and not resolved.python_code:
+        from .ops import get_op_template
+
+        op_template = get_op_template(resolved.op)
+        if op_template is not None:
+            resolved.python_code = op_template(node, resolved)
 
     # Placeholder: emit warning comment + pass, don't raise
     if resolved.confidence == "placeholder":
@@ -188,6 +200,7 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     # Build code based on code type
     if isinstance(resolved.python_code, dict):
         fragment = _build_dict_hint(
+            node,
             resolved.python_code,
             input_map,
             wired_outputs,
@@ -366,6 +379,16 @@ def _build_input_map(
             name = resolved_inputs.get(base_idx, ("expandable",))[0]
             key = to_var_name(name) + "_values"
             input_map[key] = ", ".join(values)
+    # Also expose each expandable group under its bare terminal NAME, so a
+    # template that references the input by name works in the common 1-D case
+    # (Array Subset's `array[index:index + length]` -- index/length are
+    # "expandable" for N-D, but a single dimension resolves to one value each).
+    for base_idx, values in expandable_groups.items():
+        name = resolved_inputs.get(base_idx, ("",))[0]
+        if name and name not in input_map:
+            joined = ", ".join(values)
+            input_map[name] = joined
+            input_map[to_var_name(name)] = joined
 
     # Fill defaults for template terminals the heap did not serialize at all
     # (truly-absent optional terminals). NOTE: merely UNWIRED terminals DO
@@ -397,13 +420,15 @@ def _detect_passthroughs(
     output IS the input. For these, bind the output terminal directly to
     the input variable instead of allocating a new name.
 
-    Uses the same output terminal iteration order as _build_dict_hint
-    (skip error clusters, skip unwired) to match expressions by position.
+    Pairs each output with its expression by the output's ORDINAL among all
+    outputs (matching _build_dict_hint), so an unwired earlier output does not
+    shift the remaining expressions.
     """
     bindings: dict[str, str] = {}
     skip_ids: set[str] = set()
 
-    exprs = [(k, v) for k, v in hint.items() if k not in ("_body", "_import")]
+    exprs = [v for k, v in hint.items() if k not in ("_body", "_import")]
+    ordinals = _output_index_ordinals(node, resolved)
 
     # Build resolved output name lookup
     resolved_outputs: dict[int, str] = {}
@@ -412,8 +437,6 @@ def _detect_passthroughs(
             if rt.direction == "out":
                 resolved_outputs[rt.index] = rt.name or ""
 
-    # Iterate output terminals in the same order as _get_wired_outputs
-    expr_idx = 0
     for term in node.terminals:
         if term.direction != "output":
             continue
@@ -424,10 +447,10 @@ def _detect_passthroughs(
         term_name = term.name or ""
         if not term_name and term.index in resolved_outputs:
             term_name = resolved_outputs[term.index]
-        if expr_idx >= len(exprs):
-            break
-        _key, expr_template = exprs[expr_idx]
-        expr_idx += 1
+        expr_ordinal = ordinals.get(term.index)
+        if expr_ordinal is None or expr_ordinal >= len(exprs):
+            continue
+        expr_template = exprs[expr_ordinal]
 
         # Case 1: bare input reference (in_N) — identity passthrough
         if re.match(r"^in_\d+$", expr_template):
@@ -466,13 +489,40 @@ def _detect_passthroughs(
     return bindings, skip_ids
 
 
+def _output_index_ordinals(
+    node: PrimitiveNode, resolved: ResolvedPrimitive | None
+) -> dict[int, int]:
+    """Map each output terminal INDEX to its ordinal position among all outputs.
+
+    Dict-format ``python_code`` expressions are authored in output-terminal
+    order (the output list, sorted by connector-pane index). The ordinal is
+    therefore the expression's position in that list — which is how a wired
+    output is paired to its expression, independent of how many outputs are
+    wired. Pairing by position among *wired* outputs would shift expressions
+    whenever an earlier output is left unwired.
+
+    The expression list mirrors the resolved (JSON) output order, so prefer
+    those indices; fall back to the node's own output terminals when the node
+    carries no resolution.
+    """
+    if resolved and resolved.terminals:
+        out_indices = sorted(
+            {rt.index for rt in resolved.terminals if rt.direction == "out"}
+        )
+    else:
+        out_indices = sorted(
+            {t.index for t in node.terminals if t.direction == "output"}
+        )
+    return {idx: pos for pos, idx in enumerate(out_indices)}
+
+
 def _get_wired_outputs(
     node: PrimitiveNode,
     resolved: ResolvedPrimitive | None,
     ctx: CodeGenContext,
     skip_term_ids: set[str] | None = None,
-) -> list[tuple[str, str, str]]:
-    """Get list of (terminal_id, terminal_name, var_name) for wired outputs.
+) -> list[tuple[str, str, str, int]]:
+    """Get (terminal_id, terminal_name, var_name, terminal_index) for wired outputs.
 
     Matches by connector pane index (sparse dict lookup).
     Terminal names in the primitive JSON should be valid Python identifiers.
@@ -515,11 +565,19 @@ def _get_wired_outputs(
         if not term_name and term_index in resolved_outputs:
             term_name = resolved_outputs[term_index]
 
-        # Expandable output: accept all terminals mapped to expandable index
+        # Expandable output: accept all terminals mapped to expandable index.
+        # ``_{len(outputs)}`` distinguishes several expandable outputs WITHIN one
+        # node; route through make_output_var so the name is also unique ACROSS
+        # nodes (four single-output Index Array nodes would otherwise all be
+        # ``element_0`` and clobber each other -- MD5's a/b/c/d extraction).
         if expandable_out_index is not None and term_index == expandable_out_index:
             base_name = resolved_outputs.get(expandable_out_index, "element")
-            var_name = to_var_name(base_name) + f"_{len(outputs)}"
-            outputs.append((term_id, term_name or base_name, var_name))
+            var_name = ctx.make_output_var(
+                f"{to_var_name(base_name)}_{len(outputs)}",
+                node.id,
+                terminal_id=term_id,
+            )
+            outputs.append((term_id, term_name or base_name, var_name, term_index))
             continue
 
         # Output with -1 index and no name: resolution failure
@@ -536,15 +594,16 @@ def _get_wired_outputs(
             if term_name
             else f"out_{term_index}"
         )
-        outputs.append((term_id, term_name, var_name))
+        outputs.append((term_id, term_name, var_name, term_index))
 
     return outputs
 
 
 def _build_dict_hint(
+    node: PrimitiveNode,
     hint: dict[str, str],
     input_map: dict[str, str],
-    wired_outputs: list[tuple[str, str, str]],
+    wired_outputs: list[tuple[str, str, str, int]],
     ctx: CodeGenContext,
     resolved: ResolvedPrimitive | None,
     arrayify_ops: bool = False,
@@ -553,7 +612,7 @@ def _build_dict_hint(
 
     Dict format:
     - "_body": Optional statement to execute first
-    - other keys: output_name → expression
+    - other keys: output_name → expression (authored in output-terminal order)
     """
     statements: list[ast.stmt] = []
     bindings: dict[str, str] = {}
@@ -570,13 +629,20 @@ def _build_dict_hint(
         body_substituted = _substitute_template(body, input_map, resolved)
         statements.append(parse_stmt(body_substituted))
 
-    # Handle each output — match by position, not name.
-    # The graph knows the literal connections; we just need
-    # to pair each wired output with its expression.
+    # Pair each wired output with its expression by the output's ORDINAL among
+    # all outputs (dict expressions are authored in output-terminal order), not
+    # by its position in the wired-only list — an unwired earlier output must
+    # not shift the remaining expressions onto the wrong terminals.
     exprs = [v for k, v in hint.items() if k not in ("_body", "_import")]
-    for i, (term_id, term_name, var_name) in enumerate(wired_outputs):
-        if i < len(exprs):
-            expr_substituted = _substitute_template(exprs[i], input_map, resolved)
+    ordinals = _output_index_ordinals(node, resolved)
+    for i, (term_id, term_name, var_name, term_index) in enumerate(wired_outputs):
+        expr_idx = ordinals.get(term_index, i)
+        if expr_idx < len(exprs):
+            expr_substituted = _substitute_template(
+                exprs[expr_idx], input_map, resolved
+            )
+            if "_lv" in expr_substituted:
+                imports.add(LV_IMPORT)
             expr_ast = parse_expr(expr_substituted)
             if arrayify_ops:
                 expr_ast, used = arrayify(expr_ast)
@@ -595,7 +661,7 @@ def _build_dict_hint(
 def _build_string_hint(
     hint: str,
     input_map: dict[str, str],
-    wired_outputs: list[tuple[str, str, str]],
+    wired_outputs: list[tuple[str, str, str, int]],
     ctx: CodeGenContext,
     resolved: ResolvedPrimitive | None,
     arrayify_ops: bool = False,
@@ -619,6 +685,11 @@ def _build_string_hint(
     # Substitute inputs
     expr_substituted = _substitute_template(expr, input_map, resolved)
 
+    # A template that calls a runtime helper directly (e.g. the TYPE_CAST op's
+    # `_lv.type_cast(...)`) needs the `_lv` import even when arrayify never fires.
+    if "_lv" in expr_substituted:
+        imports.add(LV_IMPORT)
+
     expr_ast = parse_expr(expr_substituted)
     if arrayify_ops:
         expr_ast, used = arrayify(expr_ast)
@@ -627,12 +698,12 @@ def _build_string_hint(
 
     # Assign to output variables
     if len(wired_outputs) == 1:
-        term_id, _, var_name = wired_outputs[0]
+        term_id, _, var_name, _ = wired_outputs[0]
         statements.append(build_assign(var_name, expr_ast))
         bindings[term_id] = var_name
     elif len(wired_outputs) > 1:
         # Multiple outputs - unpack tuple
-        var_names = [v for _, _, v in wired_outputs]
+        var_names = [v for _, _, v, _ in wired_outputs]
         statements.append(
             ast.Assign(
                 targets=[
@@ -644,7 +715,7 @@ def _build_string_hint(
                 value=expr_ast,
             )
         )
-        for term_id, _, var_name in wired_outputs:
+        for term_id, _, var_name, _ in wired_outputs:
             bindings[term_id] = var_name
     else:
         # No outputs - just expression as statement
@@ -682,7 +753,11 @@ def _substitute_template(
     for n in names:
         escaped = re.escape(n)
         patterns.append(r"\{" + escaped + r"\}")  # {name} with braces
-        patterns.append(r"\b" + escaped + r"\b")  # bare name
+        # Bare name, but NOT an attribute access: a terminal named "path" or
+        # "index" must not clobber the `path` in `os.path.isabs(in_1)` or a
+        # `.index` method -- only standalone placeholder identifiers (`array`,
+        # `index`, `length` in `array[index:index + length]`) are substituted.
+        patterns.append(r"(?<![\w.])" + escaped + r"\b")
     combined = "|".join(patterns)
 
     def _replace(m: re.Match) -> str:

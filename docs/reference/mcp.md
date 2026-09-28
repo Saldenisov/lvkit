@@ -52,8 +52,8 @@ All take a `project` path (any file/dir inside the repo).
 
 | Tool | Description |
 |------|-------------|
-| `index` | Build/refresh the index for a repo. Returns VI count, collisions handled, and ms. |
-| `query` | Run one read-only SQL `SELECT`/`WITH` over the index and get back just the answer (a `GROUP BY` histogram, not a row dump). Queries the curated views `vi`, `terminal`, `constant`, `node`, `type_use`, `class_fact`, `lvproj`. |
+| `index` | Build/refresh the index for a repo (VIs and `.ctl` controls). A full build returns the VI count, `controls`, collisions handled, and ms; `refresh=true` returns `rebuilt`, `deleted`, `total`, `controls` and ms. |
+| `query` | Run one read-only SQL `SELECT`/`WITH` over the index and get back just the answer (a `GROUP BY` histogram, not a row dump). Queries the curated views `vi`, `terminal`, `constant`, `node`, `type_use`, `type`, `type_field`, `type_item`, `vi_used_type`, `typedef`, `typedef_field`, `typedef_ref`, `typedef_use`, `typedef_type`, `class_fact`, `lvproj`. |
 | `query_schema` | List the views and their columns, so a query uses real column names. |
 
 Reads of terminals, constants, symbols, and type-uses go through `query` (e.g.
@@ -77,13 +77,14 @@ The same SQL is available on the CLI as [`lvkit query`](query.md).
 
 ### Deep single-VI — load one VI live, on demand
 
-Each takes a `vi_path` (a real `.vi`) and loads it live (XML already cached) — no
-`load`/`clear` session state.
+Each takes the path of a real `.vi` — or, for `read_ctl` and `render`, a `.ctl`
+control — and loads it live (XML already cached) — no `load`/`clear` session state.
 
 | Tool | Description |
 |------|-------------|
 | `describe` | Human-readable purpose, signature, SubVI calls, control flow. |
 | `read_vi` | The VI as the canonical **netlist IR** — `{vi, inputs, outputs, components, body}`, faithful type labels, a `kind`-tagged instance/scope body. The structured counterpart to `describe`'s prose. |
+| `read_ctl` | A `.ctl` typedef / custom control as `{typedef, path, kind, type, default, fields, uses}` — the control's own type, enum items, and every field with its recorded default (nested clusters, arrays and saved values included). `render` on the same path draws its front panel. |
 
 ### Resolution gaps — triage before converting
 

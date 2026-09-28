@@ -15,6 +15,7 @@ from lvkit.graph import InMemoryVIGraph
 from lvkit.graph.models import (
     AnyGraphNode,
     Constant,
+    ConstantNode,
     DestinationInfo,
     PrimitiveNode,
     SourceInfo,
@@ -23,6 +24,7 @@ from lvkit.graph.models import (
 from lvkit.graph.operations import OperationsMixin, frame_key
 from lvkit.models import (
     Frame,
+    LVTypeKind,
     Terminal,
     Tunnel,
     TunnelTerminal,
@@ -257,27 +259,43 @@ class CodeGenContext:
                     continue
 
                 # This terminal IS a tunnel inner — derive name from outer
-                outer_id = term.paired_id
-
-                # Priority 1: downstream consumer of the outer terminal
-                for outer_dest in self.graph.outgoing_edges(outer_id):
-                    # Skip self-edges (tunnel inner terminals on same structure)
-                    if outer_dest.node_id == dest.node_id:
-                        continue
-                    if outer_dest.name:
-                        name = to_var_name(outer_dest.name)
-                        self._allocated_vars.add(name)
-                        return name
-
-                # Priority 2: outer terminal's own name
-                outer_term = next(
-                    (t for t in dest_gnode.terminals if t.id == outer_id),
-                    None,
-                )
-                if outer_term and outer_term.name:
-                    name = to_var_name(outer_term.name)
+                name = self.output_tunnel_var_name(term.paired_id, dest.node_id)
+                if name:
                     self._allocated_vars.add(name)
                     return name
+
+        return None
+
+    def output_tunnel_var_name(
+        self, outer_id: str, structure_node_id: str
+    ) -> str | None:
+        """Variable name for a structure output tunnel's merge, derived from
+        its outer terminal: the downstream consumer's name, else the outer
+        terminal's own name. ``None`` when neither is named — the caller then
+        picks a fallback.
+
+        A case output tunnel is a MERGE: one outer terminal, one inner per
+        frame. All of a frame's producers and the case generator resolve the
+        merge variable through THIS one derivation, so every frame writes the
+        same name and no override table is needed.
+        """
+        if self.graph is None:
+            return None
+
+        # Priority 1: downstream consumer of the outer terminal (skip edges
+        # back into the same structure — its own inner tunnel terminals).
+        for outer_dest in self.graph.outgoing_edges(outer_id):
+            if outer_dest.node_id == structure_node_id:
+                continue
+            if outer_dest.name:
+                return to_var_name(outer_dest.name)
+
+        # Priority 2: the outer terminal's own name.
+        node = self.graph._graph.nodes.get(structure_node_id, {}).get("node")
+        if node is not None:
+            outer_term = next((t for t in node.terminals if t.id == outer_id), None)
+            if outer_term and outer_term.name:
+                return to_var_name(outer_term.name)
 
         return None
 
@@ -591,10 +609,20 @@ def _bind_inputs_and_constants(
     """
     for inp in inputs:
         if inp.id and not inp.is_error_cluster:
-            ctx.bind(inp.id, to_var_name(inp.name or "input"))
+            var = to_var_name(inp.name or "input")
+            ctx.bind(inp.id, var)
+            # Track array-typed inputs so the final arrayify pass broadcasts
+            # operators/conversions applied to them (same as array-typed
+            # primitive outputs) — an array parameter is just as array-valued.
+            lv_type = getattr(inp, "lv_type", None)
+            if lv_type is not None and lv_type.kind == LVTypeKind.ARRAY:
+                ctx.array_vars.add(var)
     for const in constants:
         if const.id:
-            ctx.bind(const.id, _format_constant(const))
+            bound = _format_constant(const)
+            ctx.bind(const.id, bound)
+            if _needs_simplenamespace(bound):
+                ctx.add_import(_SIMPLENAMESPACE_IMPORT)
             # VIRefnum constants need an import for the callable.
             if (
                 const.lv_type
@@ -648,7 +676,48 @@ def _decode_numeric_constant(value: str, underlying_type: str) -> str:
     return str(int(value, 16))
 
 
-def _format_constant(const: Constant) -> str:
+# A named cluster constant lowers to types.SimpleNamespace; sites that bind such
+# a constant add this import (see _needs_simplenamespace).
+_SIMPLENAMESPACE_IMPORT = "from types import SimpleNamespace"
+
+
+def _needs_simplenamespace(expr: str) -> bool:
+    """True if a formatted-constant expression uses ``SimpleNamespace`` and thus
+    needs its import added at the binding site."""
+    return "SimpleNamespace(" in expr
+
+
+def _format_cluster_constant(const: Constant | ConstantNode) -> str | None:
+    """Format a CLUSTER constant as a Python object: a named/typedef cluster as
+    ``SimpleNamespace(field=value, ...)`` (attribute access, and mutable so
+    Bundle By Name can assign fields), an anonymous cluster as a positional
+    tuple. Returns None if the value or fields can't be resolved, so the caller
+    falls back to generic formatting."""
+    lv_type = const.lv_type
+    if lv_type is None or not lv_type.fields:
+        return None
+    fields = lv_type.fields
+    anon = not lv_type.typedef_name and not lv_type.classname
+    value = const.value
+    if isinstance(value, str):
+        try:
+            value = ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            return None
+    if not isinstance(value, dict):
+        return None
+    # Values in field order; a field absent from the parsed dict falls back to
+    # None (LabVIEW's cluster default fills every field, so this is defensive).
+    ordered = [(f.name, repr(value.get(f.name))) for f in fields]
+    if anon:
+        elts = ", ".join(v for _name, v in ordered)
+        trailing = "," if len(ordered) == 1 else ""
+        return f"({elts}{trailing})"
+    kwargs = ", ".join(f"{to_var_name(name)}={v}" for name, v in ordered)
+    return f"SimpleNamespace({kwargs})"
+
+
+def _format_constant(const: Constant | ConstantNode) -> str:
     """Format a constant value as a Python expression.
 
     Note: enum imports are handled by the SubVI codegen (subvi.py) which
@@ -675,6 +744,16 @@ def _format_constant(const: Constant) -> str:
     if python_hint:
         return str(python_hint)
 
+    # Cluster constant: emit a mutable attribute object so Bundle/Unbundle By
+    # Name (which read and write ``.field``) operate on it. A named/typedef
+    # cluster uses attribute access with field names matched to nmux's
+    # ``to_var_name(field.name)``; an anonymous cluster (no field names) is a
+    # positional tuple, the representation nmux uses for anonymous clusters.
+    if const.lv_type and const.lv_type.kind == LVTypeKind.CLUSTER:
+        cluster_expr = _format_cluster_constant(const)
+        if cluster_expr is not None:
+            return cluster_expr
+
     value = const.value
     underlying = const.lv_type.underlying_type if const.lv_type else None
 
@@ -685,19 +764,45 @@ def _format_constant(const: Constant) -> str:
     if value is None:
         return "None"
 
+    # Array constants: LabVIEW's rendered value is already list-literal syntax
+    # (e.g. "[False, True]", "[1, 2, 3]"). Validate via literal_eval and re-emit
+    # canonically; fall through to scalar handling if it isn't a plain literal.
+    if underlying == "Array" and isinstance(value, str):
+        try:
+            return repr(ast.literal_eval(value))
+        except (ValueError, SyntaxError):
+            pass
+    if isinstance(value, list):
+        return repr(value)
+
     # Type-driven decoding: use underlying_type when available.
     if underlying == "Boolean":
         return "True" if value in ("True", "1", "01") else "False"
     if underlying == "Path":
+        # The parser already hands path constants back as a ``Path("…")``
+        # expression (parser/vi.py); don't double-wrap it into Path('Path("…")').
+        if isinstance(value, str) and value.startswith("Path("):
+            return value
         return f"Path('{value}')"
     if underlying and underlying.startswith("Num") and isinstance(value, str):
         return _decode_numeric_constant(value, underlying)
     if underlying == "String" and isinstance(value, str):
-        if value == '""':
-            return "''"
-        if len(value) >= 2 and value.startswith('"') and value.endswith('"'):
-            return repr(value[1:-1])
-        return repr(value)
+        # The decoders hand back a QUOTED, escaped string literal — double-quoted
+        # from _decode_string_default, single-quoted from _decode_element — so we
+        # must recover the RAW text and re-emit it once. repr'ing the quoted form
+        # directly double-wraps it (a space -> "' '").
+        try:
+            # A fully-escaped literal round-trips through literal_eval.
+            return repr(ast.literal_eval(value))
+        except (ValueError, SyntaxError):
+            # _decode_element leaves control bytes (\n, \r, \t) RAW inside the
+            # quotes, so literal_eval rejects it. Strip one matching quote pair
+            # and undo only the escaping the decoder applied (quote, backslash).
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                q = value[0]
+                inner = value[1:-1].replace("\\" + q, q).replace("\\\\", "\\")
+                return repr(inner)
+            return repr(value)
 
     # Already-decoded Python values
     if isinstance(value, int | float):

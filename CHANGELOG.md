@@ -3,6 +3,21 @@
 lvkit follows semantic versioning.
 
 ## [Unreleased]
+- **Front panels render as LabVIEW draws them** — a `.ctl` or a VI's own front panel becomes an SVG with nested clusters at their real layout and each control's real saved value, in its own number format (#101).
+- **VIs with huge saved values extract in seconds, not gigabytes** — a graph's preallocated buffer (a 3 MB VI that became a 1.3 GB XML and ran out of memory) is now stored compressed, losslessly, and its front panel renders.
+- **Array controls draw from their own parts** — the frame, index selector (shown only when "Show Index" is on), scrollbar, real saved elements, and disabled default rows for an empty array (#101).
+- **Front-panel labels, booleans and array indices sit and size as LabVIEW draws them** — labels at their own position and a readable size, a boolean at its button size, and one framed index per array dimension (#101).
+- **Front-panel clusters and arrays are drawn in their own frame colors** — the fill and outline the VI records, not a fixed theme color (#101).
+- **`lvkit render` draws a `.ctl` control's front panel** — as an SVG or an interactive viewer page, and a directory run renders its controls too (#101).
+- **`lvkit describe` reads a `.ctl`** — its type, enum items, and every field with its recorded default (arrays and nested clusters included), as text or `--format json` (#101).
+- **A `.ctl` has an lvnet form** — `lvkit describe --format lvnet` and MCP `read_ctl(format="lvnet")` print a `typedef` document: its uses, lossless type, and each field with its recorded default (#101).
+- **Types and `.ctl` controls are queryable** — every type has a structural id, and new `type`, `type_field`, `type_item`, `vi_used_type`, `typedef*` views answer "who uses this type (nested included)", "enums containing X" and "VIs that depend on this control" through `lvkit query` and MCP `query` (#101).
+- **Type defaults read consistently everywhere** — `describe` prints an enum control's default as its item (`Write`, not `"Write"`), the docs page quotes string defaults, and MCP `read_vi`/`read_ctl` reject an unknown `format` instead of silently returning JSON (#101).
+- **Agents can read and see a `.ctl`** — a new MCP `read_ctl` tool returns its type and field defaults, and `render` draws its front panel (#101).
+- **`lvkit docs` documents `.ctl` type definitions** — a page per control (front panel, fields with defaults, what it uses and what uses it), linked from the index and from every VI that uses it (#101).
+- **More front-panel control types render for real** — refnums, variants, color boxes, DAQmx/VISA name controls, pictures, combo boxes, slides, graphs, and measurement-data controls now draw their real shape and saved value instead of a generic placeholder box (#101).
+- **Fix: some front-panel controls drew with an invisible name** — a control with disabled sub-parts recorded outside its own box (a slide's hidden digital display, a graph's hidden legend chrome) painted over its own label; excluded from the drawn extent now.
+- **First use of a fresh cache no longer fails under concurrent extraction** — parallel first callers could delete a cache directory another was creating.
 
 ## [0.8.4] - 2026-09-16
 - **Fix: a VI with a huge front-panel default parses fast** — decoding array/cluster front-panel defaults on a memoryview drops the O(N²) re-copy, so a VI with a 65-million-element default no longer hangs the parser (#96).

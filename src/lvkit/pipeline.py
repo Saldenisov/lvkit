@@ -238,10 +238,18 @@ def _generate_polymorphic_module(
     variant_result_classes: list[str] = []  # Track result class names
     all_inputs: dict[int, Any] = {}
     all_outputs: dict[int, Any] = {}
+    # Imports a variant body needs (e.g. the runtime helper for Index Array).
+    # The variant bodies below drop their own import lines; collect them here so
+    # the shared module header carries every one a variant references.
+    _header = {ln for ln in lines if ln.startswith(("import ", "from "))}
+    variant_imports: set[str] = set()
 
     for variant_name in variants:
         vi_context = graph.get_vi_context(variant_name)
-        func_name = to_function_name(variant_name)
+        # build_module names the variant function from its DISPLAY name
+        # (basename), so the wrapper must reference that same short name — a
+        # full-path-mangled name is undefined (NameError). Mirrors wrapper_func.
+        func_name = to_function_name(Path(variant_name).name)
         variant_funcs.append(func_name)
 
         try:
@@ -265,7 +273,8 @@ def _generate_polymorphic_module(
                 graph=graph,
                 soft_unresolved=soft_unresolved,
             )
-            # Extract just the function and result class (skip imports)
+            # Take the function and result class; collect imports the body needs
+            # into the shared header rather than dropping them.
             tree = ast.parse(code)
             for node in tree.body:
                 if isinstance(node, ast.ClassDef):
@@ -275,6 +284,10 @@ def _generate_polymorphic_module(
                 elif isinstance(node, ast.FunctionDef):
                     lines.append("")
                     lines.append(ast.unparse(node))
+                elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                    imp = ast.unparse(node)
+                    if imp not in _header:
+                        variant_imports.add(imp)
 
             # Collect inputs/outputs for union signature
             for inp in vi_context.inputs:
@@ -295,21 +308,34 @@ def _generate_polymorphic_module(
             error_msg = textwrap.indent(str(e), "# ")
             lines.append(f"# ERROR generating {variant_name}:\n{error_msg}")
 
-    # Generate wrapper function
-    wrapper_func = to_function_name(wrapper_name)
+    # A variant that calls a SIBLING variant emits an import for it as a
+    # separate module — but siblings are DEFINED inline in this same module, and
+    # no standalone module for them exists (ModuleNotFoundError). Drop any import
+    # whose bound name is one of this module's own variant functions.
+    _inline = set(variant_funcs)
 
-    # Build parameter list from union of variant inputs
-    params: list[str] = []
-    for idx in sorted(all_inputs.keys()):
-        inp = all_inputs[idx]
-        name = getattr(inp, "name", None) or f"arg_{idx}"
-        var_name = name.lower().replace(" ", "_").replace("-", "_")
-        var_name = "".join(c for c in var_name if c.isalnum() or c == "_")
-        if var_name and not var_name[0].isalpha():
-            var_name = "p_" + var_name
-        params.append(f"{var_name}: Any = None")
+    def _imports_inline_sibling(imp: str) -> bool:
+        try:
+            node = ast.parse(imp).body[0]
+        except (SyntaxError, IndexError):
+            return False
+        if not isinstance(node, (ast.Import, ast.ImportFrom)):
+            return False
+        return any((a.asname or a.name) in _inline for a in node.names)
 
-    param_str = ", ".join(params) if params else ""
+    variant_imports = {i for i in variant_imports if not _imports_inline_sibling(i)}
+
+    # Hoist any imports the variant bodies referenced into the shared header
+    # (after the fixed imports, before the blank line separating header/body).
+    if variant_imports:
+        lines[4:4] = sorted(variant_imports)
+
+    # Generate wrapper function. Name it by the VI's DISPLAY name (basename),
+    # not the full path — callers import it as to_function_name(node.name) (the
+    # short name), so a path-mangled wrapper name is an ImportError for every
+    # caller. (Path(...).name strips a path prefix; a bare qualified name is
+    # left unchanged, so multi-VI generation is unaffected.)
+    wrapper_func = to_function_name(Path(wrapper_name).name)
 
     # Determine return type from outputs - use first variant's result class
     if variant_result_classes:
@@ -322,15 +348,27 @@ def _generate_polymorphic_module(
     # Generate wrapper with runtime type dispatch
     lines.append("")
     lines.append("")
-    lines.append(f"def {wrapper_func}({param_str}) -> {returns}:")
+    lines.append("def _lv_dispatch(_fn, /, *_vals):")
+    lines.append('    """Call a polymorphic variant, mapping the wrapper\'s values')
+    lines.append("    to the variant's parameters BY POSITION (variants share the")
+    lines.append("    input SLOT order but may name a slot differently — e.g. a")
+    lines.append('    scalar `string` vs an array `strings`)."""')
+    lines.append("    import inspect")
+    lines.append("    _p = list(inspect.signature(_fn).parameters)")
+    lines.append("    return _fn(**dict(zip(_p, _vals)))")
+    lines.append("")
+    lines.append("")
+    # The wrapper takes *args/**kwargs: a caller names arguments by the POLY
+    # VI's OWN connector pane, which need not match any variant's parameter
+    # names, so collect the provided values in call order and let _lv_dispatch
+    # map them to the chosen variant's parameters positionally.
+    lines.append(f"def {wrapper_func}(*args, **kwargs) -> {returns}:")
     lines.append(f'    """Polymorphic wrapper for {wrapper_name}."""')
+    lines.append("    _vals = [*args, *kwargs.values()]")
 
-    if variant_funcs and params:
-        param_names = [p.split(":")[0].strip() for p in params]
-        call_args = ", ".join(f"{n}={n}" for n in param_names)
-        first_param = param_names[0] if param_names else None
-
-        # Categorize variants by type (array vs traditional/scalar)
+    if variant_funcs:
+        # Categorize variants by type (array vs traditional/scalar) and dispatch
+        # on the first value's type.
         array_variants = [f for f in variant_funcs if "array" in f.lower()]
         traditional_variants = [f for f in variant_funcs if "traditional" in f.lower()]
         other_variants = [
@@ -338,25 +376,19 @@ def _generate_polymorphic_module(
             for f in variant_funcs
             if f not in array_variants and f not in traditional_variants
         ]
-
-        # Generate type-based dispatch
         if array_variants and (traditional_variants or other_variants):
-            # Have both array and non-array variants - dispatch on type
-            lines.append(f"    if isinstance({first_param}, (list, tuple)):")
-            lines.append(f"        return {array_variants[0]}({call_args})")
+            arr0 = array_variants[0]
+            fallback = (
+                traditional_variants[0]
+                if traditional_variants
+                else (other_variants[0] if other_variants else variant_funcs[0])
+            )
+            lines.append("    if _vals and isinstance(_vals[0], (list, tuple)):")
+            lines.append(f"        return _lv_dispatch({arr0}, *_vals)")
             lines.append("    else:")
-            if traditional_variants:
-                fallback = traditional_variants[0]
-            elif other_variants:
-                fallback = other_variants[0]
-            else:
-                fallback = variant_funcs[0]
-            lines.append(f"        return {fallback}({call_args})")
+            lines.append(f"        return _lv_dispatch({fallback}, *_vals)")
         else:
-            # Only one type of variant - call first one
-            lines.append(f"    return {variant_funcs[0]}({call_args})")
-    elif variant_funcs:
-        lines.append(f"    return {variant_funcs[0]}()")
+            lines.append(f"    return _lv_dispatch({variant_funcs[0]}, *_vals)")
     else:
         lines.append("    pass")
 
@@ -515,7 +547,7 @@ def generate_python(
             print("         -> (included in polymorphic wrapper)")
             continue
 
-        is_stub = graph.is_stub_vi(vi_name)
+        is_stub = graph.is_stub(vi_name)
         has_vilib = vilib_resolver.has_implementation(vi_name)
         has_inline = vilib_resolver.has_inline(vi_name)
 

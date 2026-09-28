@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 
 from lvkit.graph.models import AnyGraphNode, LoopNode
-from lvkit.models import LVType, LVTypeKind, Tunnel
+from lvkit.models import LVType, LVTypeKind, Tunnel, TunnelMode, TunnelTerminal
 
 from ..ast_utils import (
     build_assign,
@@ -16,6 +16,16 @@ from ..ast_utils import (
 )
 from ..context import CodeGenContext
 from ..fragment import CodeFragment
+
+
+def _tunnel_is_input(outer_term_uid: str | None, term_by_id: dict) -> bool:
+    """True iff this lpTun is an INPUT tunnel — decided by its OUTER terminal's
+    direction, not by whether ``ctx.resolve`` finds a var. An OUTPUT tunnel's
+    outer can also resolve (through the loop to the body value), so a
+    resolve-truthiness test misclassifies the output accumulator as an input
+    array — dropping its accumulation and leaking it into the loop bound."""
+    t = term_by_id.get(outer_term_uid)
+    return t is not None and t.direction == "input"
 
 
 def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
@@ -32,6 +42,14 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
 
     # Track shift register variable names for update statements
     shift_reg_vars: dict[str, str] = {}  # lSR outer_terminal -> var_name
+    # lSR outer terminals whose left side is wired from OUTSIDE the loop
+    # (an initializer). These are local accumulators: their right-side value
+    # must be fed back into the local each iteration so the loop advances.
+    # An UNINITIALIZED lSR (not in this set) is LabVIEW's functional-global
+    # idiom -- it persists across CALLS via a module global (see below), so
+    # its local must NOT be overwritten mid-loop; a separate branch reads the
+    # pre-update value after the loop (e.g. the OpenG "Changed?" family).
+    initialized_sr_outers: set[str] = set()
     # (global_name, lsr_outer_term, fallback_shift_var) for uninitialized
     # SRs -- written back to the module global after the loop so the next
     # VI call sees them. The final value used is looked up after step 5
@@ -62,6 +80,18 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                 pre_loop_stmts.append(build_assign(shift_var, parse_expr(outer_var)))
                 inner_ctx.bind(inner_term, shift_var)
                 shift_reg_vars[outer_term] = shift_var
+                initialized_sr_outers.add(outer_term)
+                # An array-typed shift register carries an array; track it so the
+                # module arrayify pass broadcasts operators over it (e.g. an
+                # element-wise Add of the accumulator to a per-iteration array,
+                # inlined past the per-node hook -- MD5's block-state update).
+                _sr_t = term_by_id.get(outer_term)
+                if (
+                    _sr_t is not None
+                    and _sr_t.lv_type is not None
+                    and _sr_t.lv_type.kind == LVTypeKind.ARRAY
+                ):
+                    ctx.array_vars.add(shift_var)
             else:
                 # Uninitialized shift register: nothing wired into the
                 # left terminal from outside the loop. In LabVIEW this is
@@ -92,8 +122,12 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                 # for why the rSR update does not mutate shift_var itself).
                 uninitialized_sr_writebacks.append((global_name, outer_term, shift_var))
 
-        elif tunnel_type == "lpTun":
-            # Check if input tunnel (outer has a source)
+        elif tunnel_type == "lpTun" and _tunnel_is_input(outer_term, term_by_id):
+            # INPUT tunnel (outer terminal direction is "input"): its outer has a
+            # source feeding the loop. Classify by DIRECTION, not by whether
+            # resolve() finds a var — an OUTPUT tunnel's outer can also resolve
+            # (through the loop to the body value), which would misclassify the
+            # accumulator as an input array and drop its accumulation.
             outer_var = ctx.resolve(outer_term)
             if outer_var:
                 # While loops: pass the whole value through
@@ -110,7 +144,10 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
     #
     # For For loops, lpTun OUTPUT tunnels are auto-indexed by default
     # (they accumulate into arrays, not just return last value)
-    accum_tunnels: list[tuple[Tunnel, str]] = []  # (tunnel, accum_var)
+    accum_tunnels: list[tuple[Tunnel, str]] = []  # (tunnel, accum_var) — indexed
+    # (tunnel, var) for indexing-DISABLED output tunnels: the loop's LAST-value
+    # output, a scalar assigned each iteration rather than accumulated.
+    lastval_tunnels: list[tuple[Tunnel, str]] = []
     n_terminal_var: str | None = None  # For loop count
 
     for tunnel in tunnels:
@@ -133,17 +170,37 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                     # Integer or unknown - use directly
                     n_terminal_var = outer_var
 
-        elif tunnel_type == "lpTun" and loop_type == "forLoop":
-            # In For loops, lpTun OUTPUT tunnels are auto-indexed (accumulate)
-            # Distinguish input vs output:
-            # - INPUT tunnel: outer terminal has external source (resolvable)
-            # - OUTPUT tunnel: outer terminal has NO external source
-            outer_var = ctx.resolve(outer_term)
-
-            if not outer_var:
-                # No external source to outer -> this is an OUTPUT tunnel
-                # Treat as accumulator - use pluralized name to avoid
-                # conflict with inner iteration variable
+        elif (
+            tunnel_type == "lpTun"
+            and loop_type == "forLoop"
+            and not _tunnel_is_input(outer_term, term_by_id)
+        ):
+            # A For-loop lpTun OUTPUT tunnel (outer terminal direction is
+            # "output"). Its mode decides the shape:
+            # - INDEXING (default): auto-indexed into an array (accumulate).
+            # - PASSTHROUGH (indexing disabled): the LAST-iteration value, a
+            #   scalar; assigned each pass, seeded to the type default so a
+            #   0-iteration loop yields the default.
+            if tunnel.mode == TunnelMode.PASSTHROUGH:
+                # Disambiguate the generic fallback name ("value") so two
+                # last-value tunnels in one VI don't collapse to one var and
+                # clobber each other (mirrors the shift-register handling).
+                last_var = _unique_shift_var_name(_make_var_name(tunnel, ctx), ctx)
+                # Reserve it NOW: a second last-value tunnel on THIS loop is
+                # bound only locally (not yet on the graph), so the next
+                # _unique_shift_var_name must see this name to avoid reusing
+                # it (both would clobber into one variable otherwise).
+                ctx._allocated_vars.add(last_var)
+                outer_sr_term = term_by_id.get(outer_term)
+                seed = default_value_expr(
+                    outer_sr_term.lv_type if outer_sr_term else None
+                )
+                pre_loop_stmts.append(build_assign(last_var, seed))
+                lastval_tunnels.append((tunnel, last_var))
+                bindings[outer_term] = last_var
+            else:
+                # Auto-indexed accumulator — pluralized name to avoid
+                # conflict with the inner (singular) iteration variable.
                 base_name = _make_var_name(tunnel, ctx)
                 accum_var = _pluralize(base_name)
                 pre_loop_stmts.append(
@@ -152,6 +209,13 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                 accum_tunnels.append((tunnel, accum_var))
                 bindings[outer_term] = accum_var
 
+    # Input auto-index arrays for a For loop, classified ONCE here (step 3) and
+    # reused by _build_for_loop for the loop structure — so the inner-terminal
+    # binding and the loop's iteration form can never disagree (a divergence
+    # here is what let an OUTPUT accumulator leak into the range()). Each entry
+    # is (outer_var, inner_terminal_uid).
+    for_input_arrays: list[tuple[str, str]] = []
+
     # 3. For forLoops: bind lpTun inner terminals based on loop style
     #    Must happen BEFORE generating inner statements
     if loop_type == "forLoop":
@@ -159,14 +223,24 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
         # (outer_var, inner_term, outer_term)
         lpTun_array_inputs: list[tuple[str, str, str]] = []
         lpTun_scalar_inputs: list[tuple[str, str]] = []  # (outer_var, inner_term)
+        materialized: set[str] = set()  # literal array sources already assigned
 
         for tunnel in tunnels:
-            if tunnel.tunnel_type == "lpTun":
+            if tunnel.tunnel_type == "lpTun" and _tunnel_is_input(
+                tunnel.outer_terminal_uid, term_by_id
+            ):
                 outer_var = ctx.resolve(tunnel.outer_terminal_uid)
-                # Resolved value must be a valid Python identifier
-                # (constants like '\x12' from the graph are not iterable names)
+                # A literal source (e.g. a list/array constant) can't be iterated
+                # or indexed by a bare value-derived name, so materialize it into
+                # a real local before the loop instead of leaving it undefined.
                 if outer_var and not outer_var.isidentifier():
-                    outer_var = to_var_name(outer_var) or "items"
+                    literal = outer_var
+                    outer_var = to_var_name(literal) or "items"
+                    if outer_var not in materialized:
+                        pre_loop_stmts.append(
+                            build_assign(outer_var, parse_expr(literal))
+                        )
+                        materialized.add(outer_var)
                 if outer_var and tunnel.inner_terminal_uid:
                     outer_term = tunnel.outer_terminal_uid
                     inner_term = tunnel.inner_terminal_uid
@@ -174,11 +248,23 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                     # Treat as array if type is array OR unknown (backward compat)
                     # Only treat as scalar if type is known and NOT an array
                     is_array = lv_type is None or lv_type.kind == LVTypeKind.ARRAY
-                    if is_array:
+                    # A PASSTHROUGH input tunnel (LabVIEW "Disable Indexing")
+                    # passes the WHOLE value each iteration even when it's an
+                    # array — so it's a scalar pass-through, not auto-indexed.
+                    if tunnel.mode == TunnelMode.PASSTHROUGH:
+                        lpTun_scalar_inputs.append((outer_var, inner_term))
+                    elif is_array:
                         lpTun_array_inputs.append((outer_var, inner_term, outer_term))
                     else:
                         # Known scalar type: pass through directly (no indexing)
                         lpTun_scalar_inputs.append((outer_var, inner_term))
+
+        # Single source of truth for the loop's input arrays: _build_for_loop
+        # reuses exactly this set (never re-scans the tunnels), so the iteration
+        # form matches the bindings emitted just below.
+        for_input_arrays = [
+            (outer_var, inner) for outer_var, inner, _ in lpTun_array_inputs
+        ]
 
         # Bind scalar inputs directly - same value each iteration
         for outer_var, inner_term in lpTun_scalar_inputs:
@@ -187,6 +273,21 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
         # Decide: enumerate (single array, no N) vs indexed access for arrays
         depth = ctx.loop_depth
         idx_var = "ijklmn"[depth] if depth < 6 else f"idx_{depth}"
+
+        # The loop's iteration terminal (the LabVIEW `i` counter — a plain output
+        # Terminal, not a tunnel) is the Python loop index. Bind it so code inside
+        # the body reads `i`, not the terminal's default 0. Both the enumerate and
+        # the range(...) forms emit `idx_var` as the loop variable.
+        iter_term = next(
+            (
+                t
+                for t in node.terminals
+                if t.direction == "output" and not isinstance(t, TunnelTerminal)
+            ),
+            None,
+        )
+        if iter_term is not None:
+            inner_ctx.bind(iter_term.id, idx_var)
 
         if len(lpTun_array_inputs) == 1 and not n_terminal_var:
             # Single array, no N terminal: use enumerate, bind to singular form
@@ -201,12 +302,12 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
     # 4. Generate inner node code
     inner_stmts = _generate_inner(inner_nodes, inner_ctx)
 
-    # 4. Add accumulator appends for lMax at end of loop body
+    # 4. Add output-tunnel writes at end of loop body: append for indexed
+    # accumulators, plain assignment for last-value (indexing-disabled) tunnels.
     for tunnel, accum_var in accum_tunnels:
         inner_term = tunnel.inner_terminal_uid
         inner_val = inner_ctx.resolve(inner_term)
         if inner_val and inner_val != accum_var:
-            # accum_var.append(inner_val)
             inner_stmts.append(
                 ast.Expr(
                     value=ast.Call(
@@ -220,6 +321,11 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                     )
                 )
             )
+
+    for tunnel, last_var in lastval_tunnels:
+        inner_val = inner_ctx.resolve(tunnel.inner_terminal_uid)
+        if inner_val and inner_val != last_var:
+            inner_stmts.append(build_assign(last_var, parse_expr(inner_val)))
 
     # 5. Handle shift register updates (rSR) at end of loop body
     #
@@ -273,20 +379,28 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
                     terminal_id=outer_term,
                 )
                 inner_stmts.append(build_assign(updated_var, parse_expr(inner_val)))
-                bindings[outer_term] = updated_var
                 # Feed the new value back into the lSR local for the NEXT
-                # iteration ONLY when it is genuine accumulation -- i.e. the
-                # new value is computed FROM the SR's current value
-                # (`counter = counter + 1`). When the new value is INDEPENDENT
-                # of the SR (a functional global storing an external input,
-                # e.g. the OpenG "Changed?" family: `state_new = u16`), we must
-                # NOT overwrite: rsr_shift_var still holds the PRE-update value
-                # that a separate branch consumes after the loop (the
-                # `old != new` comparison). Overwriting only where there is real
-                # feedback keeps those branch consumers correct without needing
-                # a per-iteration snapshot.
-                if _expr_references(inner_val, rsr_shift_var):
+                # iteration when the SR is INITIALIZED (a local accumulator):
+                # its next value is whatever the body wired to the right side
+                # -- `counter + 1`, a case-merged array, the found index + 1 --
+                # and it MUST advance each iteration regardless of whether that
+                # expression textually mentions the SR var. An UNINITIALIZED SR
+                # is skipped: it is the functional-global idiom whose state
+                # persists across CALLS via the module global below, and whose
+                # pre-update value is read by a post-loop branch (the OpenG
+                # "Changed?" `old != new`), so an in-loop write would clobber it.
+                if lsr_outer in initialized_sr_outers:
                     sr_feedbacks.append((rsr_shift_var, updated_var))
+                    # A post-loop reader of an initialized SR reads the
+                    # loop-carried variable -- its initial value when the loop
+                    # runs 0 times, the last fed-back value otherwise -- NOT the
+                    # body-local updated_var, which is unbound if the body never
+                    # executes (e.g. an empty input array).
+                    bindings[outer_term] = rsr_shift_var
+                else:
+                    # Uninitialized (functional-global) SR: the module-global
+                    # writeback below reads this fresh updated_var.
+                    bindings[outer_term] = updated_var
             else:
                 bindings[outer_term] = rsr_shift_var
 
@@ -317,7 +431,7 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
         loop_ast, stop_condition_var = _build_while_loop(node, inner_stmts, inner_ctx)
     else:
         loop_ast = _build_for_loop(
-            node, inner_stmts, inner_ctx, tunnels, n_terminal_var
+            node, inner_stmts, inner_ctx, n_terminal_var, for_input_arrays
         )
 
     # 7. Handle lpTun outputs (last value)
@@ -360,21 +474,6 @@ def generate(node: LoopNode, ctx: CodeGenContext) -> CodeFragment:
         bindings=bindings,
         imports=inner_ctx.imports,
     )
-
-
-def _expr_references(expr_str: str, var: str) -> bool:
-    """True if the Python expression ``expr_str`` reads the name ``var``.
-
-    Used to detect true shift-register accumulation: the rSR's new value is
-    computed FROM the SR's current value (so it must be fed back for the next
-    iteration), versus an independent value (which must not overwrite the lSR
-    local a separate branch still reads). AST-based so ``state`` does not match
-    ``state2``."""
-    try:
-        tree = ast.parse(expr_str, mode="eval")
-    except SyntaxError:
-        return False
-    return any(isinstance(n, ast.Name) and n.id == var for n in ast.walk(tree))
 
 
 def _make_var_name(tunnel: Tunnel, ctx: CodeGenContext | None = None) -> str:
@@ -678,8 +777,8 @@ def _build_for_loop(
     node: LoopNode,
     body: list[ast.stmt],
     ctx: CodeGenContext,
-    tunnels: list[Tunnel],
-    n_terminal_var: str | None = None,
+    n_terminal_var: str | None,
+    input_arrays: list[tuple[str, str]],
 ) -> ast.For:
     """Build a for loop AST node.
 
@@ -714,8 +813,10 @@ def _build_for_loop(
                 cond_expr = ast.UnaryOp(op=ast.Not(), operand=cond_expr)
             body = [*body, ast.If(test=cond_expr, body=[ast.Break()], orelse=[])]
 
-    # Find ALL auto-indexing array inputs
-    autoindex_arrays = _find_all_autoindex_arrays(tunnels, ctx)
+    # Auto-indexing input arrays, classified once by generate() (step 3) and
+    # passed in — NOT re-scanned here, so this iteration form always matches the
+    # inner-terminal bindings that step 3 already emitted.
+    autoindex_arrays = input_arrays
 
     # Get index variable for this loop depth (i, j, k, ...)
     # Use depth-1 because ctx was already incremented for loop interior
@@ -796,40 +897,6 @@ def _build_for_loop(
         body=body,
         orelse=[],
     )
-
-
-def _find_all_autoindex_arrays(
-    tunnels: list[Tunnel], ctx: CodeGenContext
-) -> list[tuple[str, str]]:
-    """Find array inputs for autoindexing (excludes scalar inputs).
-
-    LabVIEW For loops with multiple auto-indexing inputs iterate
-    min(len(arr1), len(arr2), ...) times.
-
-    In LabVIEW, lpTun inputs to For loops are auto-indexed IF they are arrays.
-    Scalar inputs pass through unchanged (same value each iteration).
-
-    Returns list of (array_var, inner_terminal_uid) tuples.
-    Only includes inputs with array type - scalar inputs are excluded.
-    """
-    results: list[tuple[str, str]] = []
-
-    for tunnel in tunnels:
-        tunnel_type = tunnel.tunnel_type
-        outer_term = tunnel.outer_terminal_uid
-        inner_term = tunnel.inner_terminal_uid
-
-        # In For loops, lpTun inputs are auto-indexed if array OR type unknown
-        # Only exclude if type is KNOWN and NOT an array (scalar)
-        if tunnel_type == "lpTun" and outer_term and inner_term:
-            outer_var = ctx.resolve(outer_term)
-            if outer_var:
-                lv_type = _get_terminal_type(outer_term, ctx)
-                # Treat as array if type is array OR unknown (backward compat)
-                if lv_type is None or lv_type.kind == LVTypeKind.ARRAY:
-                    results.append((outer_var, inner_term))
-
-    return results
 
 
 # Comparison operator inversions for cleaner negation

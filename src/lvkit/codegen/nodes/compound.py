@@ -124,7 +124,6 @@ def generate_compound_arith(
 
     sorted_inputs = sorted(inputs, key=lambda t: t.index)
     input_exprs = []
-    input_names = []
     for inp in sorted_inputs:
         val = ctx.resolve(inp.id)
         if val:
@@ -133,9 +132,10 @@ def generate_compound_arith(
                 expr = _invert_expr(expr, boolean, operation, inp.lv_type)
                 val = ast.unparse(expr)
             input_exprs.append(val)
-            input_names.append(val)
 
-    var_name = _make_arith_var_name(operation, input_names)
+    var_name = ctx.make_output_var(
+        _arith_base_name(operation, output_term), node.id, terminal_id=output_id
+    )
 
     if not input_exprs:
         default_value = False if operation in ("or", "and") else 0
@@ -218,19 +218,18 @@ def generate_compound_arith(
     )
 
 
-def _make_arith_var_name(operation: str, input_names: list[str]) -> str:
-    """Generate a semantic variable name for compound arithmetic."""
-    if operation in ("or", "and"):
-        stop_keywords = {"stop", "done", "exit", "quit", "end", "finish", "complete"}
-        for name in input_names:
-            if any(kw in name.lower() for kw in stop_keywords):
-                return "should_stop"
-        return "should_stop"
+def _arith_base_name(operation: str, output_term: Terminal) -> str:
+    """A base variable-name stem for a compound-arithmetic output.
 
-    if operation == "add" and input_names:
-        return "total"
-
-    return "combined"
+    Passed to ``ctx.make_output_var``, which uniquifies it on collision and
+    defers to output-tunnel naming when the output feeds a structure boundary
+    — so this only needs a reasonable, operation-derived stem, never a fixed
+    string. Prefer the output terminal's own name when it carries one.
+    """
+    name = (output_term.name or "").strip()
+    if name:
+        return name
+    return {"add": "total", "multiply": "product"}.get(operation, "combined")
 
 
 def generate_array_build(
@@ -272,7 +271,9 @@ def generate_array_build(
         else:
             parts.append(ast.List(elts=[ast.Constant(value=None)], ctx=ast.Load()))
 
-    var_name = _make_array_var_name(input_names)
+    var_name = ctx.make_output_var(
+        _make_array_var_name(input_names), node.id, terminal_id=output_id
+    )
 
     if not parts:
         expr: ast.expr = ast.List(elts=[], ctx=ast.Load())
@@ -287,6 +288,55 @@ def generate_array_build(
 
     return CodeFragment(
         statements=[stmt],
+        bindings={output_id: var_name},
+    )
+
+
+def generate_concat_strings(
+    node: PrimitiveNode,
+    ctx: CodeGenContext,
+) -> CodeFragment:
+    """Generate code for Concatenate Strings (``concat``).
+
+    LabVIEW's Concatenate Strings joins all input strings, in terminal order,
+    into a single output string. A 1D-array-of-strings input contributes all
+    of its elements concatenated together (``"".join(arr)``); a scalar string
+    input contributes its own value. With no inputs the result is ``""``.
+    """
+    inputs = [t for t in node.terminals if t.direction == "input"]
+    outputs = [t for t in node.terminals if t.direction == "output"]
+
+    if not outputs:
+        return CodeFragment()
+
+    output_id = outputs[0].id
+
+    parts: list[ast.expr] = []
+    for inp in sorted(inputs, key=lambda t: t.index):
+        val = ctx.resolve(inp.id)
+        if not val:
+            continue
+        is_array = inp.lv_type is not None and inp.lv_type.kind == LVTypeKind.ARRAY
+        if is_array:
+            # A 1D array of strings concatenates its elements.
+            parts.append(parse_expr(f'"".join({val})'))
+        else:
+            parts.append(parse_expr(val))
+
+    if not parts:
+        expr: ast.expr = ast.Constant(value="")
+    else:
+        expr = parts[0]
+        for part in parts[1:]:
+            expr = ast.BinOp(left=expr, op=ast.Add(), right=part)
+
+    out_name = outputs[0].name
+    var_name = ctx.make_output_var(
+        out_name or "concatenated_string", node.id, terminal_id=output_id
+    )
+
+    return CodeFragment(
+        statements=[build_assign(var_name, expr)],
         bindings={output_id: var_name},
     )
 

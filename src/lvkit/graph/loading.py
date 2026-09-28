@@ -58,6 +58,7 @@ from .models import (
     VIProperties,
     WindowProps,
 )
+from .node_kinds import EdgeRel, NodeType
 from .op_walk import stamp_nmux_lane_names, stamp_property_value_names
 from .parallel_parse import PARALLEL_THRESHOLD, parallel_parse_directory
 
@@ -429,12 +430,12 @@ class LoadingMixin:
     def _add_stub(
         self,
         key: str,
-        node_type: str,
+        node_type: NodeType,
         name: str,
         qname: str | None,
         path_tokens: list[str] | None,
         caller: str | None,
-        rel: str | None = None,
+        rel: EdgeRel | None = None,
     ) -> None:
         """Add one path-keyed STUB node for a dependency whose file is absent
         (or unresolved) -- the single shape shared by every stub-creation site
@@ -490,7 +491,7 @@ class LoadingMixin:
         # lib_qname + ":" + name — dynamic dispatch, owner-chain nesting).
         lib_path_r = lvlib_path.resolve()
         lib_key = str(lib_path_r)
-        self._dep_graph.add_node(lib_key, node_type="library")
+        self._dep_graph.add_node(lib_key, node_type=NodeType.LIBRARY)
         self._register_dep_node(lib_key, lib_path_r, lib_name, lib_qname)
         self._stubs.discard(lib_key)
 
@@ -515,7 +516,7 @@ class LoadingMixin:
                             typedef_qname=typedef_qname,
                             search_paths=search_paths,
                         )
-                        self._dep_graph.add_edge(lib_key, ctl_key, rel="owns")
+                        self._dep_graph.add_edge(lib_key, ctl_key, rel=EdgeRel.OWNS)
                     else:
                         # Absent .ctl: key the stub by its INTENDED resolved path
                         # (computable without the file), so it stages/upgrades by
@@ -523,12 +524,12 @@ class LoadingMixin:
                         ctl_key = str(ctl_path.resolve())
                         self._add_stub(
                             ctl_key,
-                            "typedef",
+                            NodeType.TYPEDEF,
                             member_name,
                             typedef_qname,
                             path_tokens=None,
                             caller=lib_key,
-                            rel="owns",
+                            rel=EdgeRel.OWNS,
                         )
                 elif member_suffix == ".vi":
                     member_qname = lib_qname + ":" + member_name
@@ -544,7 +545,9 @@ class LoadingMixin:
                         member_key = self.load_vi(vi_path, mode, search_paths)
                         # Ownership edge — to the member's RETURN key (its path).
                         if member_key and member_key in self._dep_graph:
-                            self._dep_graph.add_edge(lib_key, member_key, rel="owns")
+                            self._dep_graph.add_edge(
+                                lib_key, member_key, rel=EdgeRel.OWNS
+                            )
                     else:
                         # Absent .vi member: key the stub by its INTENDED
                         # resolved path (computable without the file), so it
@@ -553,12 +556,12 @@ class LoadingMixin:
                         vi_key = str((lvlib_path.parent / member.url).resolve())
                         self._add_stub(
                             vi_key,
-                            "vi",
+                            NodeType.VI,
                             member_name,
                             member_qname,
                             path_tokens=None,
                             caller=lib_key,
-                            rel="owns",
+                            rel=EdgeRel.OWNS,
                         )
                 else:
                     # A member the library XML declares Type="VI" but whose URL
@@ -606,19 +609,19 @@ class LoadingMixin:
                         owner_chain=chain + [lib.name + ".lvlib"],
                     )
                     if member_key:
-                        self._dep_graph.add_edge(lib_key, member_key, rel="owns")
+                        self._dep_graph.add_edge(lib_key, member_key, rel=EdgeRel.OWNS)
                 else:
                     # Absent .lvclass member: same path-keyed stub treatment.
                     class_key = str((lvlib_path.parent / member.url).resolve())
                     class_qname = lib_qname + ":" + class_name
                     self._add_stub(
                         class_key,
-                        "class",
+                        NodeType.CLASS,
                         class_name,
                         class_qname,
                         path_tokens=None,
                         caller=lib_key,
-                        rel="owns",
+                        rel=EdgeRel.OWNS,
                     )
             elif member.member_type == "Library":
                 lib_name_file = Path(member.url).name
@@ -639,7 +642,7 @@ class LoadingMixin:
                         owner_chain=chain + [lib.name + ".lvlib"],
                     )
                     if nested_key:
-                        self._dep_graph.add_edge(lib_key, nested_key, rel="owns")
+                        self._dep_graph.add_edge(lib_key, nested_key, rel=EdgeRel.OWNS)
                 else:
                     # Absent nested .lvlib member: same path-keyed stub
                     # treatment.
@@ -647,12 +650,12 @@ class LoadingMixin:
                     nested_qname = lib_qname + ":" + lib_name_file
                     self._add_stub(
                         nested_key,
-                        "library",
+                        NodeType.LIBRARY,
                         lib_name_file,
                         nested_qname,
                         path_tokens=None,
                         caller=lib_key,
-                        rel="owns",
+                        rel=EdgeRel.OWNS,
                     )
 
         return lib_key
@@ -693,8 +696,11 @@ class LoadingMixin:
         cls_name = cls.name + ".lvclass"
         cls_qname = ":".join(chain + [cls_name]) if chain else cls_name
 
-        # Add class node to dep_graph with field info.
-        fields = self._class_private_data_fields(cls, lvclass_path)
+        # Add class node to dep_graph with field info. The private data is an
+        # inline cluster when the class carries one; otherwise it is recovered
+        # below, once the node exists (a separate .ctl, then the flattened
+        # property).
+        fields = self._inline_private_data_fields(cls)
         # PATH is the class's identity (finishes #26): key the node by the
         # resolved .lvclass path and index its qname/bare-name so a type
         # reference resolves to this key. The qname stays the DISPLAY name.
@@ -733,7 +739,7 @@ class LoadingMixin:
             method_paths[Path(method.vi_path).name] = str(vp)
         self._dep_graph.add_node(
             cls_key,
-            node_type="class",
+            node_type=NodeType.CLASS,
             fields=fields,
             parent_class=cls.parent_class,
             parent_key=parent_key,
@@ -745,6 +751,13 @@ class LoadingMixin:
         )
         self._register_dep_node(cls_key, cls_path_r, cls_name, cls_qname)
         self._stubs.discard(cls_key)
+        # The class node must exist before its private-data control loads, so a
+        # private-data type that references this class dedups on it.
+        if not fields:
+            fields = self._load_private_data_ctl(
+                cls_key, cls, lvclass_path, search_paths
+            ) or self._flattened_private_data_fields(lvclass_path)
+            self._dep_graph.nodes[cls_key]["fields"] = fields
 
         # Field-load the parent chain (no methods) so inherited nMux field
         # indices AND inherited-method calls resolve; dedup on the parent's
@@ -780,7 +793,7 @@ class LoadingMixin:
             if not self._dep_graph.has_node(parent_key):
                 self._dep_graph.add_node(
                     parent_key,
-                    node_type="class",
+                    node_type=NodeType.CLASS,
                     fields_only=True,
                     path_tokens=None,
                 )
@@ -804,7 +817,7 @@ class LoadingMixin:
                     self._dep_graph.add_edge(
                         cls_key,
                         method_key,
-                        rel="owns",
+                        rel=EdgeRel.OWNS,
                         scope=method.scope,
                         is_accessor=method.is_accessor,
                         accessor_type=method.accessor_type,
@@ -816,62 +829,74 @@ class LoadingMixin:
 
         return cls_key
 
-    def _class_private_data_fields(
-        self, cls: LVClass, lvclass_path: Path
+    def _inline_private_data_fields(self, cls: LVClass) -> list[ClusterField]:
+        """The class's private data as an inline "class private data" cluster
+        found in a method VI's VCTP (structure.py::_parse_private_data_fields),
+        converted by the same helper the render resolver's VI-own-inline-copy
+        fallback uses — see structure.py::private_data_field_to_cluster_field.
+        Empty when the class carries none."""
+        return [private_data_field_to_cluster_field(f) for f in cls.private_data_fields]
+
+    def _load_private_data_ctl(
+        self,
+        cls_key: str,
+        cls: LVClass,
+        lvclass_path: Path,
+        search_paths: list[Path],
     ) -> list[ClusterField]:
-        """The class's private-data fields, tried in fallback order.
+        """A class whose private data is a separate control (.ctl): load it as
+        a typedef node (its file may differ from the class's recorded logical
+        name), edge the class to it (``EdgeRel.PRIVATE_DATA``), and return its
+        cluster fields. Runs AFTER the class node is registered, so a private
+        data type that references its own class dedups on that node instead of
+        recursing. Empty when no control can be pinned down, or when the file
+        is readable but has no cluster root: a control that isn't a cluster is
+        not a class's private data, so it is not edged (it stays a typedef
+        node). An unreadable control stays edged as a stub, so staging can
+        still name it, and is logged."""
+        ctl = self._find_private_data_ctl(lvclass_path.parent, cls.private_data_ctl)
+        if ctl is None:
+            return []
+        ctl_key = self.load_typedef(ctl, search_paths=search_paths)
+        if ctl_key in self._stubs:
+            logger.warning(
+                "class %s: private-data control %s could not be read",
+                cls.name,
+                ctl.name,
+            )
+        elif not self._dep_graph.nodes[ctl_key].get("fields"):
+            return []
+        self._dep_graph.add_edge(cls_key, ctl_key, rel=EdgeRel.PRIVATE_DATA)
+        return list(self._dep_graph.nodes[ctl_key].get("fields") or [])
 
-        The LVPrivateDataField -> ClusterField conversion (incl. nested
-        sub-field typing) is shared with the render resolver's
-        VI-own-inline-copy fallback — see
-        structure.py::private_data_field_to_cluster_field. Three sources, in
-        order:
-
-        1. An inline "class private data" cluster found in a method VI's VCTP
-           (structure.py::_parse_private_data_fields).
-        2. A separate control (.ctl) typedef this class stores its private
-           data as instead (same .ctl extraction as load_typedef); its file
-           may differ from the class's recorded logical name.
-        3. A source-only .lvclass: neither of the above carries the cluster
-           (e.g. the pre-refactor layout where the private data is embedded
-           ONLY as the flattened NI.LVClass.FlattenedPrivateDataCTL property
-           in the class XML) — recovered straight from that property.
-           Best-effort: a malformed/older embedded control must never break
-           class loading.
-        """
-        fields = [
-            private_data_field_to_cluster_field(f) for f in cls.private_data_fields
-        ]
-        if not fields:
-            ctl = self._find_private_data_ctl(lvclass_path.parent, cls.private_data_ctl)
-            if ctl is not None:
-                ctl_fields, _ = self._ctl_root_fields(ctl)
-                if ctl_fields:
-                    fields = ctl_fields
-        if not fields:
-            try:
-                pd_fields = private_data_from_lvclass_xml(lvclass_path)
-            except Exception:
-                # Intentional hard best-effort boundary, not a narrowable
-                # set: private_data_from_lvclass_xml decodes a possibly
-                # malformed/legacy embedded RSRC container through
-                # pylabview's OWN VI-resource parser (parse_flattened_
-                # private_data -> lv_rsrc.VI(...).parseData()), whose
-                # exception surface on untrusted/old-format binary data
-                # isn't a documented closed set (struct/index/value/key
-                # errors and more have all been observed from that parser
-                # elsewhere) -- this docstring's own contract is "a
-                # malformed/older embedded control must never break class
-                # loading", so any failure here degrades to "no fields
-                # recovered", never propagates.
-                logger.debug(
-                    "flattened private-data recovery failed for %s",
-                    lvclass_path,
-                    exc_info=True,
-                )
-                pd_fields = []
-            fields = [private_data_field_to_cluster_field(f) for f in pd_fields]
-        return fields
+    def _flattened_private_data_fields(self, lvclass_path: Path) -> list[ClusterField]:
+        """A source-only .lvclass: neither an inline cluster nor a .ctl carries
+        the private data (e.g. the pre-refactor layout where it is embedded
+        ONLY as the flattened NI.LVClass.FlattenedPrivateDataCTL property in the
+        class XML) — recovered straight from that property. Best-effort: a
+        malformed/older embedded control must never break class loading."""
+        try:
+            pd_fields = private_data_from_lvclass_xml(lvclass_path)
+        except Exception:
+            # Intentional hard best-effort boundary, not a narrowable
+            # set: private_data_from_lvclass_xml decodes a possibly
+            # malformed/legacy embedded RSRC container through
+            # pylabview's OWN VI-resource parser (parse_flattened_
+            # private_data -> lv_rsrc.VI(...).parseData()), whose
+            # exception surface on untrusted/old-format binary data
+            # isn't a documented closed set (struct/index/value/key
+            # errors and more have all been observed from that parser
+            # elsewhere) -- this docstring's own contract is "a
+            # malformed/older embedded control must never break class
+            # loading", so any failure here degrades to "no fields
+            # recovered", never propagates.
+            logger.debug(
+                "flattened private-data recovery failed for %s",
+                lvclass_path,
+                exc_info=True,
+            )
+            return []
+        return [private_data_field_to_cluster_field(f) for f in pd_fields]
 
     def _resolve_vilib_class_ref(
         self,
@@ -1072,7 +1097,7 @@ class LoadingMixin:
 
         # Absent project members are stubbed by their INTENDED resolved path
         # (mirroring load_lvlib's absent-member branches) so they're still
-        # NAMED — get_dependency_paths / is_stub_vi / progressive staging can
+        # NAMED — get_dependency_paths / is_stub / progressive staging can
         # see them and upgrade by identity when the file appears. UNLIKE
         # load_lvlib's members, there is no ownership edge: a ``.lvproj`` is a
         # build/reference manifest, not itself a dep_graph node — load_lvproj
@@ -1083,7 +1108,12 @@ class LoadingMixin:
             else:
                 key = str(lib_path.resolve())
                 self._add_stub(
-                    key, "library", lib_name, lib_name, path_tokens=None, caller=None
+                    key,
+                    NodeType.LIBRARY,
+                    lib_name,
+                    lib_name,
+                    path_tokens=None,
+                    caller=None,
                 )
 
         for class_name, class_path in get_project_classes(proj):
@@ -1093,7 +1123,7 @@ class LoadingMixin:
                 key = str(class_path.resolve())
                 self._add_stub(
                     key,
-                    "class",
+                    NodeType.CLASS,
                     class_name,
                     class_name,
                     path_tokens=None,
@@ -1106,7 +1136,7 @@ class LoadingMixin:
             else:
                 key = str(vi_path.resolve())
                 self._add_stub(
-                    key, "vi", vi_name, vi_name, path_tokens=None, caller=None
+                    key, NodeType.VI, vi_name, vi_name, path_tokens=None, caller=None
                 )
 
     def load_directory(
@@ -1479,32 +1509,49 @@ class LoadingMixin:
 
         return vi_key
 
-    def _ctl_root_fields(
+    def _ctl_root(
         self,
         ctl_path: Path,
-    ) -> tuple[list[ClusterField] | None, dict[int, LVType]]:
-        """The root cluster fields + full type_map of a control (.ctl). The
-        single ``.ctl`` field-extraction, shared by ``load_typedef`` and the
-        class private-data fallback in ``load_lvclass`` (a class whose private
-        data is a ``.ctl`` control, not an inline cluster). Returns
-        ``(None, {})`` when the control's XML can't be produced."""
+    ) -> tuple[LVType | None, dict[int, LVType], ParsedFrontPanel | None]:
+        """The root type + full type_map + front-panel geometry of a control
+        (.ctl). The single ``.ctl`` extraction, used by ``load_typedef`` for a
+        standalone typedef AND (through it) for a class whose private data is
+        a ``.ctl`` control rather than an inline cluster. The root is the
+        control's own type -- a cluster (``.fields``), an enum
+        (``.values``), a ring, a scalar, ... -- so a non-cluster control keeps
+        its type. Returns ``(None, {}, None)`` when the control's XML can't
+        be produced.
+
+        ``front_panel`` is the control's OWN front-panel layout (real
+        per-control bounds + nested cluster field geometry, see
+        ``ParsedFPControl.cluster_geom``) — decoded by the SAME
+        ``parse_vi``/``_parse_front_panel`` path a VI's own front panel uses;
+        a ``.ctl``'s FPHb carries the identical shape (verified: this needs
+        no special-casing, just feeding the SAME ``bd_xml``/``fp_xml``/
+        ``main_xml`` triple ``extract_vi_xml`` already produces for a
+        typedef's near-empty block diagram). None when ``fp_xml`` is absent
+        or carries no parseable front panel.
+        """
         # Guard the whole extract+parse. A control can extract to XML that is
         # then malformed, so parse_type_map_rich / _get_fp_root_type_id can raise
         # ET.ParseError (a SyntaxError subclass — NOT an OSError/ValueError) or
-        # ValueError. Honor this method's documented "(None, {}) on failure"
-        # contract for those too (load_typedef and lvkit.list_deps rely on it).
+        # ValueError. Honor this method's documented "(None, {}, None) on
+        # failure" contract for those too (load_typedef and lvkit.list_deps
+        # rely on it).
         try:
-            _, fp_xml, main_xml = extract_vi_xml(ctl_path)
+            bd_xml, fp_xml, main_xml = extract_vi_xml(ctl_path)
             if not (main_xml and main_xml.exists()):
-                return None, {}
+                return None, {}, None
             type_map = parse_type_map_rich(main_xml)
             root_type_id = _get_fp_root_type_id(fp_xml)
+            front_panel = parse_vi(
+                bd_xml=bd_xml, fp_xml=fp_xml, main_xml=main_xml
+            ).front_panel
         except (RuntimeError, OSError, ValueError, ET.ParseError):
-            return None, {}
+            return None, {}, None
         if root_type_id is None:
             root_type_id = 1  # cluster control default
-        root = type_map.get(root_type_id)
-        return (root.fields if root is not None else None), type_map
+        return type_map.get(root_type_id), type_map, front_panel
 
     def _find_private_data_ctl(
         self,
@@ -1528,8 +1575,10 @@ class LoadingMixin:
         typedef_qname: str | None = None,
         search_paths: list[Path] | None = None,
     ) -> str:
-        """Load a .ctl typedef and add it to the dep_graph with its fields.
-        Returns the dep-graph KEY (the resolved .ctl path) it registered under.
+        """Load a .ctl typedef and add it to the dep_graph as a ``typedef`` node
+        carrying its ``root_type``, cluster ``fields`` and ``front_panel``.
+        Returns the dep-graph KEY (the resolved .ctl path) it registered under;
+        the node is a STUB when the file is absent or can't be read as a control.
 
         Mirrors load_vi / load_lvclass / load_lvlib for consistency: PATH is the
         typedef's identity (finishes #26), and the qname/bare-name index to that
@@ -1552,14 +1601,22 @@ class LoadingMixin:
             # is edged by its CALLER, not internally (unlike a caller-edging
             # stub site) — kept shape-consistent (explicit path_tokens) with
             # the other stub sites regardless.
-            self._dep_graph.add_node(ctl_key, node_type="typedef", path_tokens=None)
+            self._dep_graph.add_node(
+                ctl_key, node_type=NodeType.TYPEDEF, path_tokens=None
+            )
             self._stubs.add(ctl_key)
             self._register_dep_name(ctl_key, ctl_path.name, qname)
             return ctl_key
 
-        fields, type_map = self._ctl_root_fields(ctl_path)
-        if type_map:
-            self._dep_graph.add_node(ctl_key, node_type="typedef", fields=fields)
+        root, type_map, front_panel = self._ctl_root(ctl_path)
+        if type_map and root is not None:
+            self._dep_graph.add_node(
+                ctl_key,
+                node_type=NodeType.TYPEDEF,
+                fields=root.fields,
+                root_type=root,
+                front_panel=front_panel,
+            )
             self._register_dep_node(ctl_key, ctl_path_r, ctl_path.name, qname)
             self._stubs.discard(ctl_key)
 
@@ -1583,8 +1640,10 @@ class LoadingMixin:
                         caller_qname=ctl_key,
                     )
         else:
-            # XML not produced — stub with what we know
-            self._dep_graph.add_node(ctl_key, node_type="typedef", path_tokens=None)
+            # XML not produced, or no root type — stub with what we know
+            self._dep_graph.add_node(
+                ctl_key, node_type=NodeType.TYPEDEF, path_tokens=None
+            )
             self._stubs.add(ctl_key)
             self._register_dep_name(ctl_key, ctl_path.name, qname)
         return ctl_key
@@ -1754,13 +1813,13 @@ class LoadingMixin:
                     self._dep_graph.add_edge(caller_qname, existing)
                 return
             node_type = (
-                "class"
+                NodeType.CLASS
                 if leaf.endswith(".lvclass")
-                else "typedef"
+                else NodeType.TYPEDEF
                 if leaf.endswith(".ctl")
-                else "library"
+                else NodeType.LIBRARY
                 if leaf.endswith(".lvlib")
-                else "vi"
+                else NodeType.VI
             )
             computed = self._intended_dep_path(qualified_name, dep_ref, caller_file)
             stub_key = str(computed) if computed is not None else qualified_name
@@ -1825,7 +1884,7 @@ class LoadingMixin:
             )
             self._add_stub(
                 unknown_key,
-                "unknown",
+                NodeType.UNKNOWN,
                 leaf,
                 qualified_name,
                 path_tokens=path_tokens,
@@ -1923,7 +1982,7 @@ class LoadingMixin:
             (
                 s
                 for s in self._dep_graph.successors(vi_key)
-                if self._dep_graph.nodes[s].get("node_type") == "class"
+                if self._dep_graph.nodes[s].get("node_type") == NodeType.CLASS
             ),
             key=lambda s: (-len(self._dep_graph.nodes[s].get("ancestors", [])), s),
         )
@@ -1985,7 +2044,7 @@ class LoadingMixin:
         )
         self._add_stub(
             key,
-            "vi",
+            NodeType.VI,
             name.rsplit(":", 1)[-1],
             name,
             path_tokens=path_tokens,

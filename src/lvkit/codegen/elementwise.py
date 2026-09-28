@@ -22,6 +22,11 @@ _BINOP = {
     ast.FloorDiv: "floordiv",
     ast.Mod: "mod",
     ast.Pow: "pow_",
+    ast.BitAnd: "bitand",
+    ast.BitOr: "bitor",
+    ast.BitXor: "bitxor",
+    ast.LShift: "lshift",
+    ast.RShift: "rshift",
 }
 _CMP = {
     ast.Gt: "gt",
@@ -30,6 +35,16 @@ _CMP = {
     ast.LtE: "le",
     ast.Eq: "eq",
     ast.NotEq: "ne",
+}
+# Unary conversion builtins whose templates (int(bool(x)), int(round(x)), …) must
+# broadcast when their argument is an array (LabVIEW's conversions are
+# polymorphic). Mapped to the scalar-safe, recursively-broadcasting _lv helpers.
+_UNARY_FN = {
+    "int": "int_",
+    "float": "float_",
+    "bool": "bool_",
+    "round": "round_",
+    "abs": "abs_",
 }
 
 
@@ -41,6 +56,21 @@ def _call(fn: str, args: list[ast.expr]) -> ast.Call:
         args=args,
         keywords=[],
     )
+
+
+def _is_list_shaped(node: ast.expr) -> bool:
+    """True for an expression that is a LIST by construction — a sliced subscript
+    (``x[a:b]``), a list literal (``[x]``), or a ``+`` of such. Build Array and
+    Replace Array Subset join these with ``+`` to CONCATENATE; a scalar operand
+    is never list-shaped, so ``5.0 + arr[:3]`` (a broadcast) is not mistaken for a
+    concat."""
+    if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Slice):
+        return True
+    if isinstance(node, ast.List):
+        return True
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+        return _is_list_shaped(node.left) and _is_list_shaped(node.right)
+    return False
 
 
 def _is_array_valued(node: ast.expr, array_vars: frozenset[str]) -> bool:
@@ -77,6 +107,19 @@ class _ArrayifyBase(ast.NodeTransformer):
         self.generic_visit(node)
         fn = _BINOP.get(type(node.op))
         if fn and self._should(node.left, node.right):
+            # `+` is LIST CONCATENATION, not element-wise add, when it builds a
+            # list: a LIST LITERAL operand (`acc + [new]` — Build Array append) or
+            # BOTH operands list-shaped (`arr[:i] + repl + arr[i:]` — Replace Array
+            # Subset). Leave those alone so arrayify doesn't turn a concat into
+            # `_lv.add` (which zips and truncates). Element-wise add / broadcast
+            # (`arr + arr`, `5.0 + arr[:3]`) has no list-literal and is not
+            # both-list-shaped, so it still rewrites.
+            if isinstance(node.op, ast.Add) and (
+                isinstance(node.left, ast.List)
+                or isinstance(node.right, ast.List)
+                or (_is_list_shaped(node.left) and _is_list_shaped(node.right))
+            ):
+                return node
             self.used = True
             return _call(fn, [node.left, node.right])
         return node
@@ -95,6 +138,23 @@ class _ArrayifyBase(ast.NodeTransformer):
             if fn and self._should(node.left, node.comparators[0]):
                 self.used = True
                 return _call(fn, [node.left, node.comparators[0]])
+        return node
+
+    def visit_Call(self, node: ast.Call) -> ast.AST:
+        # Broadcast a unary conversion builtin (int/bool/round/float/abs) over an
+        # array-valued argument. Visited bottom-up, so nested conversions like
+        # int(bool(arr)) rewrite to _lv.int_(_lv.bool_(arr)).
+        self.generic_visit(node)
+        if (
+            isinstance(node.func, ast.Name)
+            and node.func.id in _UNARY_FN
+            and len(node.args) == 1
+            and not node.keywords
+            and not any(isinstance(a, ast.Starred) for a in node.args)
+            and self._should(node.args[0])
+        ):
+            self.used = True
+            return _call(_UNARY_FN[node.func.id], [node.args[0]])
         return node
 
 

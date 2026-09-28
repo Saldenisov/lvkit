@@ -16,7 +16,10 @@ from __future__ import annotations
 import math as _math
 import operator as _op
 import random as _random
+import re as _re
+import sys as _sys
 from collections.abc import Callable
+from typing import Literal
 
 
 def _binop(a, b, f: Callable):
@@ -294,3 +297,236 @@ def sec(x):
 
 def sinc(x):
     return 1.0 if x == 0 else _math.sin(x) / x
+
+
+def index_array(arr, i, default):
+    """Index Array (node class ``aIndx``): LabVIEW returns the element type's
+    DEFAULT for an out-of-range index rather than raising, so a byte value
+    indexing a short lookup table yields the default instead of ``IndexError``.
+    ``default`` is the element type's real default, supplied by codegen."""
+    j = int(i)
+    return arr[j] if 0 <= j < len(arr) else default
+
+
+def array_subset(arr, index, length):
+    """Array Subset (node class ``subset``): the contiguous run of ``length``
+    elements starting at ``index``. An UNWIRED length is ``None`` -- LabVIEW then
+    returns the rest of the array from ``index`` to the end (not an empty run).
+    Python slicing clips both ends to the array bounds, matching LabVIEW."""
+    i = int(index)
+    if length is None:
+        return arr[i:]
+    return arr[i:i + int(length)]
+
+
+def array_size(a, ndims: int):
+    """LabVIEW Array Size for an ``ndims``-dimensional array. A 1-D array yields
+    a scalar element count; a 2-D+ array yields a 1-D list of per-dimension sizes
+    ``[d0, d1, ...]`` (LabVIEW's multi-dimensional Array Size returns the size
+    vector, not a scalar). Dimension sizes are read down the first element of
+    each axis, matching LabVIEW's rectangular arrays; an empty axis is size 0."""
+    if ndims <= 1:
+        return len(a)
+    sizes = []
+    cur = a
+    for _ in range(ndims):
+        sizes.append(len(cur) if isinstance(cur, (list, tuple)) else 0)
+        cur = cur[0] if isinstance(cur, (list, tuple)) and cur else []
+    return sizes
+
+
+def _spreadsheet_convert(x: str, elem: str):
+    """Convert one spreadsheet field to the array element type (LabVIEW scans an
+    unparseable/empty numeric field as the numeric default, never raising)."""
+    if elem == "int":
+        try:
+            return int(x)
+        except ValueError:
+            return 0
+    if elem == "float":
+        try:
+            return float(x)
+        except ValueError:
+            return 0.0
+    return x
+
+
+def spreadsheet_string_to_array(s, delimiter, ndims: int = 1, elem: str = "str"):
+    """Spreadsheet String To Array (prim 1539).
+
+    A 2-D ``array type`` splits rows on the end-of-line and columns on the
+    delimiter; a 1-D ``array type`` treats BOTH the delimiter and an EOL as
+    element separators. The delimiter defaults to a tab when empty. An empty
+    input yields an empty array. ``elem`` (``"str"``/``"int"``/``"float"``,
+    from the output element type) drives per-field conversion.
+    """
+    delim = delimiter if delimiter else "\t"
+    if s == "":
+        return []
+    if ndims >= 2:
+        return [
+            [_spreadsheet_convert(c, elem) for c in row.split(delim)]
+            for row in s.splitlines()
+        ]
+    # 1-D: delimiter OR end-of-line separates elements (EOL alternatives first
+    # so CRLF matches as one separator, not CR then an empty field).
+    pattern = "|".join(_re.escape(sep) for sep in ("\r\n", "\r", "\n", delim))
+    return [_spreadsheet_convert(p, elem) for p in _re.split(pattern, s)]
+
+
+# Element-wise unary conversions: LabVIEW's numeric/boolean conversion functions
+# are polymorphic (scalar OR array OR nested), so codegen's arrayify pass rewrites
+# int()/bool()/round()/float()/abs() over an array-valued argument into these,
+# which broadcast (recursively) via _unop.
+def int_(a):
+    return _unop(a, int)
+
+
+def float_(a):
+    return _unop(a, float)
+
+
+def bool_(a):
+    return _unop(a, bool)
+
+
+def round_(a):
+    return _unop(a, round)
+
+
+def abs_(a):
+    return _unop(a, abs)
+
+
+# Bitwise operators broadcast element-wise (LabVIEW masks/shifts are polymorphic;
+# e.g. To U32 lowers to `x & 0xFFFFFFFF`, which must map over an array x).
+def bitand(a, b):
+    return _binop(a, b, lambda x, y: x & y)
+
+
+def bitor(a, b):
+    return _binop(a, b, lambda x, y: x | y)
+
+
+def bitxor(a, b):
+    return _binop(a, b, lambda x, y: x ^ y)
+
+
+def lshift(a, b):
+    return _binop(a, b, lambda x, y: x << y)
+
+
+def rshift(a, b):
+    return _binop(a, b, lambda x, y: x >> y)
+
+
+def rotate(x, n, bits):
+    """LabVIEW Rotate: rotate the low ``bits`` bits of ``x`` left by ``n``
+    (``n < 0`` rotates right), modulo the integer width — ``n`` and ``n ± bits``
+    give the same result. ``x`` is treated as an unsigned bit pattern of that
+    width; the result is the rotated value in ``[0, 2**bits)``."""
+    mask = (1 << bits) - 1
+    x &= mask
+    n %= bits
+    return ((x << n) | (x >> (bits - n))) & mask
+
+
+# Integer type spec -> (byte width, signed). Type Cast (below) speaks these.
+_INT_SPEC = {
+    "i8": (1, True), "u8": (1, False),
+    "i16": (2, True), "u16": (2, False),
+    "i32": (4, True), "u32": (4, False),
+    "i64": (8, True), "u64": (8, False),
+}
+
+
+def _flatten_bytes(x, spec: str) -> bytes:
+    """Flatten a value to LabVIEW's big-endian FLAT byte form (no length prefix,
+    which is what Type Cast uses — unlike Flatten To String). Supports strings,
+    scalar integers, and 1-D integer arrays; raises for anything else."""
+    if spec == "str":
+        return x.encode("latin-1") if isinstance(x, str) else bytes(x)
+    if spec in _INT_SPEC:
+        width, signed = _INT_SPEC[spec]
+        return int(x).to_bytes(width, "big", signed=signed)
+    if spec.endswith("[]") and spec[:-2] in _INT_SPEC:
+        width, signed = _INT_SPEC[spec[:-2]]
+        return b"".join(int(e).to_bytes(width, "big", signed=signed) for e in x)
+    raise NotImplementedError(f"Type Cast cannot flatten spec {spec!r}")
+
+
+def _unflatten_bytes(b: bytes, spec: str):
+    """Interpret big-endian flat bytes as the target type spec (inverse of
+    _flatten_bytes). Supports strings, scalar integers, and 1-D integer arrays."""
+    if spec == "str":
+        return b.decode("latin-1")
+    if spec in _INT_SPEC:
+        width, signed = _INT_SPEC[spec]
+        return int.from_bytes(b[:width], "big", signed=signed)
+    if spec.endswith("[]") and spec[:-2] in _INT_SPEC:
+        width, signed = _INT_SPEC[spec[:-2]]
+        return [
+            int.from_bytes(b[i:i + width], "big", signed=signed)
+            for i in range(0, len(b) - len(b) % width, width)
+        ]
+    raise NotImplementedError(f"Type Cast cannot unflatten spec {spec!r}")
+
+
+def type_cast(x, src: str, dst: str):
+    """LabVIEW Type Cast: reinterpret x's flat bytes as the destination type.
+    Flattens x (big-endian, no length prefix) then reads those bytes back as
+    dst. Supported specs: 'str', scalar ints ('u32', 'i16', …) and 1-D integer
+    arrays ('u32[]', …); other type pairs raise NotImplementedError (loud, never
+    silently wrong)."""
+    return _unflatten_bytes(_flatten_bytes(x, src), dst)
+
+
+# LabVIEW's 3 byte-order codes -> Python's from_bytes/to_bytes literal.
+_BYTE_ORDER: dict[int, Literal["little", "big"]] = {
+    0: "big", 1: _sys.byteorder, 2: "little"
+}
+
+
+def unflatten_from_string(
+    binary_string, dst: str, byte_order: int = 0, includes_size: bool = True
+):
+    """LabVIEW Unflatten From String: parse ``binary_string`` (LabVIEW's
+    Flatten To String format) as ``dst``'s type, returning
+    ``(value, rest_of_the_binary_string)``. Unlike Type Cast, a String/array
+    target carries a 4-byte length PREFIX when ``includes_size`` is True (the
+    default — matching Flatten To String's own output format), and
+    ``byte_order`` selects big-endian/native/little-endian (LabVIEW's 0/1/2).
+    Supported specs: 'str', scalar ints, and 1-D integer arrays (same set Type
+    Cast supports); other type pairs raise NotImplementedError (loud, never
+    silently wrong -- clusters/refnums/floats await a fuller flat-format
+    implementation, same as Type Cast)."""
+    order = _BYTE_ORDER[byte_order]
+    data = (
+        binary_string.encode("latin-1")
+        if isinstance(binary_string, str)
+        else bytes(binary_string)
+    )
+    if dst == "str":
+        if includes_size:
+            n = int.from_bytes(data[:4], order)
+            value, rest = data[4 : 4 + n], data[4 + n :]
+        else:
+            value, rest = data, b""
+        return value.decode("latin-1"), rest.decode("latin-1")
+    if dst in _INT_SPEC:
+        width, signed = _INT_SPEC[dst]
+        value = int.from_bytes(data[:width], order, signed=signed)
+        return value, data[width:].decode("latin-1")
+    if dst.endswith("[]") and dst[:-2] in _INT_SPEC:
+        width, signed = _INT_SPEC[dst[:-2]]
+        if includes_size:
+            count = int.from_bytes(data[:4], order)
+            body, rest = data[4 : 4 + count * width], data[4 + count * width :]
+        else:
+            body, rest = data, b""
+        value = [
+            int.from_bytes(body[i : i + width], order, signed=signed)
+            for i in range(0, len(body) - len(body) % width, width)
+        ]
+        return value, rest.decode("latin-1")
+    raise NotImplementedError(f"Unflatten From String cannot unflatten spec {dst!r}")

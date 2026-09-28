@@ -37,6 +37,7 @@ from .netlist_models import (
     NetlistTerminalBinding,
     NetRef,
 )
+from .typedef import TypedefField, TypedefInfo, TypedefRef
 
 
 def _netref_to_dict(ref: NetRef) -> dict[str, Any]:
@@ -153,7 +154,7 @@ def _feedback_to_dict(fb: NetlistFeedback) -> dict[str, Any]:
 
 def _lv_type_to_dict(lv_type: LVType) -> dict[str, Any]:
     """The FULL lossless structured type -- JSON's counterpart to lvnet's
-    verbose-only ``types :`` footnote body (``_lvnet_type_lossless_def``),
+    verbose-only ``types :`` footnote body (``lvnet_type_lossless_def``),
     but shaped as a direct recursive mirror of the ``LVType`` dataclass
     itself (every field, unflattened) rather than lvnet's by-name-
     deduplicated appendix: JSON has none of lvnet's line-length/whitespace
@@ -165,7 +166,7 @@ def _lv_type_to_dict(lv_type: LVType) -> dict[str, Any]:
     never called for the default (non-verbose) output.
 
     - ``values``: ``{member_name: {"value": ordinal, "description": ...}}``,
-      sorted by ordinal (mirrors ``_lvnet_type_lossless_def``'s enum/ring
+      sorted by ordinal (mirrors ``lvnet_type_lossless_def``'s enum/ring
       ordinal order) -- ``None`` when the type has none loaded (an
       unresolved enum/ring, or any non-enum/ring kind).
     - ``fields``: ``[{"name": ..., "type": <recursive dict or None>}, ...]``
@@ -229,7 +230,7 @@ def _dependency_terminal_to_dict(t: ConnectorPaneTerminal) -> dict[str, Any]:
 
 def _dependency_to_dict(dep: NetlistDependency) -> dict[str, Any]:
     """One ``uses :`` manifest entry -- the JSON counterpart of
-    ``_render_lvnet_uses``'s rendered line (+ its verbose-only nested
+    ``render_lvnet_uses``'s rendered line (+ its verbose-only nested
     interface). ``verbose``-only caller (``netlist_to_dict``); ``interface``
     is omitted entirely (never an empty list) when this dependency has none
     loaded -- a ``class``/``typedef`` dependency, or an unresolved ``subVI``
@@ -438,4 +439,49 @@ def netlist_to_dict(module: NetlistModule, *, verbose: bool = False) -> dict[str
         result["dependencies"] = [
             _dependency_to_dict(dep) for dep in module.dependencies
         ]
+    return result
+
+
+def _typedef_ref_to_dict(ref: TypedefRef) -> dict[str, Any]:
+    return {"kind": ref.node_type.value, "qualified": ref.qualified, "path": ref.path}
+
+
+def _typedef_field_to_dict(f: TypedefField, verbose: bool) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "name": f.name,
+        "type": f.lv_type.type_descriptor() if f.lv_type is not None else None,
+        "default": f.default,
+    }
+    if f.elements:
+        out["elements"] = list(f.elements)
+    if f.fields:
+        out["fields"] = [_typedef_field_to_dict(n, verbose) for n in f.fields]
+    if verbose and f.lv_type is not None:
+        out["lv_type"] = _lv_type_to_dict(f.lv_type)
+    return out
+
+
+def typedef_to_dict(info: TypedefInfo, *, verbose: bool = False) -> dict[str, Any]:
+    """A ``.ctl`` typedef as JSON -- the one shape ``describe --format json`` and
+    the MCP ``read_ctl`` tool both return. ``verbose`` adds every type's full
+    structure (:func:`_lv_type_to_dict`) beside its descriptor string. It never
+    carries ``used_by``, and carries ``owned_by`` only when there is an owner: a
+    standalone control load has no users or owners, and an empty list would read
+    as "nothing uses / owns this". ``uses`` is always present -- the control's own
+    references are complete in any load, so ``[]`` really means it uses nothing."""
+    result: dict[str, Any] = {
+        "typedef": info.name,
+        "path": info.key,
+        "kind": info.root_type.kind.value,
+        "type": info.root_type.type_descriptor(),
+        "default": info.default,
+        "fields": [_typedef_field_to_dict(f, verbose) for f in info.fields],
+        "uses": [_typedef_ref_to_dict(r) for r in info.uses],
+    }
+    if info.elements:
+        result["elements"] = list(info.elements)
+    if info.owned_by:
+        result["owned_by"] = [_typedef_ref_to_dict(r) for r in info.owned_by]
+    if verbose:
+        result["root_type"] = _lv_type_to_dict(info.root_type)
     return result

@@ -60,6 +60,46 @@ substrate.
 projection (`build_netlist_from_graph` + `render_lvnet`). Do not try
 `cached_render(fmt="lvnet")`.
 
+### A `.ctl` control is a graph citizen too — the same rule, its own views
+
+`load_ctl_by_path(path)` (`graph/load_ctl.py`) loads ONE control into a fresh graph
+(`load_typedef` registers a path-keyed `typedef` node; a VI/class that uses it, a library
+that owns it and a class whose private data it is get edges to it). Every view reads it
+through the graph's typedef queries (`TypedefMixin`, `graph/typedef.py`: `get_typedef` →
+`TypedefInfo`, `list_typedefs`, `get_typedef_front_panel`, `typedef_name`, `is_typedef`) —
+never the dep-graph node dict:
+
+| View | Entry point | Where |
+|------|-------------|-------|
+| front panel (SVG/HTML) | `render_body` (dispatches on file kind) → `render_ctl_front_panel` | `render/body.py`, `render/ctl.py`, `render/front_panel/` |
+| describe (text/JSON) | `describe_ctl_file` (`typedef_to_dict` for JSON) | `graph/describe_typedef.py`, `graph/netlist_json.py` |
+| lvnet (text, emit only) | `render_lvnet_typedef` (netlist-language.md §2.1) | `graph/lvnet_typedef.py` |
+| docs (HTML page per control) | `generate_documents` + `TypedefPageMixin` | `docs/generate.py`, `docs/html_generator/typedef_page.py` |
+| MCP | `read_ctl` (json / lvnet), `render` accepts a `.ctl` | `mcp/server/vi_tools.py` |
+
+One default rule (`default_literal`, `graph/typedef.py`) spells a recorded default for every
+text surface; each supplies its own quoting.
+
+The **index** (`index/`) records types and controls too. `index/types.py` (`TypeCatalog`)
+gives every `LVType` a *structural* `type_id` (kind, name, fields, items, element — same shape,
+same id; a same-named type with another structure differs) and stores each type once
+(`types` / `type_fields` / `type_items`), with each VI's and control's closure of used types
+(`vi_types` / `typedef_types`, nested types included — no recursion needed to ask "who uses
+T"). `index/typedefs.py` builds a control's facts from `graph.get_typedef` and keeps them in
+step on content hash; a control that (transitively) uses a changed one is rebuilt too, since
+its own fields/type_id are resolved through that dependency (`sync_typedefs`'s dependents
+closure). `build.sync_index` is the one cold-or-refresh policy (controls first, then VIs)
+that MCP `_get_index` / `index` and `lvkit index` all call. A VI's recorded
+`vi_typedef_versions` (each control it depends on, with that control's `type_id` as last
+seen) is compared against the controls' CURRENT `type_id` at every sync, so a VI is rebuilt
+whenever a control it (transitively) reads has actually changed shape — not just when this
+one sync call happened to touch it — even though the VI's own file did not change.
+`warm_all_loaded` / `warm_index_for_vi` also index the controls a graph holds, but only those
+under the warmed project root. The tables live in `store.py` (VIs), `store_types.py` (the
+shared catalog) and `store_typedefs.py` (controls); a VI's dependency edges to controls are
+`typedef_uses`. All of it surfaces as views in `index/sql.py` (`type*`, `vi_used_type`,
+`typedef*`).
+
 ## Output cache (`src/lvkit/output_cache.py`)
 
 Caches **rendered output STRINGS** (not graphs), keyed by
@@ -431,7 +471,7 @@ gate: an anonymous cluster now renders `Cluster{ f : <type> }` inline (anon enum
 `Enum{ m = 0 }`), one renderer `_lvnet_type_inline` whose leaf/structural split
 mirrors `_lv_type_comparison_shape`; the inline line parser finds its own
 `=`/`default`/`@index` only at brace DEPTH 0 (`_top_level_word_index` /
-`_find_top_level_sep`); `_iter_named_subtypes` descends every non-error cluster's
+`_find_top_level_sep`); `iter_named_subtypes` descends every non-error cluster's
 fields (error clusters stay the opaque `Error` token); the reconstruct self-check
 (`_maybe_attach_lvtype`) mirrors `_lvnet_type_inline`, not `type_descriptor`.
 Two subtle mirror-bugs the gate caught + fixed: (1) `refnum{` detection must be
@@ -446,7 +486,7 @@ Verified gap: an anonymous cluster's inline terminal label renders field NAMES o
 (`type_descriptor(expand_named=False)` → lowercase `cluster{f1, f2}`), so field
 types (and any named type reachable ONLY through an anonymous-cluster field) are not
 text-recoverable. The over-collection fix (committed 86c9b8f) made this HONEST —
-`_iter_named_subtypes` no longer collects those unrecoverable types into the `types:`
+`iter_named_subtypes` no longer collects those unrecoverable types into the `types:`
 footnote — but it's still a losslessness gap. Closing it is NOT the one-liner it
 looked like: the footnote lossless-def grammar (`Enum{ m0 = 0 }` / `Cluster{ a :
 DBL }`) uses bare ` = ` / ` : ` tokens, and the INLINE terminal-line parser

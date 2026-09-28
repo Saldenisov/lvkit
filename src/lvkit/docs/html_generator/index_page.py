@@ -5,7 +5,10 @@ Methods: _render_index_page.
 
 from __future__ import annotations
 
+from html import escape
 from typing import TYPE_CHECKING
+
+from .typedef_page import TypedefPage
 
 
 class IndexPageMixin:
@@ -16,6 +19,7 @@ class IndexPageMixin:
     doc_type: str
     icon_map: dict[str, str]
     class_pages: dict[str, str]
+    typedef_pages: dict[str, TypedefPage]
 
     if TYPE_CHECKING:
         # Stubs for methods defined on other mixins, resolved via MRO
@@ -80,6 +84,25 @@ class IndexPageMixin:
         lib_count = len(sorted_libraries)
         lib_word = "library" if lib_count == 1 else "libraries"
         toc_summary = f"Total VIs: {len(all_vis)} across {lib_count} {lib_word}"
+        if self.typedef_pages:
+            typedef_links = "".join(
+                f'<li><a href="{escape(page.filename)}">{escape(page.name)}</a></li>'
+                for page in self.typedef_pages.values()
+            )
+            count = len(self.typedef_pages)
+            plural = "s" if count != 1 else ""
+            library_sections.append(f"""
+            <details class="library-accordion" open>
+                <summary class="library-header">
+                    <div class="library-header-content">
+                        <span class="library-name">Type Definitions</span>
+                        <span class="library-count">{count} type{plural}</span>
+                    </div>
+                </summary>
+                <ul class="vi-list">{typedef_links}</ul>
+            </details>
+            """)
+            toc_summary += f"; type definitions: {count}"
 
         return f"""<!DOCTYPE html>
 <html lang="en">

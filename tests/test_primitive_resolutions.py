@@ -26,7 +26,6 @@ step.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -72,8 +71,10 @@ def test_array_size_collision_does_not_return():
 
 def test_key_python_code_semantics():
     res = get_resolver()
-    # Array Size = count; reductions = sum / product (element-typed)
-    assert "len(in_1)" in str(res.resolve(prim_id=1809).python_code)
+    # Array Size = count (now the ARRAY_SIZE op handler: `len` for 1-D, a size
+    # vector for N-D -- see test_array_size_returns_dimension_vector_for_nd);
+    # reductions = sum / product (element-typed)
+    assert res.resolve(prim_id=1809).op == "ARRAY_SIZE"
     assert "sum(in_1)" in str(res.resolve(prim_id=1903).python_code)
     assert "prod(in_1)" in str(res.resolve(prim_id=1904).python_code)
     # 1057 no longer carries "abs(in_1)" -- it was corrected from the
@@ -123,6 +124,118 @@ def test_boolean_logic_prims_have_integer_bitwise_variant():
     assert "in_1 or in_2" in str(res.resolve(prim_id=1062).python_code)
 
 
+def test_rotate_resolves_and_matches_ni_docs():
+    """Rotate (1082) resolves via the ROTATE op handler, and lv.rotate reproduces
+    NI's documented examples: 3 rotated left in 8 bits -> 6/12 at y=1/2, 96 at
+    y=-3, identity at y=0, and rotation is modulo the integer width."""
+    from lvkit.runtime import lv
+
+    assert get_resolver().resolve(prim_id=1082).op == "ROTATE"
+    assert lv.rotate(3, 1, 8) == 6
+    assert lv.rotate(3, 2, 8) == 12
+    assert lv.rotate(3, -3, 8) == 96
+    assert lv.rotate(3, 0, 8) == 3
+    assert lv.rotate(3, 9, 8) == lv.rotate(3, 1, 8)  # y +- width is a no-op
+    assert lv.rotate(0x12345678, 8, 32) == 0x34567812
+
+
+def test_type_cast_resolves_and_reinterprets_bytes():
+    """Type Cast (1166) resolves via the TYPE_CAST op handler, and lv.type_cast
+    reinterprets flat bytes big-endian with no length prefix: a U32 array casts
+    to its raw bytes and round-trips, and an unsupported pair raises loudly
+    (never a silently-wrong cast)."""
+    import pytest as _pytest
+
+    from lvkit.runtime import lv
+
+    assert get_resolver().resolve(prim_id=1166).op == "TYPE_CAST"
+    s = lv.type_cast([0x12345678, 0xDEADBEEF], "u32[]", "str")
+    assert s.encode("latin-1").hex() == "12345678deadbeef"
+    assert lv.type_cast(s, "str", "u32[]") == [0x12345678, 0xDEADBEEF]
+    assert lv.type_cast(258, "i16", "str").encode("latin-1").hex() == "0102"
+    with _pytest.raises(NotImplementedError):
+        lv.type_cast(1.0, "f64", "str")
+
+
+def test_unflatten_from_string_resolves_and_parses_flat_format():
+    """Unflatten From String (1165) resolves via the UNFLATTEN_FROM_STRING op
+    handler, and lv.unflatten_from_string parses LabVIEW's Flatten To String
+    format (length-prefixed strings/arrays, selectable byte order), returning
+    (value, rest_of_the_binary_string) -- distinct from Type Cast's no-prefix
+    reinterpret. An unsupported target (e.g. a real corpus float/cluster/refnum
+    target) raises loudly, never a silently-wrong value."""
+    import pytest as _pytest
+
+    from lvkit.runtime import lv
+
+    assert get_resolver().resolve(prim_id=1165).op == "UNFLATTEN_FROM_STRING"
+    # Length-prefixed string (Flatten To String's own output format)
+    flat = len("hi").to_bytes(4, "big").decode("latin-1") + "hi" + "TAIL"
+    value, rest = lv.unflatten_from_string(flat, "str")
+    assert (value, rest) == ("hi", "TAIL")
+    # Scalar int has no size concept; byte_order selects endianness
+    u32_bytes = (300).to_bytes(4, "big").decode("latin-1")
+    value, _rest = lv.unflatten_from_string(u32_bytes, "u32")
+    assert value == 300
+    u16_le_bytes = (5).to_bytes(2, "little").decode("latin-1")
+    value, _ = lv.unflatten_from_string(u16_le_bytes, "u16", 2)
+    assert value == 5
+    # includes_size=False: no prefix, whole string is the value
+    value, rest = lv.unflatten_from_string("rawtext", "str", includes_size=False)
+    assert (value, rest) == ("rawtext", "")
+    with _pytest.raises(NotImplementedError):
+        lv.unflatten_from_string("x", "Cluster")
+
+
+def test_decimal_digit_checks_first_character_ascii_range():
+    """Decimal Digit? (1119) resolves via python_code; NI's doc semantics:
+    'Returns TRUE if char represents a decimal digit ranging from 0 through
+    9. If char is a string, this function uses the first character in the
+    string. ... Otherwise, this function returns FALSE.' Distinguished from
+    its siblings (Hex Digit? = 1123, Octal Digit?) by resID, confirmed via
+    NI's own VI-Scripting export identity, not shape (all share the same
+    String -> Boolean pane)."""
+    resolved = get_resolver().resolve(prim_id=1119)
+    assert resolved.name == "Decimal Digit?"
+    code = resolved.python_code["result"]
+    for char, expected in [("5", True), ("a", False), ("", False), ("9x", True)]:
+        env = {"in_1": char}
+        assert eval(code, env) is expected, f"{char!r} -> expected {expected}"  # noqa: S307
+
+
+def test_array_size_returns_dimension_vector_for_nd():
+    """Array Size (1809) resolves via the ARRAY_SIZE op handler; lv.array_size
+    returns a scalar element COUNT for a 1-D array but a 1-D vector of
+    per-dimension sizes for a 2-D+ array (LabVIEW's multi-dim Array Size)."""
+    from lvkit.runtime import lv
+
+    assert get_resolver().resolve(prim_id=1809).op == "ARRAY_SIZE"
+    assert lv.array_size([1, 2, 3], 1) == 3
+    assert lv.array_size([[1, 2, 3], [4, 5, 6]], 2) == [2, 3]
+    assert lv.array_size([], 2) == [0, 0]  # empty 2-D array is [rows=0, cols=0]
+    assert lv.array_size([[]], 2) == [1, 0]  # one empty row
+
+
+def test_type_cast_refnum_to_refnum_is_identity():
+    """A refnum-to-refnum Type Cast reinterprets an opaque reference handle, not
+    bytes (Cast Queue <-> Msg Queue), so the handler emits the value unchanged
+    rather than a byte round-trip the runtime can't model."""
+    from lvkit.codegen.nodes.ops.type_cast import _is_refnum
+    from lvkit.models import LVType, LVTypeKind
+
+    refnum = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="Refnum")
+    assert _is_refnum(refnum)
+    assert not _is_refnum(LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="String"))
+    assert not _is_refnum(None)
+
+
+def test_number_to_boolean_array_uses_type_width():
+    """Number To Boolean Array (1814) resolves via the NUMBER_TO_BOOLEAN_ARRAY op
+    handler, whose array length is the input's integer TYPE width, not the value's
+    bit_length (a U32 always yields 32 bits, even for small/zero values)."""
+    assert get_resolver().resolve(prim_id=1814).op == "NUMBER_TO_BOOLEAN_ARRAY"
+
+
 def test_numeric_primitives_are_elementwise():
     res = get_resolver()
     # Add, Subtract, Multiply, Sign all broadcast over arrays
@@ -163,7 +276,8 @@ def test_1116_is_not_equal_to_zero():
     assert r.confidence != "placeholder"
     assert r.python_code == {"result": "in_1 != 0"}
 
-    entry = json.loads(PRIMS.read_text())["primitives"]["1116"]
+    from lvkit._data import load_primitives
+    entry = load_primitives()["primitives"]["1116"]
     assert entry.get("verified") is False
     assert entry["python_code"] == {"result": "in_1 != 0"}
     assert "placeholder" not in entry
@@ -228,3 +342,21 @@ def test_arithmetic_block_is_not_build_array():
     res = get_resolver()
     for prim_id in (1050, 1051, 1052, 1053):
         assert res.resolve(prim_id=prim_id).name != "Build Array"
+
+
+def test_substitute_template_preserves_attribute_access():
+    """A terminal named `path`/`index` must not clobber an attribute access in
+    the template (`os.path.isabs`, `x.index`) -- only standalone placeholder
+    identifiers are substituted."""
+    from lvkit.codegen.nodes.primitive import _substitute_template
+
+    imap = {"path": "my_path", "in_1": "my_path", "index": "i", "length": "n"}
+    # `os.path` and `.isabs` survive; the standalone in_1 is substituted.
+    assert (
+        _substitute_template("(0 if __import__('os').path.isabs(in_1) else 1)", imap)
+        == "(0 if __import__('os').path.isabs(my_path) else 1)"
+    )
+    # standalone bare names (Array Subset) still substitute.
+    assert _substitute_template("array[index:index + length]", imap) == (
+        "array[i:i + n]"
+    )

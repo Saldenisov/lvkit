@@ -36,6 +36,8 @@ class ClusterConstantGlyph:
     # collapse, never squashed members. (``ConstantNode.collapsed``.)
     collapsed: bool = False
     fill_attr: str = "const_fill"
+    # A literal fill color (``#RRGGBB``) that replaces the theme's ``fill_attr``.
+    fill_color: str | None = None
     # The cluster's own wire color (brown for an all-numeric cluster, pink for a
     # mixed/common one) — the icon border matches the wire. None -> brown.
     border_color: str | None = None
@@ -46,6 +48,8 @@ class ClusterConstantGlyph:
     # cluster the heap-geometry pass couldn't decode — the equal-height-row
     # fallback below then applies to every field.
     cluster_geom: ClusterGeom | None = None
+    # Font size of a field's name drawn at its real label rect.
+    field_label_size: float = 7.0
 
     # Below these, a stacked "name: value" row can't fit both a name AND a
     # value cell, so we drop the field-NAME labels and draw the field VALUES
@@ -68,7 +72,7 @@ class ClusterConstantGlyph:
             y1,
             x2,
             y2,
-            fill=getattr(theme, self.fill_attr),
+            fill=self.fill_color or getattr(theme, self.fill_attr),
             stroke=border,
             stroke_width=1.5,
         )
@@ -118,7 +122,7 @@ class ClusterConstantGlyph:
         bx1, by1, bx2, by2 = bounds
         scale = min((bx2 - bx1) / cg.width, (by2 - by1) / cg.height)
         geom_by_name = {f.name: f for f in cg.fields}
-        label_size = 7.0
+        label_size = self.field_label_size
         for name, field_glyph in self.fields:
             geom = geom_by_name[name]
             vx1, vy1, vx2, vy2 = geom.value_rect
@@ -142,7 +146,7 @@ class ClusterConstantGlyph:
                     backend.text(
                         abs_label[0] + 1.0,
                         (abs_label[1] + abs_label[3]) / 2 + label_size * 0.34,
-                        name,
+                        geom.label_text or name,
                         label_size,
                         anchor="start",
                         fill=theme.text,

@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 import xml.etree.ElementTree as ET
 
+from ..heap_text import decode_default_data
+
 # Precompiled pattern for XML-encoded control characters (&#xNN;)
 _XML_CONTROL_ENTITY_RE = re.compile(r"&#x[0-9a-fA-F]{2};")
 
@@ -62,6 +64,9 @@ def decode_xml_entities_to_bytes(data: str) -> bytes:
     text), which would silently drop every encoded byte before this
     function ever sees it.
     """
+    compressed = decode_default_data(data)
+    if compressed is not None:
+        return compressed
     result = bytearray()
     i = 0
     while i < len(data):
@@ -133,8 +138,39 @@ def safe_attr(elem: ET.Element | None, attr: str, default: str = "") -> str:
     return default
 
 
+def extract_label_strict(elem: ET.Element) -> str | None:
+    """The user-visible LABEL (partID=16) ONLY -- never a caption (partID=82,
+    a separate, independently-editable DISPLAY alias LabVIEW lets a developer
+    set) or any other fallback. ``None`` when ``elem`` genuinely carries no
+    partID=16 label part.
+
+    Use this whenever the result must be a MATCHABLE identifier joined
+    against another independently-computed list of the SAME names -- e.g. a
+    cluster field's name, matched between ``cluster_geom.fields`` (real heap
+    geometry) and ``ParsedFPControl.children`` (parsed field controls), see
+    ``layout._field_name``/``vi._parse_cluster_fields``. A field can have
+    BOTH a label (partID=16) and a caption (partID=82) part in its
+    ``partsList``, in either XML order (verified on the real corpus: a
+    "Record Length" field carries partID=82 ``"Record Length (10000s)"``
+    BEFORE partID=16 ``"Record Length (Samples/Sec)"`` in document order) --
+    falling back to "any label-class part" when the strict partID=16 lookup
+    fails would silently let the caption stand in for the match key,
+    desyncing it from whichever OTHER computation used the real label.
+    ``extract_label`` (this module) is the lenient, DISPLAY-oriented version
+    built on top of this -- use IT only where no cross-list match is at
+    stake and any readable name is acceptable."""
+    for xpath in ("./partsList/*[@class='label'][partID='16']", "./label[partID='16']"):
+        for label in elem.findall(xpath):
+            text = _first_text(label)
+            if text and text.lower() != "pane":
+                return text
+    return None
+
+
 def extract_label(elem: ET.Element) -> str | None:
-    """Extract label text from an XML element.
+    """Extract label text from an XML element, for DISPLAY purposes -- any
+    readable name is acceptable here (unlike ``extract_label_strict``, which
+    this delegates to first).
 
     Searches for label text in the proper location:
     - partID=16 is the user-visible control label in LabVIEW
@@ -148,17 +184,19 @@ def extract_label(elem: ET.Element) -> str | None:
     Returns:
         Label text or None if not found
     """
+    strict = extract_label_strict(elem)
+    if strict:
+        return strict
     # Object-scoped, grounded in LabVIEW's heap layout: an object's OWN label
     # lives among its own parts -- inside its <partsList> (the grouping of a
     # control's cosmetic parts + label), or, for node types that don't use
     # partsList, as a DIRECT <label> child. A nested object (a cluster field, a
     # loop frame's subVI) keeps its parts under ITSELF, outside this object's
     # partsList -- so we never steal its label, which is the descendant grab
-    # that used to force per-caller guards. partID=16 is the user-visible label;
-    # prefer it, then any own label, then a bare textRec / Formula-Node name.
+    # that used to force per-caller guards. No partID=16 label (the strict tier
+    # above already tried it): fall back to any own label, then a bare textRec /
+    # Formula-Node name -- DISPLAY only, never used where a match is at stake.
     for xpath in (
-        "./partsList/*[@class='label'][partID='16']",
-        "./label[partID='16']",
         "./partsList/*[@class='label']",
         "./label",
     ):
@@ -220,3 +258,17 @@ def _first_text(label: ET.Element) -> str | None:
             if cleaned:
                 return cleaned
     return None
+
+
+def heap_color(text: str | None) -> str | None:
+    """A heap ``fgColor``/``bgColor`` (``00RRGGBB`` hex) as ``#RRGGBB``. Only a
+    literal color has a ``00`` high byte; any other value (e.g. ``01000000``,
+    a default) is not a color to draw with, so it is None."""
+    value = (text or "").strip()
+    if len(value) != 8 or not value.startswith("00"):
+        return None
+    try:
+        int(value, 16)
+    except ValueError:
+        return None
+    return "#" + value[2:].upper()

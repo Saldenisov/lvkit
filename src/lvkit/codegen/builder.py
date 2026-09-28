@@ -9,10 +9,11 @@ from collections.abc import Callable
 
 from lvkit.graph import InMemoryVIGraph
 from lvkit.graph.models import AnyGraphNode, VIContext
-from lvkit.models import Terminal
+from lvkit.models import LVTypeKind, Terminal
 
 from .ast_optimizer import optimize_module
 from .ast_utils import (
+    build_assign,
     default_value_expr,
     parse_expr,
     to_function_name,
@@ -65,6 +66,18 @@ def build_module(
     Returns:
         Python source code as string
     """
+    # Canonicalize the VI reference to its graph key (source path) ONCE, so every
+    # downstream graph lookup (child_nodes, top_level_nodes, var_name_in_use,
+    # clear_var_names) keys on the path directly instead of each re-resolving a
+    # bare name -- and var_name_in_use no longer silently falls back to scanning
+    # the whole graph when handed a bare filename. A no-op when already a key.
+    if graph is not None:
+        vi_name = graph.resolve_vi_name(vi_name)
+        # Clear any var_name scratch a prior build left on the graph's terminals
+        # so this build is idempotent (see InMemoryVIGraph.clear_var_names).
+        # No-op on a freshly loaded graph.
+        graph.clear_var_names(vi_name)
+
     # Initialize context with inputs and constants
     ctx = CodeGenContext.from_vi_context(vi_context, graph=graph)  # InMemoryVIGraph
     ctx.import_resolver = import_resolver
@@ -86,6 +99,12 @@ def build_module(
 
     # Generate function body
     body: list[ast.stmt] = []
+
+    # Normalize unwired array inputs: they default to None (a mutable [] default
+    # would be shared across calls), so map None -> [] up front, matching
+    # LabVIEW's "unwired array input == empty array". `x or []` also folds an
+    # already-empty list to [] harmlessly.
+    body.extend(build_array_input_normalization(vi_context.inputs))
 
     # Add held error initialization if needed
     if use_error_handling:
@@ -160,20 +179,25 @@ def generate_body(
         else:
             remaining = tier
 
-        # Process remaining operations
+        # A ThreadPoolExecutor parallel tier is used ONLY when the held-error
+        # model needs per-branch error holding. Otherwise independent nodes are
+        # emitted SEQUENTIALLY in dataflow order: equivalent for by-value LabVIEW
+        # dataflow (independent branches carry no shared mutable state), far more
+        # idiomatic Python, and free of the per-branch return wiring that dropped
+        # cross-branch inlined references (the `product`/UnboundLocal class).
         if remaining:
-            if len(remaining) == 1:
-                node = remaining[0]
-                fragment = generate_node(node, ctx)
-                for s in fragment.statements:
-                    tagged.append(({node.id}, s))
-                ctx.merge(fragment.bindings)
-                ctx.imports.update(fragment.imports)
-            else:
+            if ctx.use_held_error_model and len(remaining) > 1:
                 tier_ids = {op.id for op in remaining}
                 stmts = _generate_parallel_tier(remaining, ctx)
                 for s in stmts:
                     tagged.append((tier_ids, s))
+            else:
+                for node in remaining:
+                    fragment = generate_node(node, ctx)
+                    for s in fragment.statements:
+                        tagged.append(({node.id}, s))
+                    ctx.merge(fragment.bindings)
+                    ctx.imports.update(fragment.imports)
 
         # Apply Clear Errors wrapping for each extracted clear op
         for clear_op in clear_ops:
@@ -566,10 +590,14 @@ def build_return_stmt(vi_context: VIContext, ctx: CodeGenContext) -> ast.Return 
         out_name = out.name or "output"
         var_name = to_var_name(out_name)
 
-        # Try to resolve from context
+        # Try to resolve from context. resolve() returns an EXPRESSION string
+        # (often compound, e.g. "low_000 + product" from an inlined output), so
+        # parse it into a real AST — a bare ast.Name(id=expr) is malformed and
+        # hides the variable loads from later passes (dead-code elimination then
+        # deletes the assignments the return depends on).
         value = ctx.resolve(out_id)
         if value:
-            value_ast = ast.Name(id=value, ctx=ast.Load())
+            value_ast: ast.expr = parse_expr(value)
         else:
             value_ast = ast.Constant(value=None)
 
@@ -712,7 +740,12 @@ def build_function_def(
     vi_context: VIContext, vi_name: str, body: list[ast.stmt]
 ) -> ast.FunctionDef:
     """Build function definition."""
-    func_name = to_function_name(vi_name)
+    # Name the function by the VI's DISPLAY name, not the raw vi_name (which in
+    # single-VI generation is a filesystem path → a giant path-mangled name).
+    # Callers import/call it as to_function_name(node.name) == the display name,
+    # and the result class + return use vi_context.name too, so this keeps the
+    # def, the return annotation, the call sites, and the imports all consistent.
+    func_name = to_function_name(vi_context.name)
 
     # Build arguments
     args = build_args(vi_context.inputs)
@@ -720,7 +753,7 @@ def build_function_def(
     # Build return annotation
     returns = None
     if vi_context.outputs:
-        result_class = build_result_class_name(vi_name)
+        result_class = build_result_class_name(vi_context.name)
         returns = ast.Name(id=result_class, ctx=ast.Load())
 
     # Ensure non-empty body
@@ -741,11 +774,14 @@ def build_args(inputs: list[Terminal]) -> ast.arguments:
 
     Skips error cluster inputs - Python uses exceptions instead.
 
-    Wiring rules:
-    - 0 = unknown (treat as required)
-    - 1 = required (no default)
-    - 2 = recommended (has default)
-    - 3 = optional (has default)
+    Every input gets a default, in connector-pane order. In LabVIEW any input
+    terminal may be left unwired and then takes its own default value, so every
+    generated parameter is optional-with-default — which also sidesteps Python's
+    "non-default argument follows default argument" rule without reordering the
+    parameters (reordering would desync positional callers, e.g. class-method
+    dynamic dispatch, which pass arguments in connector-pane order). The default
+    is the terminal's real connector-pane default when known, else the type
+    default (e.g. 0 / '' / None).
     """
     args = []
     defaults = []
@@ -754,20 +790,18 @@ def build_args(inputs: list[Terminal]) -> ast.arguments:
         if inp.is_error_cluster:
             continue
 
-        name = to_var_name(inp.name or "input")
+        # Array inputs default to None (see build_array_input_normalization), so
+        # their annotation is honestly `<type> | None`.
         type_hint = inp.python_type()
-
-        # wiring_rule >= 2 means recommended or optional
-        is_optional = inp.wiring_rule >= 2
-
-        arg = ast.arg(
-            arg=name,
-            annotation=parse_expr(type_hint),
+        if _is_array_input(inp):
+            type_hint = f"{type_hint} | None"
+        args.append(
+            ast.arg(
+                arg=to_var_name(inp.name or "input"),
+                annotation=parse_expr(type_hint),
+            )
         )
-        args.append(arg)
-
-        if is_optional:
-            defaults.append(default_value_expr(inp.lv_type))
+        defaults.append(_param_default_expr(inp))
 
     return ast.arguments(
         posonlyargs=[],
@@ -778,6 +812,48 @@ def build_args(inputs: list[Terminal]) -> ast.arguments:
         kwarg=None,
         defaults=defaults,
     )
+
+
+def _is_array_input(inp: Terminal) -> bool:
+    """True for a non-error array/list-typed input parameter."""
+    return (
+        not inp.is_error_cluster
+        and inp.lv_type is not None
+        and inp.lv_type.kind == LVTypeKind.ARRAY
+    )
+
+
+def build_array_input_normalization(inputs: list[Terminal]) -> list[ast.stmt]:
+    """`name = name or []` for each array input, so an unwired (None-defaulted)
+    array behaves as LabVIEW's empty array instead of crashing on iteration."""
+    stmts: list[ast.stmt] = []
+    for inp in inputs:
+        if not _is_array_input(inp):
+            continue
+        name = to_var_name(inp.name or "input")
+        stmts.append(build_assign(name, parse_expr(f"{name} or []")))
+    return stmts
+
+
+def _param_default_expr(inp: Terminal) -> ast.expr:
+    """Default-value AST for a parameter: the terminal's real connector-pane
+    default when it maps cleanly to the scalar type, else the type default."""
+    dv = inp.default_value
+    if dv is None:
+        return default_value_expr(inp.lv_type)
+    underlying = inp.lv_type.underlying_type if inp.lv_type else None
+    try:
+        if underlying and underlying.startswith(("NumInt", "NumUInt")):
+            return ast.Constant(value=int(dv))
+        if underlying in ("NumFloat32", "NumFloat64"):
+            return ast.Constant(value=float(dv))
+        if underlying == "Boolean":
+            return ast.Constant(value=str(dv).strip().lower() in ("true", "1"))
+        if underlying == "String":
+            return ast.Constant(value=str(dv))
+    except (ValueError, TypeError):
+        pass
+    return default_value_expr(inp.lv_type)
 
 
 def build_result_class_name(vi_name: str) -> str:

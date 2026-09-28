@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -63,7 +62,7 @@ def test_class_refnum_value_decodes_to_class_name_not_handle():
         "205365727665722e6c766c69621a4d6561737572656d656e74436f6e746578742e"
         "6c76636c6173730000000000000000000000"
     )
-    val, size = _decode_element(raw, cls)
+    val, size, _structured = _decode_element(raw, cls)
     assert val == "MeasurementContext.lvclass"
     assert "Refnum(" not in val
     # count(4) + self-inclusive block(0x45=69) = the whole name descriptor.
@@ -73,7 +72,7 @@ def test_class_refnum_value_decodes_to_class_name_not_handle():
     gen = LVType(
         kind=LVTypeKind.PRIMITIVE, underlying_type="Refnum", ref_type="Occurrence"
     )
-    val2, _ = _decode_element((5).to_bytes(4, "big"), gen)
+    val2, _, _ = _decode_element((5).to_bytes(4, "big"), gen)
     assert val2 == "Refnum(5)"
 
 
@@ -152,6 +151,7 @@ _CLUSTER_CONST_FIXTURE = """
         <partsList elements="2">
           <SL__arrayElement class="label" uid="201">
             <objFlags>0</objFlags>
+            <partID>16</partID>
             <bounds>(-15, 0, 0, 40)</bounds>
             <textRec class="textHair"><text>"count"</text></textRec>
           </SL__arrayElement>
@@ -165,6 +165,7 @@ _CLUSTER_CONST_FIXTURE = """
         <partsList elements="2">
           <SL__arrayElement class="label" uid="211">
             <objFlags>0</objFlags>
+            <partID>16</partID>
             <bounds>(0, 0, 35, 15)</bounds>
             <textRec class="textHair"><text>"note"</text></textRec>
           </SL__arrayElement>
@@ -178,6 +179,7 @@ _CLUSTER_CONST_FIXTURE = """
         <partsList elements="1">
           <SL__arrayElement class="label" uid="221">
             <objFlags>0</objFlags>
+            <partID>16</partID>
             <bounds>(-15, 0, 0, 40)</bounds>
             <textRec class="textHair"><text>"inner"</text></textRec>
           </SL__arrayElement>
@@ -190,6 +192,7 @@ _CLUSTER_CONST_FIXTURE = """
               <partsList elements="2">
                 <SL__arrayElement class="label" uid="231">
                   <objFlags>0</objFlags>
+                  <partID>16</partID>
                   <bounds>(-15, 0, 0, 30)</bounds>
                   <textRec class="textHair"><text>"a"</text></textRec>
                 </SL__arrayElement>
@@ -203,6 +206,7 @@ _CLUSTER_CONST_FIXTURE = """
               <partsList elements="2">
                 <SL__arrayElement class="label" uid="241">
                   <objFlags>0</objFlags>
+                  <partID>16</partID>
                   <bounds>(-15, 0, 0, 30)</bounds>
                   <textRec class="textHair"><text>"b"</text></textRec>
                 </SL__arrayElement>
@@ -433,6 +437,7 @@ _REFNUM_PAYLOAD_FIXTURE = """
         <partsList elements="2">
           <SL__arrayElement class="label" uid="501">
             <objFlags>0</objFlags>
+            <partID>16</partID>
             <bounds>(-15, 0, 0, 60)</bounds>
             <textRec class="textHair"><text>"ResultChangedRef"</text></textRec>
           </SL__arrayElement>
@@ -450,6 +455,7 @@ _REFNUM_PAYLOAD_FIXTURE = """
                 <partsList elements="1">
                   <SL__arrayElement class="label" uid="521">
                     <objFlags>8</objFlags>
+                    <partID>16</partID>
                     <bounds>(-15, 0, 0, 40)</bounds>
                     <textRec class="textHair"><text>"test"</text></textRec>
                   </SL__arrayElement>
@@ -460,6 +466,7 @@ _REFNUM_PAYLOAD_FIXTURE = """
                 <partsList elements="1">
                   <SL__arrayElement class="label" uid="531">
                     <objFlags>8</objFlags>
+                    <partID>16</partID>
                     <bounds>(-15, 0, 0, 20)</bounds>
                     <textRec class="textHair"><text>"execution time"</text></textRec>
                   </SL__arrayElement>
@@ -567,6 +574,7 @@ _ARRAY_OF_CLUSTER_FIXTURE = """
               <partsList elements="1">
                 <SL__arrayElement class="label" uid="590">
                   <objFlags>0</objFlags>
+                  <partID>16</partID>
                   <bounds>(-17, 2, 0, 26)</bounds>
                   <textRec class="textHair"><text>"test"</text></textRec>
                 </SL__arrayElement>
@@ -577,6 +585,7 @@ _ARRAY_OF_CLUSTER_FIXTURE = """
               <partsList elements="1">
                 <SL__arrayElement class="label" uid="627">
                   <objFlags>0</objFlags>
+                  <partID>16</partID>
                   <bounds>(-17, 0, 0, 30)</bounds>
                   <textRec class="textHair"><text>"error"</text></textRec>
                 </SL__arrayElement>
@@ -589,6 +598,7 @@ _ARRAY_OF_CLUSTER_FIXTURE = """
                     <partsList elements="1">
                       <SL__arrayElement class="label" uid="944">
                         <objFlags>0</objFlags>
+                        <partID>16</partID>
                         <bounds>(-17, 0, 0, 34)</bounds>
                         <textRec class="textHair"><text>"status"</text></textRec>
                       </SL__arrayElement>
@@ -599,6 +609,7 @@ _ARRAY_OF_CLUSTER_FIXTURE = """
                     <partsList elements="1">
                       <SL__arrayElement class="label" uid="950">
                         <objFlags>0</objFlags>
+                        <partID>16</partID>
                         <bounds>(-17, 0, 0, 29)</bounds>
                         <textRec class="textHair"><text>"code"</text></textRec>
                       </SL__arrayElement>
@@ -609,6 +620,7 @@ _ARRAY_OF_CLUSTER_FIXTURE = """
                     <partsList elements="1">
                       <SL__arrayElement class="label" uid="960">
                         <objFlags>0</objFlags>
+                        <partID>16</partID>
                         <bounds>(-17, 0, 0, 19)</bounds>
                         <textRec class="textHair"><text>"source"</text></textRec>
                       </SL__arrayElement>
@@ -679,7 +691,7 @@ def test_fp_default_with_null_bytes_not_corrupted():
         _decode_default_data(
             strip_surrounding_quotes(serialized),
             "stdString",
-        )
+        )[0]
         == '"hi"'
     )
     # Old path deletes the length prefix -> len < 4 -> value lost.
@@ -687,7 +699,7 @@ def test_fp_default_with_null_bytes_not_corrupted():
         _decode_default_data(
             clean_labview_string(serialized),
             "stdString",
-        )
+        )[0]
         != '"hi"'
     )
 
@@ -2020,7 +2032,7 @@ class TestRealVIParsing:
         assert target is not None, "GTR's SMUI cluster constant not found"
 
         raw_uid = target.id.rsplit("::", 1)[-1]
-        _, decoded = decode_constant(
+        _, decoded, _ = decode_constant(
             ParsedConstant(uid=raw_uid, type_desc="", value=target.raw_value),
             lv_type=target.lv_type,
         )
@@ -2081,11 +2093,10 @@ def test_every_dco_keyed_primitive_template_is_reachable() -> None:
     dco_ref-carrying entry's class name MUST be in OPERATION_NODE_CLASSES,
     or its node is silently dropped exactly like aInsert/aReshape were.
     """
-    from lvkit._data import data_dir
+    from lvkit._data import load_primitives
     from lvkit.parser.constants import OPERATION_NODE_CLASSES
 
-    with open(data_dir() / "primitives.json") as f:
-        data = json.load(f)
+    data = load_primitives()
 
     dco_keyed_classes = sorted(
         node_class

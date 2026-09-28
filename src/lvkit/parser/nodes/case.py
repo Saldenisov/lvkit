@@ -76,6 +76,7 @@ def extract_case_structures(
     root: ET.Element,
     terminal_info: dict[str, ParsedTerminalInfo] | None = None,
     selector_tables: list[SelectorTable] | None = None,
+    table_index_shift: int = 0,
 ) -> list[ParsedCaseStructure]:
     """Extract case structures with frame mappings.
 
@@ -88,6 +89,9 @@ def extract_case_structures(
             (parsed from the main ``*.xml``). When present and consistent, they
             supply the real per-frame selector values that are absent from the
             block-diagram heap.
+        table_index_shift: the dataspace type map (TM80) ``IndexShift``. Added to
+            a case's ``selector_table_offset`` (its ``tdOffset``) it yields that
+            case's DataFill TypeID — the direct case→table link.
 
     Returns:
         List of ParsedCaseStructure with frame mappings
@@ -108,9 +112,29 @@ def extract_case_structures(
             case_structures.append(cs)
 
     if selector_tables:
-        _apply_selector_tables(case_structures, selector_tables)
+        _apply_selector_tables(case_structures, selector_tables, table_index_shift)
+
+    for cs in case_structures:
+        _apply_last_frame_default(cs)
 
     return case_structures
+
+
+def _apply_last_frame_default(cs: ParsedCaseStructure) -> None:
+    """An integer/string selector has an infinite domain, so a case on one ALWAYS
+    has a default frame. When neither ``SelectDefaultCase`` nor a value-less frame
+    identified it, the default is the LAST frame (validated: every numeric
+    ``SelectDefaultCase`` in the corpus points at the last frame, and value-less
+    defaults are the last frame too). LabVIEW writes ``SelectDefaultCase`` only to
+    RELOCATE the default off that last position. The last frame may also carry an
+    explicit value ("N, Default"); marking it default is correct because codegen
+    emits it as the ``case _`` catch-all, which subsumes that value.
+    """
+    if cs.selector_type not in ("integer", "string"):
+        return
+    if not cs.frames or any(f.is_default for f in cs.frames):
+        return
+    cs.frames[-1].is_default = True
 
 
 def _extract_one_case_structure(
@@ -385,11 +409,23 @@ def _extract_one_case_structure(
                     frame.selector_ranges = ranges
                 frames.append(frame)
 
+    # tdOffset: the select node's client index into the dataspace type map;
+    # +TM80 IndexShift = this case's DataFill selector-table TypeID (the direct
+    # case->table link resolved in _apply_selector_tables). Stored as hex.
+    td_offset_text = case_elem.findtext("tdOffset")
+    selector_table_offset: int | None = None
+    if td_offset_text:
+        try:
+            selector_table_offset = int(td_offset_text, 16)
+        except ValueError:
+            selector_table_offset = None
+
     return ParsedCaseStructure(
         uid=case_uid,
         selector_terminal_uid=selector_terminal_uid,
         selector_type=selector_type,
         selector_vctp_index=selector_vctp_index,
+        selector_table_offset=selector_table_offset,
         # Case Insensitive Match only applies to string selectors.
         case_insensitive=case_insensitive and selector_type == "string",
         frames=frames,
@@ -609,54 +645,99 @@ def _decode_selector_table(
     )
 
 
+def _table_fits_case(case: ParsedCaseStructure, table: SelectorTable) -> bool:
+    """Whether ``table`` is structurally consistent with ``case`` — same kind
+    (a string table iff a string case) and every diagram/displayed index in
+    range. A negative ``displayed_frame`` is the "none displayed" sentinel."""
+    if (case.selector_type == "string") != table.has_strings:
+        return False
+    n_frames = len(case.frames)
+    if table.displayed_frame >= n_frames:
+        return False
+    return all(0 <= diag < n_frames for _s, _e, diag in table.ranges)
+
+
 def _apply_selector_tables(
     cases: list[ParsedCaseStructure],
     tables: list[SelectorTable],
+    index_shift: int = 0,
 ) -> None:
     """Correlate dataspace selector tables to case structures and apply values.
 
-    The correlation is deterministic and self-checking, never a guess: cases
-    ordered by their selector-type VCTP index (``selector_vctp_index``) line up
-    one-to-one with tables ordered by ``DataFill`` TypeID, because LabVIEW
-    assigns both indices in the same DCO-enumeration pass. Boolean cases store
-    no table (their True/False frames are implicit), so they are excluded from
-    the correlation and keep their existing labels.
+    PRIMARY (direct link): a case's ``selector_table_offset`` (its select node's
+    ``tdOffset``, a TM80 client index) plus the TM80 ``index_shift`` IS the
+    TypeID of that case's ``DataFill`` selector table. This maps each case to its
+    own table with no positional guessing, so multi-case VIs and orphan tables
+    (left by a deleted case, referenced by no surviving case) resolve correctly.
 
-    Application only proceeds if the counts match AND every zipped pair is
-    kind-consistent (a string table iff a string case) AND every frame index /
-    displayed frame lies in range. Any inconsistency aborts the WHOLE
-    application (leaving fallback values) rather than risk a wrong label.
+    FALLBACK (positional): for any case the direct link doesn't resolve (no
+    ``tdOffset``, or the named table is missing/inconsistent), correlate the
+    still-unassigned cases and tables by order — cases by VCTP index against
+    tables by TypeID — boolean-inclusive first, then boolean-excluded so a
+    table-less boolean can't abort a tabled case's correlation.
     """
-    corr_cases = [
-        c
-        for c in cases
-        if c.selector_type != "boolean" and c.selector_vctp_index is not None
-    ]
-    if len(corr_cases) != len(tables):
+    tables_by_id = {t.type_id: t for t in tables}
+    applied: set[int] = set()
+    used_type_ids: set[int] = set()
+    for case in cases:
+        if case.selector_table_offset is None:
+            continue
+        table = tables_by_id.get(case.selector_table_offset + index_shift)
+        if table is not None and _table_fits_case(case, table):
+            _apply_one_table(case, table)
+            applied.add(id(case))
+            used_type_ids.add(table.type_id)
+
+    leftover_cases = [c for c in cases if id(c) not in applied]
+    leftover_tables = [t for t in tables if t.type_id not in used_type_ids]
+    if not leftover_cases or not leftover_tables:
         return
-    corr_cases.sort(key=lambda c: c.selector_vctp_index or 0)
+    with_vctp = [c for c in leftover_cases if c.selector_vctp_index is not None]
+    non_boolean = [c for c in with_vctp if c.selector_type != "boolean"]
+    for case_subset in (with_vctp, non_boolean):
+        if _try_apply_selector_tables(case_subset, leftover_tables):
+            return
+
+
+def _try_apply_selector_tables(
+    corr_cases: list[ParsedCaseStructure],
+    tables: list[SelectorTable],
+) -> bool:
+    """Validate then apply ``tables`` to ``corr_cases`` (sorted by VCTP index).
+
+    Returns True iff the counts matched and every pair validated (and was
+    applied); False leaves everything untouched for the caller to try a
+    different case subset.
+    """
+    if len(corr_cases) != len(tables):
+        return False
+    ordered = sorted(corr_cases, key=lambda c: c.selector_vctp_index or 0)
 
     # Validate every pair before mutating anything.
-    for case, table in zip(corr_cases, tables):
+    for case, table in zip(ordered, tables):
         is_string = case.selector_type == "string"
         if is_string != table.has_strings:
-            return
+            return False
         n_frames = len(case.frames)
-        # Full range check (matches the diag check below and
-        # parse_displayed_frame) -- a negative displayed_frame is invalid too.
-        if not (0 <= table.displayed_frame < n_frames):
-            return
+        # A negative displayed_frame is the "no frame displayed" sentinel
+        # (valid); only a positive out-of-range index is a mismatch.
+        if table.displayed_frame >= n_frames:
+            return False
         for _start, _end, diag in table.ranges:
             if not (0 <= diag < n_frames):
-                return
+                return False
 
-    for case, table in zip(corr_cases, tables):
+    for case, table in zip(ordered, tables):
         _apply_one_table(case, table)
+    return True
 
 
 def _apply_one_table(case: ParsedCaseStructure, table: SelectorTable) -> None:
     """Overwrite a case's frame selector values from its correlated table."""
-    case.displayed_frame = table.displayed_frame
+    # displayed_frame < 0 is the "no frame displayed" sentinel — leave the
+    # case's own displayed_frame (from dIdx) rather than overwrite with -1.
+    if table.displayed_frame >= 0:
+        case.displayed_frame = table.displayed_frame
     covered: set[int] = {diag for _s, _e, diag in table.ranges}
     for idx, frame in enumerate(case.frames):
         my_ranges = [(s, e) for s, e, d in table.ranges if d == idx]
@@ -677,6 +758,11 @@ def _apply_one_table(case: ParsedCaseStructure, table: SelectorTable) -> None:
             frame.selector_strings = strings
             frame.selector_ranges = []
             frame.selector_value = strings[0] if strings else str(idx)
+        elif case.selector_type == "boolean":
+            # A boolean table names True/False by a 0/1 point range per diagram.
+            frame.selector_ranges = []
+            frame.selector_strings = []
+            frame.selector_value = "True" if my_ranges[0][0] == 1 else "False"
         else:
             frame.selector_ranges = [
                 SelectorRange(start=s, end=e) for s, e in my_ranges

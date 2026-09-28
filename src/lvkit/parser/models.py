@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..models import ClusterField, DisableStructureKind, EventFrame, LVType, Tunnel
+from .layout import ClusterGeom
 
 if TYPE_CHECKING:
     from .layout import Layout
@@ -230,6 +231,11 @@ class ParsedCaseStructure:
     # the dataspace ``DataFill`` TypeID order — used to correlate each case to
     # its ``SelectorTable``.
     selector_vctp_index: int | None = None
+    # The select node's ``tdOffset`` — a client index into the dataspace type
+    # map (TM80). Adding the TM80 ``IndexShift`` yields the TypeID of THIS case's
+    # ``DataFill`` selector table, so each case maps DIRECTLY to its table (no
+    # positional guess; orphan tables from deleted cases are simply unreferenced).
+    selector_table_offset: int | None = None
     # Frame LabVIEW last displayed (from the correlated SelectorTable). None if
     # no table correlated. Consumed by the renderer's faithful initial view.
     displayed_frame: int | None = None
@@ -475,6 +481,36 @@ class ParsedFPDCOTypeMap:
         )
 
 
+@dataclass(frozen=True)
+class ParsedFPPart:
+    """A constituent part of a composite front-panel control, with its geometry
+    in the CONTROL'S OWN local coordinate space (the FPHb heap records these; the
+    parser used to discard them). For an array control these carry the real
+    layout the developer built: the index display (``part_id`` 8002), the caption
+    (16), frame cosmetics, and the element type/cell (``part_id`` None, whose
+    ``part_class`` is the element control type, e.g. ``stdNum``). A downstream
+    view sizes the array from these instead of guessing constants.
+
+    ``props`` carries the part's own control PROPERTIES straight from the heap
+    (the scalar-valued children of its ddo) so a view can render the control
+    accurately, not generically — e.g. a numeric element's ``StdNumMin`` /
+    ``StdNumMax`` (data range), ``StdNumInc`` (increment), ``typeDesc``
+    (representation). Empty for parts that carry none."""
+
+    part_id: int | None  # LabVIEW partID; None for the array element's own ddo
+    part_class: str  # e.g. "stdNum", "stdString", "label", "cosm"
+    bounds: tuple[int, int, int, int]  # top, left, bottom, right, control-local
+    props: dict[str, str] = field(default_factory=dict)
+    # The part's OWN sub-parts (its nested `partsList`), each relative to THIS
+    # part's top-left -- e.g. an array's index display is itself a numeric
+    # control whose readout and spinner halves are sub-parts.
+    parts: list[ParsedFPPart] = field(default_factory=list)
+    # The part's own literal colors (``#RRGGBB``), when the heap records one;
+    # None for a default/system color, which the view themes.
+    fg_color: str | None = None
+    bg_color: str | None = None
+
+
 @dataclass
 class ParsedFPControl:
     """A control or indicator on the front panel."""
@@ -484,11 +520,93 @@ class ParsedFPControl:
     control_type: str  # stdString, stdNumeric, stdBool, stdPath, stdEnum, etc.
     bounds: tuple[int, int, int, int]  # top, left, bottom, right
     is_indicator: bool = False  # True if output, False if input
-    type_desc: str | None = None
+    # This control's own resolved LabVIEW type, from the VI's VCTP type map
+    # (`type_mapping.parse_type_map_rich`) -- the SAME per-terminal machinery a
+    # connector-pane terminal's type comes from. Real per-control identity
+    # (a refnum's `ref_type`, an lvVariant's `Any`, ...) that `control_type`/
+    # `parts` alone don't carry; resolved whenever the heap's own `typeDesc`
+    # exists, whether or not this control has a serializable default (a
+    # refnum's own type resolves even though a refnum has no default value).
+    # None for an unresolved control or a VI whose VCTP was unreadable.
+    lv_type: LVType | None = None
     default_value: str | None = None
+    # A developer-set CAPTION (partID 82, see extract_caption) -- a display-
+    # only alias, distinct from `name` (the LABEL, partID 16). Most controls
+    # have none: a caption is something a developer sets deliberately, for a
+    # more descriptive/exotic display string while keeping the underlying
+    # label simple (e.g. for wiring/identification). `name` is ALWAYS the
+    # label and is the only thing ever used for cluster-field IDENTITY/
+    # matching (see layout._field_name/vi._parse_cluster_fields) -- caption
+    # is for DISPLAY ONLY, and only when actually set.
+    caption: str | None = None
+    # Which caption text is SHOWN: the label (partID 16) and the caption
+    # (partID 82) are alternatives a developer chooses between -- each has its
+    # own hidden flag (objFlags bit 0x8). Verified on the real corpus: no
+    # control shows both, and every visible caption sits on a control whose
+    # label is hidden. Defaults suit a hand-built control (label shown).
+    label_visible: bool = True
+    caption_visible: bool = False
     enum_values: list[str] = field(default_factory=list)
     ddo_uid: str | None = None  # UID of the inner ddo element (for ctlRefConst lookup)
     children: list[ParsedFPControl] = field(default_factory=list)  # For clusters
+    # Constituent parts with control-local geometry (array index display /
+    # element cell / frame). Empty for simple scalar controls.
+    parts: list[ParsedFPPart] = field(default_factory=list)
+    # This control's REAL field geometry, decoded from the heap's own
+    # front-panel-editor layout (`layout._cluster_field_geoms`) -- present when
+    # `control_type == "stdClust"` (a standalone cluster, or a typedef-wrapped
+    # one -- `.ctl` typedef controls included, see `layout._cluster_shape`), OR
+    # when this is an `indArr` whose ELEMENT is a `stdClust` (the geometry
+    # then describes one visible row's field layout). None for every other
+    # control type, or when the heap carries no decodable `paneHierarchy`.
+    # NOTE the coordinate convention differs from `bounds` above: `bounds` is
+    # `(top, left, bottom, right)` (this module's convention); `ClusterGeom`'s
+    # rects are `(x1, y1, x2, y2)` (the layout module's convention) relative
+    # to this control's own (0, 0) at its NATIVE (`cluster_geom.width`/
+    # `height`) size -- a consumer places/scales it into wherever it actually
+    # draws this control (see `ClusterGeom`'s own docstring for the uniform-
+    # scale contract).
+    cluster_geom: ClusterGeom | None = None
+    # For an `indArr` whose element is a SCALAR/enum (not `stdClust`, which
+    # carries its own value through `children` instead): the display value an
+    # unset/past-end row shows, decoded from a REPRESENTATIVE-ROW default the
+    # heap stores as a `<DefaultData>` sibling of the array's own `<ddo>` --
+    # one raw instance of the ELEMENT type (no array length prefix), distinct
+    # from the array's own combined default (which this control's own
+    # `default_value` already carries, and which is `[]`/empty for an array
+    # saved with zero elements). Verified byte-exact against issue #101's
+    # real `.ctl`: every disabled-row value on its reference screenshot,
+    # numeric and enum-index alike, decodes from here, not from a generic
+    # 0/False/first-enum type default. `None` when the heap carries no such
+    # sibling (e.g. a control whose developer never set a custom element
+    # default -- falls back to the type default, same as before).
+    element_default_value: str | None = None
+    # For an `indArr`: the ELEMENT's own resolved type (see `lv_type` above) --
+    # an array of refnums/variants/etc. needs its element's type, not the
+    # array's own (an ARRAY-kind `LVType`, unhelpful for drawing one element).
+    # None for every non-array control.
+    element_lv_type: LVType | None = None
+    # For an `indArr` saved WITH elements: every element's own decoded value,
+    # in index order -- a display string per scalar/enum element, a dict by
+    # field name per cluster element (`_decode_element`'s structured breakdown,
+    # recursively). Empty for an array saved with zero elements (whose rows
+    # show `element_default_value` instead) and for every non-array control.
+    element_values: list[object] = field(default_factory=list)
+    # A numeric control's own LabVIEW display-format spec (its `numLabel`
+    # part's `<format>`, e.g. `%#_g`, `%.0f`) -- for an `indArr`, its ELEMENT's.
+    # None for every non-numeric control.
+    number_format: str | None = None
+    # For `control_type == "stdSlide"`: its own recorded `StdNumMin`/
+    # `StdNumMax` range, decoded straight from the heap's `<StdNumMin>`/
+    # `<StdNumMax>` element (a leading decimal, LabVIEW's own `-inf`/`inf`
+    # "no bound set" sentinel, or a raw bit pattern -- see `vi._std_num_bound`).
+    # None for every non-slide control. Unlike `lv_type`/`element_lv_type`,
+    # there is no `element_slide_min`/`element_slide_max`: no real corpus
+    # array-of-stdSlide was found, so an indArr's own element range is not
+    # extracted (a future one would render with no thumb, the same as any
+    # other unresolvable range, never a wrong one).
+    slide_min: float | None = None
+    slide_max: float | None = None
 
 
 @dataclass

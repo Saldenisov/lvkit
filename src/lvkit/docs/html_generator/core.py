@@ -1,8 +1,10 @@
 """Core HTMLDocGenerator class definition.
 
-Contains __init__, generate_vi_page, generate_class_page, generate_index_page,
-write_assets — the public entry points that compose the per-responsibility
-mixins into one generator.
+Contains __init__, generate_vi_page, generate_class_page, register_typedefs,
+generate_typedef_page, generate_index_page, write_assets — the public entry
+points that compose the per-responsibility mixins into one generator. Typedef
+pages are registered BEFORE any page is written (unlike class pages, which
+register as they are written) because VI pages link forward to them.
 """
 
 from __future__ import annotations
@@ -11,11 +13,13 @@ from pathlib import Path
 from typing import Any
 
 from lvkit.graph.models import ClassHierarchyInfo, MethodAccessInfo
+from lvkit.graph.typedef import TypedefInfo
 
 from .assets import AssetsMixin
 from .class_page import ClassPageMixin
 from .index_page import IndexPageMixin
 from .naming import NamingMixin
+from .typedef_page import TypedefPage, TypedefPageMixin
 from .vi_page import ViPageMixin
 
 
@@ -23,6 +27,7 @@ class HTMLDocGenerator(
     NamingMixin,
     ViPageMixin,
     ClassPageMixin,
+    TypedefPageMixin,
     IndexPageMixin,
     AssetsMixin,
 ):
@@ -34,7 +39,8 @@ class HTMLDocGenerator(
         Args:
             output_dir: Directory to write HTML files
             doc_title: Title for the documentation (library/class name)
-            doc_type: Type of documentation ("library", "class", "directory")
+            doc_type: Type of documentation ("library", "class", "directory",
+                "typedef", "vi")
         """
         self.output_dir = output_dir
         self.doc_title = doc_title
@@ -45,6 +51,10 @@ class HTMLDocGenerator(
         # populated by generate_class_page(). Used by the index page to link
         # library group headers to their class landing page.
         self.class_pages: dict[str, str] = {}
+        # typedef path key -> its page path / display name (relative to
+        # output_dir), set by register_typedefs() BEFORE any page is written so
+        # VI pages can link to a typedef page.
+        self.typedef_pages: dict[str, TypedefPage] = {}
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_vi_page(self, vi_data: dict[str, Any]) -> None:
@@ -69,6 +79,7 @@ class HTMLDocGenerator(
         self,
         hierarchy: ClassHierarchyInfo,
         method_access: dict[str, MethodAccessInfo],
+        private_data_key: str | None = None,
     ) -> None:
         """Generate the landing page for one loaded LabVIEW class.
 
@@ -76,15 +87,47 @@ class HTMLDocGenerator(
             hierarchy: Parent/children/methods/fields for this class.
             method_access: Access-scope info for this class's own methods
                 (keyed by qualified VI name), used to badge the Methods list.
+            private_data_key: Path key of the class's private-data control, when
+                it is documented -- the Properties section links to its page.
         """
         filename = self._class_name_to_filename(hierarchy.classname)
         self.class_pages[hierarchy.classname] = filename
         html_path = self.output_dir / filename
         html_path.parent.mkdir(parents=True, exist_ok=True)
 
-        html = self._render_class_page(hierarchy, method_access)
+        html = self._render_class_page(hierarchy, method_access, private_data_key)
 
         html_path.write_text(html, encoding="utf-8")
+
+    def register_typedefs(self, entries: list[tuple[str, str]]) -> None:
+        """Name the page of each ``(path key, display name)`` typedef that will
+        be documented."""
+        filenames = self._typedef_filenames(entries)
+        self.typedef_pages = {
+            key: TypedefPage(filenames[key], name) for key, name in entries
+        }
+
+    def generate_typedef_page(
+        self,
+        info: TypedefInfo,
+        front_panel_svg: str | None,
+        front_panel_note: str | None = None,
+    ) -> None:
+        """Generate the page for one loaded ``.ctl`` typedef (registered first by
+        ``register_typedefs``).
+
+        Args:
+            info: The typedef's read model (type, fields, references).
+            front_panel_svg: Its rendered front panel, or None when it has none.
+            front_panel_note: Shown in place of the front panel when it could not
+                be rendered.
+        """
+        html_path = self.output_dir / self.typedef_pages[info.key].filename
+        html_path.parent.mkdir(parents=True, exist_ok=True)
+        html_path.write_text(
+            self._render_typedef_page(info, front_panel_svg, front_panel_note),
+            encoding="utf-8",
+        )
 
     def generate_index_page(self, all_vis: list[str]) -> None:
         """Generate index.html with table of contents.

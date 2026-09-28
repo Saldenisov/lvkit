@@ -441,7 +441,8 @@ def main() -> int:
 
     # Docs command - generate HTML documentation
     docs_parser = subparsers.add_parser(
-        "docs",
+        "document",
+        aliases=["docs"],
         help="Generate HTML documentation for VIs and .ctl type definitions",
     )
     docs_parser.add_argument(
@@ -790,7 +791,7 @@ def main() -> int:
         return cmd_describe(args)
     elif args.command == "generate":
         return cmd_generate(args)
-    elif args.command == "docs":
+    elif args.command in ("document", "docs"):
         return cmd_docs(args)
     elif args.command == "visualize":
         return cmd_visualize(args)

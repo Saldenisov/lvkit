@@ -57,7 +57,12 @@ def render_front_panel_svg(
     boxes = build_boxes(front_panel)
     bounds = content_bounds(boxes)
     backend = SvgBackend()
-    backend.rect(*bounds, fill=theme.canvas)
+    # A front panel's own background is LabVIEW's grey panel canvas
+    # (``fp_panel``), not the page/diagram white (``canvas``) -- every real
+    # LabVIEW front panel (incl. the Type Def. editor) sits on grey, never
+    # white; ``fp_panel`` already has a dark-mode counterpart (theme_web.py),
+    # so this stays theme-consistent.
+    backend.rect(*bounds, fill=theme.fp_panel)
     draw_front_panel(boxes, backend, theme)
     return backend.render(bounds, title=title, style=_BASE_CSS + extra_css)
 

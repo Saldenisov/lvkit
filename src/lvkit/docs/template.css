@@ -72,6 +72,17 @@ section {
     margin-bottom: 30px;
 }
 
+/* A front panel's own diagram-container sits on LabVIEW's grey panel canvas
+   (#e2e2e2 -- must match Theme.fp_panel in render/style.py), not the page's
+   white card, so the margin around the control reads as canvas, not blank
+   page. Scoped to #front-panel specifically -- a block-diagram section's
+   .diagram-container (vi_page.py) is diagram content, not a LabVIEW panel,
+   and stays on the page's white background. */
+#front-panel .diagram-container {
+    background: #e2e2e2;
+    border-radius: 5px;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

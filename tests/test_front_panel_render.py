@@ -99,9 +99,14 @@ def test_nested_cluster_children_placed_inside_parent_bounds():
     fp = ParsedFrontPanel(controls=[cluster], panel_bounds=(0, 0, 300, 300))
     svg = render_front_panel_svg(fp)
 
+    # Two fp_panel rects now: the page's own grey canvas background (drawn
+    # first, matching LabVIEW's real panel canvas -- see
+    # render/front_panel/__init__.py) and this cluster's own frame (drawn
+    # after, as part of draw_front_panel). The cluster's frame is the one
+    # this test cares about, so take the one drawn LAST.
     outer = _rects_filled(svg, DEFAULT_THEME.fp_panel)
-    assert len(outer) == 1
-    root_x1, root_y1, root_x2, root_y2 = outer[0]
+    assert len(outer) == 2
+    root_x1, root_y1, root_x2, root_y2 = outer[-1]
 
     cells = _rects_filled(
         svg, DEFAULT_THEME.fp_value_fill, stroke=DEFAULT_THEME.struct_border

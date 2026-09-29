@@ -4,6 +4,11 @@ lvkit follows semantic versioning.
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-09-28
+- **`lvkit document` is the new name for `lvkit docs`** — matches every other subcommand's verb naming (`describe`, `generate`, `render`); `docs` still works as an alias.
+- **Fix: a front panel could render 10x oversized** — a bare SVG with no `width`/`height` stretched to fill the page, and the interactive viewer's default zoom made it worse for a tall, narrow panel; both now pixel-matched to the real panel size (#101).
+- **Fix: a front panel's canvas was white instead of LabVIEW's grey** — the panel background, and the docs page's own Front Panel section, now match LabVIEW's real panel color (#101).
+
 ## [0.8.5] - 2026-09-27
 - **Front panels render as LabVIEW draws them** — a `.ctl` or a VI's own front panel becomes an SVG with nested clusters at their real layout and each control's real saved value, in its own number format (#101).
 - **VIs with huge saved values extract in seconds, not gigabytes** — a graph's preallocated buffer (a 3 MB VI that became a 1.3 GB XML and ran out of memory) is now stored compressed, losslessly, and its front panel renders.

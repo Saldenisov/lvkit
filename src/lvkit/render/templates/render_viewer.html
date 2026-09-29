@@ -140,6 +140,13 @@ const svg=stage.querySelector('svg');
 const minimap=document.getElementById('minimap');
 const mmView=document.getElementById('mmView');
 const PAD=16;
+// Initial zoom: width-fit (1), unless the diagram is tall enough that
+// width-fit would overflow the stage's height (issue #101: a portrait
+// front panel opened zoomed to fill the width, blowing its height up far
+// past the viewport) -- fitBothZoom() already computes exactly that floor
+// for the zoom-OUT clamp below, so the initial framing reuses it instead of
+// always starting at width-fit. A no-op for any diagram wide enough that
+// width-fit already shows the whole thing (fitBothZoom() returns 1 there).
 let zoom=1;
 function fitScale(){                    // css px per user px at zoom=1
   if(!svg)return 1;
@@ -170,7 +177,7 @@ function setZoom(z, ax, ay){
   zoom=z; applyZoom();
   stage.scrollLeft=cx*ratio-ax; stage.scrollTop=cy*ratio-ay;
 }
-function fit(){ setZoom(1); stage.scrollLeft=0; stage.scrollTop=0; }  // Fit = width-fit; zoom-out floor (setZoom) still reaches fit-both
+function fit(){ setZoom(fitBothZoom()); stage.scrollLeft=0; stage.scrollTop=0; }  // whole diagram in view -- width-fit for a wide one, height-fit for a tall one (same value used for the initial framing and the zoom-out floor)
 document.getElementById('zoomIn').onclick=()=>setZoom(zoom*1.3);
 document.getElementById('zoomOut').onclick=()=>setZoom(zoom/1.3);
 document.getElementById('zoomFit').onclick=fit;
@@ -255,6 +262,7 @@ if(minimap){
 stage.addEventListener('scroll',updateMinimap);
 
 addEventListener('resize',()=>{applyZoom();updateMinimap();});
+zoom=fitBothZoom();
 applyZoom();
 try{ buildMinimap(); updateMinimap(); }catch(_){ /* minimap optional */ }
 // The inline clone re-themes on its own (it inherits <html>'s data-theme), so no

@@ -476,6 +476,19 @@ class SvgBackend:
         ``quoteattr`` — e.g. task #19's ``data-lv-properties``/``data-lv-
         structure`` compact-JSON payloads, the single carrier both the viewer
         chrome and a host (which only ever sees the raw SVG) read from.
+
+        The root ``<svg>`` also carries explicit ``width``/``height`` (its
+        real drawn extent in LabVIEW pixels, same numbers as ``viewBox``) --
+        every OTHER svg this project emits (icons, the connector-pane aside,
+        help-tip panels) already sets these; this was the one root-level
+        exception. Without them, a browser embedding a bare
+        ``viewBox``-only ``<svg>`` in normal HTML flow stretches it to its
+        container's full width and scales height to match, preserving the
+        viewBox aspect ratio -- harmless-looking for a typically WIDE block
+        diagram (a modest height increase) but a 10x-oversized panel for a
+        typically TALL, narrow front panel (issue #101 comment thread,
+        2026-09-28: a 128x582 front panel rendered at 1369x6224 CSS px).
+        Width/height pin it to its real pixel size instead.
         """
         x1, y1, x2, y2 = bounds
         w, h = x2 - x1, y2 - y1
@@ -490,6 +503,7 @@ class SvgBackend:
         data_attr = "".join(f" data-{k}={quoteattr(attrs[k])}" for k in sorted(attrs))
         head = (
             f'<svg xmlns="http://www.w3.org/2000/svg"{id_attr}{aria_attr}{data_attr} '
+            f'width="{w:.0f}" height="{h:.0f}" '
             f'viewBox="{x1:.0f} {y1:.0f} {w:.0f} {h:.0f}" font-family="sans-serif">'
         )
         title_el = None

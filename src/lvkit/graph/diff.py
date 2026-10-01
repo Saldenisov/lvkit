@@ -2853,16 +2853,25 @@ def diff_to_dict(
     vi_name_a: str,
     vi_name_b: str,
 ) -> dict[str, Any]:
-    """The full ``lvkit diff`` as a JSON-ready dict -- today just
-    ``diff_uid(...).to_dict()``. Property/Health/Signature changes are
-    ordinary ``ElementChange`` entries inside ``"changes"`` now (``kind``
-    ``"property"``/``"health"``/``"signature"``), exactly like a constant or
-    a node -- there is no longer a separate top-level ``"signature"``/
-    ``"properties"``/``"health"`` array (JSON always includes all three,
-    unlike the text report's verbose-only gating of Signature)."""
+    """The full ``lvkit diff`` as a JSON-ready dict -- ``diff_uid(...).to_dict()``
+    plus a ``"before"``/``"after"`` identification pair (see #114: a diff's
+    JSON body used to carry no VI identity at all, so a response read apart
+    from the request that produced it -- routine once several diffs are in
+    flight, since MCP tool calls dispatch concurrently, not serialized --
+    couldn't be matched back to its file pair). Mirrors ``typedef_to_dict``'s
+    existing ``{"typedef": name, "path": key, ...}`` convention, one block per
+    side. Property/Health/Signature changes are ordinary ``ElementChange``
+    entries inside ``"changes"`` now (``kind`` ``"property"``/``"health"``/
+    ``"signature"``), exactly like a constant or a node -- there is no longer
+    a separate top-level ``"signature"``/``"properties"``/``"health"`` array
+    (JSON always includes all three, unlike the text report's verbose-only
+    gating of Signature)."""
     va = graph_a.resolve_vi_name(vi_name_a)
     vb = graph_b.resolve_vi_name(vi_name_b)
-    return diff_uid(graph_a, graph_b, va, vb).to_dict()
+    result = diff_uid(graph_a, graph_b, va, vb).to_dict()
+    result["before"] = {"name": graph_a.vi_display_name(va), "path": va}
+    result["after"] = {"name": graph_b.vi_display_name(vb), "path": vb}
+    return result
 
 
 def netlist_diff_rows(

@@ -85,10 +85,13 @@ def test_render_and_diff_return_a_path_not_the_content(tmp_path: Path) -> None:
         pytest.skip(f"sample VI not available: {SAMPLE}")
     vi = str(SAMPLE)
 
-    def _assert_path_not_content(resp: object, path_key: str) -> None:
+    def _assert_path_not_content(
+        resp: object, path_key: str, *, extra_keys: set[str]
+    ) -> None:
         assert isinstance(resp, dict)
-        # The response carries ONLY a path + a byte count — no markup, no blob key.
-        assert set(resp) == {path_key, "bytes"}
+        # The response carries a path + a byte count + input-VI identification
+        # (#114) — no markup, no blob key.
+        assert set(resp) == {path_key, "bytes", *extra_keys}
         blob = json.dumps(resp)
         assert "<svg" not in blob and "<html" not in blob.lower()
         # The real content is substantial and lives on disk, not in the response.
@@ -99,11 +102,15 @@ def test_render_and_diff_return_a_path_not_the_content(tmp_path: Path) -> None:
         # points at — proof the markup was NOT inlined.
         assert len(blob) * 20 < resp["bytes"]
 
-    _assert_path_not_content(_run(srv.render(vi)), "render_path")
+    _assert_path_not_content(
+        _run(srv.render(vi)), "render_path", extra_keys={"vi_name", "vi_path"}
+    )
 
     after = tmp_path / "after.vi"
     shutil.copy(SAMPLE, after)
-    _assert_path_not_content(_run(srv.diff(vi, str(after))), "diff_path")
+    _assert_path_not_content(
+        _run(srv.diff(vi, str(after))), "diff_path", extra_keys={"before", "after"}
+    )
 
 
 def test_index_tools() -> None:

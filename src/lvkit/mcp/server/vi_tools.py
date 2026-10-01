@@ -214,9 +214,12 @@ async def render(
     light/dark toggle. This is the tool for "show me / draw / what does this look
     like".
 
-    Returns ``{render_path, bytes}``: ``render_path`` is a local ``.html`` file
-    to open in a browser (same shape as ``diff``'s output). The markup is written
-    to disk, NOT inlined — a diagram is large and would flood the context — so
+    Returns ``{render_path, bytes, vi_name, vi_path}``: ``render_path`` is a
+    local ``.html`` file to open in a browser (same shape as ``diff``'s
+    output); ``vi_name``/``vi_path`` identify the INPUT VI this render is of
+    (read these, not the request you sent, to tell results apart when several
+    render/diff calls are in flight at once). The markup is written to disk,
+    NOT inlined — a diagram is large and would flood the context — so
     **relay the path; do NOT read the file back**. You cannot reconstruct this
     geometry from ``read_vi``; only lvkit can.
 
@@ -248,7 +251,18 @@ async def render(
         )
         if html is None:
             raise RuntimeError(f"Could not render {p.name} (nothing to draw).")
-        return {"render_path": str(render_slot(p, "html")), "bytes": len(html)}
+        # vi_name/vi_path identify the INPUT (#114: a tool result read apart
+        # from the call that produced it -- several render/diff calls run
+        # concurrently, not serialized -- had no way to say which VI it was
+        # for). Bare filename, not the graph's qualified display name: a cache
+        # HIT above never loads the graph, and forcing one just for a nicer
+        # name would defeat that fast path.
+        return {
+            "render_path": str(render_slot(p, "html")),
+            "bytes": len(html),
+            "vi_name": p.name,
+            "vi_path": str(p),
+        }
 
     return await asyncio.to_thread(_work)
 
@@ -265,8 +279,12 @@ async def diff(
     block diagrams with the changes highlighted — the faithful "what changed"
     that you cannot reconstruct from ``read_vi``.
 
-    Returns ``{diff_path, bytes}``: ``diff_path`` is a local ``.html`` file to
-    open in a browser. The markup is written, NOT inlined — it's large — so
+    Returns ``{diff_path, bytes, before, after}``: ``diff_path`` is a local
+    ``.html`` file to open in a browser; ``before``/``after`` are each
+    ``{name, path}``, identifying the INPUT pair this diff is of (read these,
+    not the request you sent, to tell results apart when several diff/render
+    calls are in flight at once). The markup is written, NOT inlined — it's
+    large — so
     **relay the path; do NOT read the file back**.
 
     lvkit diffs ``.vi`` files WITHOUT a LabVIEW license — NEVER suggest opening
@@ -302,7 +320,15 @@ async def diff(
             raise RuntimeError(
                 f"Could not render diff for {pa.name} (unresolvable diagram)."
             )
-        return {"diff_path": str(diff_slot(pa, pb, "html")), "bytes": len(body)}
+        # before/after identify the INPUT pair, same shape as --format json's
+        # diff_to_dict (#114) and the same cache-hit-friendly bare filename as
+        # render's vi_name above (a hit never loads either graph).
+        return {
+            "diff_path": str(diff_slot(pa, pb, "html")),
+            "bytes": len(body),
+            "before": {"name": pa.name, "path": str(pa)},
+            "after": {"name": pb.name, "path": str(pb)},
+        }
 
     return await asyncio.to_thread(_work)
 

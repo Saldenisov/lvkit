@@ -1366,6 +1366,34 @@ class TestParseVI:
         assert node.node_type == "iUse"
         assert node.name == "My Helper.vi"
 
+    def test_xnode_terminal_name_from_xtunnel_english_name(self, tmp_path: Path):
+        """An FPGA Interface XNode (class="xNode", generically captured --
+        #107) carries no <label>/partsList on its terminals at all; the name
+        comes from its xTunnel dco's hex-encoded <englishName> instead."""
+        xml_content = """<?xml version="1.0"?>
+<root>
+    <SL__arrayElement class="xNode" uid="xn1">
+        <bounds>(0, 0, 50, 30)</bounds>
+        <termList>
+            <SL__arrayElement class="term" uid="t1">
+                <dco class="xTunnel" uid="d1">
+                    <englishName>465047412054696D656B6565706572206C6F636B6564</englishName>
+                </dco>
+            </SL__arrayElement>
+        </termList>
+    </SL__arrayElement>
+    <signalList></signalList>
+</root>"""
+        xml_file = tmp_path / "test_BDHb.xml"
+        xml_file.write_text(xml_content)
+
+        vi = parse_vi(bd_xml=xml_file)
+        bd = vi.block_diagram
+        assert len(bd.nodes) == 1
+        assert bd.nodes[0].node_type == "xNode"
+        ti = bd.terminal_info["t1"]
+        assert ti.name == "FPGA Timekeeper locked"
+
     def test_parse_property_node_implicit_vs_explicit(self, tmp_path: Path):
         """A Property Node's ``bound_control_uid`` (task #51) comes ONLY from
         its own DIRECT ``<ddo>`` CHILD -- a sibling of ``<termList>``, never a

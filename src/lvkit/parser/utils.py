@@ -250,6 +250,35 @@ def extract_caption(elem: ET.Element) -> str | None:
     return None
 
 
+def extract_xtunnel_name(elem: ET.Element) -> str | None:
+    """Decode a ``dco class="xTunnel"`` terminal's own name from its
+    ``<englishName>`` child -- a hex-encoded ASCII string (e.g.
+    ``"465047412056492052656665..."`` -> ``"FPGA VI Reference ..."``).
+
+    An XNode's terminal (FPGA Interface nodes -- Open FPGA VI Reference, I/O
+    Read/Write, Wait/Acknowledge IRQ, etc.) carries NO ``<label>``/partsList
+    at all, so ``extract_label`` always misses it; this is XNode's own,
+    entirely separate terminal-naming mechanism (confirmed corpus-wide:
+    ``<englishName>`` appears ONLY as a direct ``xTunnel`` child, never on any
+    other dco class, so this is safe to try unconditionally wherever
+    present, not just when the caller already knows the class is xTunnel).
+    (#107)
+    """
+    el = elem.find("englishName")
+    if el is None or not el.text:
+        return None
+    try:
+        decoded = bytes.fromhex(el.text.strip()).decode("ascii")
+    except ValueError:
+        return None
+    # LabVIEW's convention for "unset" is a single null byte, not an empty
+    # hex string (same convention extract_caption's own docstring notes for
+    # an unset partID=82 caption) -- strip it so an XNode terminal that was
+    # never explicitly named falls through to "no name" like any other.
+    decoded = decoded.strip("\x00")
+    return decoded or None
+
+
 def _first_text(label: ET.Element) -> str | None:
     """First non-empty cleaned text anywhere inside a label's own subtree."""
     for t in label.iter("text"):

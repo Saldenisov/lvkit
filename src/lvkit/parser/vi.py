@@ -90,6 +90,7 @@ from .utils import (
     extract_caption,
     extract_label,
     extract_label_strict,
+    extract_xtunnel_name,
     heap_color,
     safe_int,
     strip_surrounding_quotes,
@@ -969,12 +970,17 @@ def _process_element_terminals(
             lv_type = resolve_type_rich(type_desc_str, type_map)
             parsed_type = _lvtype_to_parsed(lv_type)
 
-        # Extract terminal label from dco or terminal element
+        # Extract terminal label from dco or terminal element. An XNode's
+        # terminal (FPGA Interface nodes) carries no <label>/partsList at
+        # all -- its name lives in its xTunnel dco's own <englishName>, a
+        # completely separate, hex-encoded naming mechanism (#107).
         term_name = None
         if dco is not None:
             term_name = extract_label(dco)
         if not term_name:
             term_name = extract_label(term)
+        if not term_name and dco is not None:
+            term_name = extract_xtunnel_name(dco)
 
         # Per-terminal "Not" flag: bit 16 (0x00010000) set in the
         # terminal's DCO objFlags. This bit only means "invert" for

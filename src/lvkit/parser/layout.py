@@ -1379,7 +1379,20 @@ class _LayoutBuilder:
         uid = elem.get("uid")
         self._record_label_hidden(elem, uid)
         if uid:
-            self.node_bounds.setdefault(uid, (ax1, ay1, ax2, ay2))
+            # An sRN's own <bounds> is a TRANSLATION for out-of-diagram
+            # terminal references (see the comment a few lines below) -- not
+            # a real page position -- so it must stay OUT of node_bounds
+            # (the union Layout.scene_bounds() takes for the whole diagram's
+            # viewBox). A LabVIEW-internal placeholder value unrelated to the
+            # visible diagram otherwise balloons the page by tens of
+            # thousands of units with nothing actually drawn there (#107: a
+            # real corpus VI's scene went from ~4000x1300 to ~27000x13500
+            # from exactly one sRN). The shift register's own VISIBLE glyph
+            # position comes entirely from _map_shift_register's
+            # termBounds-derived entries, keyed by the lSR/rSR dco uids --
+            # never this container uid.
+            if elem.get("class") != "sRN":
+                self.node_bounds.setdefault(uid, (ax1, ay1, ax2, ay2))
             # A block-diagram decoration: a pure-visual Flat Frame / Line /
             # Arrow / embedded picture (``cosm``), or a label-to-object
             # leader/pushpin (``attachment``). Record its shape id + owning

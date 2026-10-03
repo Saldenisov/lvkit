@@ -16,7 +16,7 @@ from ..constants import (
 from ..flags import is_inverted_terminal
 from ..models import ParsedLoopStructure
 from ..utils import safe_int, safe_text
-from .base import extract_tunnel_mapping
+from .base import extract_tunnel_mapping, frame_inner_node_uids
 
 # objFlags bit on a loop border terminal's inner ``sRN`` ``<term>`` marking that
 # terminal HIDDEN ("Visible Items" unchecked). Data-driven and verified: across
@@ -220,14 +220,23 @@ def extract_loops(root: ET.Element) -> list[ParsedLoopStructure]:
                 if inner_diag is not None:
                     inner_diagram_uid = inner_diag.get("uid")
 
-                    # Find operations inside the inner diagram (direct only,
-                    # not recursing into nested case/loop nodeLists)
-                    node_list = inner_diag.find("nodeList")
-                    if node_list is not None:
-                        for node_elem in node_list.findall("SL__arrayElement"):
-                            node_uid = node_elem.get("uid")
-                            if node_uid:
-                                inner_node_uids.append(node_uid)
+                    # Operations inside the inner diagram (direct only, not
+                    # recursing into nested case/loop nodeLists) -- same
+                    # nodeList-plus-structure-zPlaneList union case.py/
+                    # sequence.py already use. A nested FLAT SEQUENCE is
+                    # listed by LabVIEW ONLY in zPlaneList, never nodeList
+                    # (see frame_inner_node_uids's own docstring); without
+                    # the union, that flat sequence's own node.parent is
+                    # never stamped to this loop, so it (and everything
+                    # inside it) is treated as a ROOT-level structure in the
+                    # render paint-order tree -- correctly POSITIONED (its
+                    # absolute bounds still thread through the real nesting)
+                    # but painted in the wrong z-slot, so the loop's own
+                    # opaque background (painted later, as a "sibling") can
+                    # cover its entire contents (#107's real cause: not a
+                    # missing FPGA node type, a pre-existing gap any nested
+                    # flat sequence inside a loop hits).
+                    inner_node_uids.extend(frame_inner_node_uids(inner_diag))
 
             # caseSel tunnels are extracted by the case parser (case.py),
             # not the loop parser — they belong to the case structure.

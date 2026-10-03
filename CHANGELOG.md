@@ -3,6 +3,8 @@
 lvkit follows semantic versioning.
 
 ## [Unreleased]
+- **FPGA Interface node terminals show their real name** — `FPGA Timekeeper locked`, `offset from time reference`, `Start capture`, etc. — instead of rendering blank; an XNode's terminal carries no ordinary label, only a hex-encoded name in its own `<englishName>` tag (#107).
+- **Fix: a flat sequence nested inside a loop could vanish under the loop's own background** — the loop's inner-node walk only read LabVIEW's `nodeList`, which never lists a nested flat sequence's own structure (only its inner frame); the flat sequence (and everything inside it) was wrongly treated as a root-level sibling instead of the loop's content, so it could paint underneath the loop's opaque body. Not FPGA-specific — any loop containing a nested flat sequence hit this (#107).
 - **`diff` output identifies which VI pair it's for** — `--format json` gains top-level `before`/`after` (`{name, path}`), and the MCP `render`/`diff` tools return the input VI's `vi_name`/`vi_path` (or `before`/`after`) alongside their output path, so a result read apart from the call that produced it — routine once several diffs are in flight — can still be matched to its files (#114).
 - **The MCP `render`/`diff` tools' `vi_name`/`name` is the real qualified name, not a collision-prone bare filename** — persisted in the render/diff output cache at build time (free: the graph was already loaded to build the output) and read back on every call, including a cache hit, with no extra graph load (#114).
 

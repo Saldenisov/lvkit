@@ -6032,6 +6032,74 @@ def test_xnode_glyph_falls_back_to_generic_class_name_when_undecoded():
     assert glyph.rows == ()
 
 
+def test_xnode_glyph_falls_back_to_state_row_names_when_unnamed():
+    """An "FPGA I/O Property Node" terminal carries NO <englishName> at all
+    (a literal unset null byte on every terminal, #107 follow-up) -- the
+    glyph falls back to the node's own ``xnode_row_names`` (decoded from
+    <StateData>), consumed in termList order, for any terminal whose own
+    name is empty. A terminal that DOES have a real name is left alone."""
+    from lvkit.render.nodes import _xnode_glyph
+
+    node = PrimitiveNode(
+        id="VI::724",
+        vi_path="VI",
+        node_type="xNode",
+        name="xNode",
+        object_name="FPGA I/O Property Node",
+        method_name="",
+        xnode_row_names=[
+            "Antenna Status",
+            "Satellites Available",
+            "UTC Offset",
+            "UTC Offset Valid",
+        ],
+        terminals=[
+            *_xnode_passthrough_terminals(),
+            # No name/display_name on any of these -- same as the real
+            # corpus data for this XNode class.
+            _xnode_term(4, "output", None, underlying_type="Boolean"),
+            _xnode_term(5, "output", None, underlying_type="NumUInt8"),
+            _xnode_term(6, "output", None, underlying_type="NumInt8"),
+            _xnode_term(7, "output", None, underlying_type="Boolean"),
+        ],
+    )
+    glyph = _xnode_glyph(node)
+    assert glyph.class_name == "FPGA I/O Property Node"
+    assert glyph.rows == (
+        ("Antenna Status", False, True),
+        ("Satellites Available", False, True),
+        ("UTC Offset", False, True),
+        ("UTC Offset Valid", False, True),
+    )
+
+
+def test_xnode_glyph_fallback_only_fills_unnamed_terminals():
+    """A terminal with a real decoded name is never overwritten by the
+    fallback list -- only terminals with NO name of their own consume from
+    it, in order."""
+    from lvkit.render.nodes import _xnode_glyph
+
+    node = PrimitiveNode(
+        id="VI::1",
+        vi_path="VI",
+        node_type="xNode",
+        name="xNode",
+        object_name="Invoke Method",
+        method_name="Run",
+        xnode_row_names=["Fallback Name"],
+        terminals=[
+            *_xnode_passthrough_terminals(),
+            _xnode_term(4, "input", "Real Name"),  # already named -- untouched
+            _xnode_term(5, "output", None),  # unnamed -- consumes the fallback
+        ],
+    )
+    glyph = _xnode_glyph(node)
+    assert glyph.rows == (
+        ("Real Name", True, False),
+        ("Fallback Name", False, True),
+    )
+
+
 def test_event_reg_node_glyph_draws_growable_rows_and_grow_handle():
     """``_event_reg_node_glyph``/``EventRegNodeGlyph`` (task #56): a
     Register-For-Events node draws a header naming this node's own

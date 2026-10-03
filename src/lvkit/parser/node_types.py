@@ -760,17 +760,32 @@ class XNodeNode(ParsedNode):
       leading bytes here are NOT a string (empty/non-printable), so
       ``method_name`` is "" for those, never a garbled guess.
 
-    Each terminal's own name comes from its ``xTunnel`` dco's
+    Each terminal's own name USUALLY comes from its ``xTunnel`` dco's
     ``<englishName>`` (``extract_xtunnel_name``, already applied generically
     in ``_process_element_terminals``) -- including the reference
     (``FPGA VI Reference In``/``Out``) and error (``error in``/``out``) pass-
     through pair, which the render layer identifies by TYPE (a refnum / the
     standard Error cluster), never by this name text, and excludes from the
     drawer -- same convention as ``PropertyNode``/``InvokeNode``'s
-    permDCOList pair."""
+    permDCOList pair.
+
+    BUT some XNode classes ("FPGA I/O Node", "FPGA I/O Property Node") never
+    set ``<englishName>`` at all (it's a literal unset null byte on every
+    terminal) even though LabVIEW's own drawer shows real per-row names --
+    e.g. "Antenna Status"/"Satellites Available"/"UTC Offset"/"UTC Offset
+    Valid". For these, the real names live in ``<StateData>`` instead, each
+    recorded TWICE in close succession (bare, then -- for a few properties --
+    repeated with a unit suffix, e.g. "Longitude" then "Longitude (°)"):
+    ``state_row_names`` holds them, termList order, richer/longer copy kept,
+    with the method name (when present) excluded (it's recorded there too,
+    but it's the header/method row, not a param). The render layer
+    (``_xnode_glyph``) uses a terminal's own ``englishName``-decoded name
+    when present, else the next unused ``state_row_names`` entry in order --
+    verified against 3 real instances spanning both node families."""
 
     class_name: str = ""
     method_name: str = ""
+    state_row_names: list[str] = field(default_factory=list)
 
 
 class PropertyNodeHandler(NodeTypeHandler):
@@ -863,29 +878,74 @@ class EventRegNodeHandler(NodeTypeHandler):
         )
 
 
+def _xnode_state_string(raw: bytes, offset: int) -> str | None:
+    """A single 4-byte-big-endian-length-prefixed string at ``offset`` in an
+    XNode's decoded ``<StateData>`` blob, or ``None`` when the length prefix
+    doesn't fit or the bytes aren't printable text (UTF-8 -- a coordinate
+    property's unit suffix carries a real ``°``, see ``XNodeNode``'s
+    docstring)."""
+    if offset + 4 > len(raw):
+        return None
+    n = int.from_bytes(raw[offset : offset + 4], "big")
+    if n <= 1 or offset + 4 + n > len(raw):
+        return None
+    try:
+        s = raw[offset + 4 : offset + 4 + n].decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+    return s if s.isprintable() else None
+
+
+def _xnode_state_strings(raw: bytes) -> list[str]:
+    """Every length-prefixed text string findable at ANY byte offset in an
+    XNode's ``<StateData>`` blob, in offset order -- a sliding scan, since
+    the surrounding binary (type descriptors, enum item lists, a resource
+    GUID) carries no reliable record boundaries of its own."""
+    return [s for i in range(len(raw) - 4) if (s := _xnode_state_string(raw, i))]
+
+
 def _xnode_state_method_name(state_data_hex: str | None) -> str:
-    """The FIRST 4-byte-big-endian-length-prefixed ASCII string in an
-    "Invoke Method" XNode's ``<StateData>`` blob -- empirically the exact
-    invoked method name (see ``XNodeNode``'s own docstring for the
-    verification). Returns "" when the blob is absent, too short, the
-    declared length doesn't fit, or the bytes aren't printable ASCII --
-    never a garbled partial string."""
+    """The FIRST string in an "Invoke Method" XNode's ``<StateData>`` blob --
+    empirically the exact invoked method name (see ``XNodeNode``'s own
+    docstring for the verification). Returns "" when absent/undecodable."""
     if not state_data_hex:
         return ""
     try:
         raw = bytes.fromhex(state_data_hex.strip())
     except ValueError:
         return ""
-    if len(raw) < 4:
-        return ""
-    n = int.from_bytes(raw[:4], "big")
-    if n <= 0 or 4 + n > len(raw):
-        return ""
+    return _xnode_state_string(raw, 0) or ""
+
+
+def _xnode_state_row_names(state_data_hex: str | None) -> list[str]:
+    """Every per-row PARAMETER/PROPERTY name in an XNode's ``<StateData>``
+    blob, in termList order (see ``XNodeNode``'s own docstring for the
+    verification against 3 real instances across both "Invoke Method" and
+    "FPGA I/O Property Node"). Each real row name is recorded TWICE in close
+    succession -- once bare, once (for "FPGA I/O Property Node") repeated
+    with a unit suffix appended (e.g. "Longitude" then "Longitude (°)") --
+    so two ADJACENT extracted strings where the second equals or extends the
+    first is the row-name signal; anything else (a resource GUID, a class
+    name, an enum item list, a lone occurrence) is incidental metadata and
+    skipped. The richer (longer) of each pair is kept. Returns [] when the
+    blob is absent/undecodable -- never a partial/garbled list."""
+    if not state_data_hex:
+        return []
     try:
-        s = raw[4 : 4 + n].decode("ascii")
-    except UnicodeDecodeError:
-        return ""
-    return s if s.isprintable() else ""
+        raw = bytes.fromhex(state_data_hex.strip())
+    except ValueError:
+        return []
+    strings = _xnode_state_strings(raw)
+    names: list[str] = []
+    i = 0
+    while i < len(strings) - 1:
+        a, b = strings[i], strings[i + 1]
+        if b == a or b.startswith(a):
+            names.append(b)
+            i += 2
+        else:
+            i += 1
+    return names
 
 
 class XNodeHandler(NodeTypeHandler):
@@ -898,15 +958,23 @@ class XNodeHandler(NodeTypeHandler):
     def parse(self, elem: ET.Element) -> XNodeNode:
         common = self._extract_common(elem)
         class_name = decode_hex_ascii(elem.findtext("displayName")) or ""
+        state_data = elem.findtext("StateData")
         method_name = (
-            _xnode_state_method_name(elem.findtext("StateData"))
+            _xnode_state_method_name(state_data)
             if class_name == "Invoke Method"
             else ""
         )
+        # The method name (when present) is ALSO recorded as a row-name pair
+        # elsewhere in the same blob -- exclude it, it's the header/method
+        # row (drawn separately), never one of the node's own param rows.
+        row_names = [
+            n for n in _xnode_state_row_names(state_data) if n != method_name
+        ]
         return XNodeNode(
             **common,
             class_name=class_name,
             method_name=method_name,
+            state_row_names=row_names,
         )
 
 

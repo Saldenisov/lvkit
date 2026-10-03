@@ -159,6 +159,13 @@ class PrimitiveNode(GraphNode):
     # ``property_value_terminal_ids``/``invoke_row_terminal_ids``. See
     # render/nodes.py:_event_reg_node_glyph.
     event_row_terminal_ids: list[str] = []
+    # XNode only (#107): per-row param/property names decoded from the
+    # node's own <StateData> blob (parser.node_types.XNodeNode.
+    # state_row_names) -- the FALLBACK name source for an XNode class that
+    # never sets a terminal's own <englishName> at all ("FPGA I/O Node",
+    # "FPGA I/O Property Node"), even though LabVIEW's own drawer shows real
+    # row names. See render/nodes.py:_xnode_glyph.
+    xnode_row_names: list[str] = []
     # Property node only: qualified terminal ids from the parser's dcoList,
     # ``properties[i]`` correlates to the terminal whose id is
     # ``property_value_terminal_ids[i]`` -- LabVIEW's real dcoList/permDCOList

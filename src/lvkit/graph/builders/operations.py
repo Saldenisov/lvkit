@@ -133,6 +133,7 @@ class PrimitiveBuildHandler(NodeBuildHandler):
             # _xnode_glyph reads them the same way _invoke_node_glyph does).
             prim_kwargs["object_name"] = node.class_name
             prim_kwargs["method_name"] = node.method_name
+            prim_kwargs["xnode_row_names"] = node.state_row_names
 
         return GraphPrimitiveNode(
             id=q_node_uid,

@@ -1436,6 +1436,80 @@ class TestParseVI:
         # entirely, confirming no crash either).
         assert rw_control.method_name == ""
 
+    def test_xnode_state_row_names_decoded_and_method_excluded(self, tmp_path: Path):
+        """Some XNode classes ("FPGA I/O Node", "FPGA I/O Property Node")
+        never set a terminal's own <englishName> at all -- the real per-row
+        names live in <StateData> instead, each recorded twice (#107, see
+        XNodeNode's own docstring). For an "Invoke Method" node, the method
+        name is ALSO recorded there as a pair but must be excluded (it's the
+        header/method row, not a param)."""
+        import struct
+
+        from lvkit.parser.node_types import XNodeNode
+
+        def pack(s: str) -> bytes:
+            data = s.encode("utf-8")
+            return struct.pack(">I", len(data)) + data
+
+        # "FPGA I/O Property Node": a leading unpaired resource GUID, then
+        # two real paired row names.
+        prop_state = (
+            pack("Mod4.{GUID}")
+            + b"\x00" * 4
+            + pack("Antenna Status")
+            + b"\xff" * 10
+            + pack("Antenna Status")
+            + b"\x00" * 4
+            + pack("UTC Offset")
+            + b"\xff" * 10
+            + pack("UTC Offset")
+        ).hex()
+        # "Invoke Method": method name "Run", one real param "Timeout (ms)",
+        # with "Run" ALSO appearing as a pair (real-corpus-verified shape).
+        invoke_state = (
+            pack("Run")
+            + b"\x00" * 4
+            + pack("Timeout (ms)")
+            + b"\xff" * 10
+            + pack("Timeout (ms)")
+            + b"\x00" * 4
+            + pack("Run")
+            + b"\xff" * 10
+            + pack("Run")
+        ).hex()
+
+        xml_content = f"""<?xml version="1.0"?>
+<root>
+    <SL__arrayElement class="xNode" uid="xn1">
+        <bounds>(0, 0, 50, 30)</bounds>
+        <termList></termList>
+        <displayName>4650474120492f4f2050726f7065727479204e6f6465</displayName>
+        <StateData>{prop_state}</StateData>
+    </SL__arrayElement>
+    <SL__arrayElement class="xNode" uid="xn2">
+        <bounds>(0, 0, 50, 30)</bounds>
+        <termList></termList>
+        <displayName>496e766f6b65204d6574686f64</displayName>
+        <StateData>{invoke_state}</StateData>
+    </SL__arrayElement>
+    <signalList></signalList>
+</root>"""
+        xml_file = tmp_path / "test_BDHb.xml"
+        xml_file.write_text(xml_content)
+
+        vi = parse_vi(bd_xml=xml_file)
+        nodes = {n.uid: n for n in vi.block_diagram.nodes}
+
+        prop_node = nodes["xn1"]
+        assert isinstance(prop_node, XNodeNode)
+        assert prop_node.state_row_names == ["Antenna Status", "UTC Offset"]
+
+        invoke_node = nodes["xn2"]
+        assert isinstance(invoke_node, XNodeNode)
+        assert invoke_node.method_name == "Run"
+        # "Run" is excluded even though it's recorded as a row-name pair too.
+        assert invoke_node.state_row_names == ["Timeout (ms)"]
+
     def test_xnode_class_name_threads_onto_the_graph_node(self, tmp_path: Path):
         """The parser's XNodeNode.class_name/method_name reach the GRAPH
         node's object_name/method_name -- the same fields _xnode_glyph

@@ -961,23 +961,28 @@ def _xnode_glyph(node: PrimitiveNode) -> XNodeGlyph:
     Method", "Read/Write Control", "Open FPGA VI Reference", "Close FPGA VI
     Reference"); for "Invoke Method", an extra row for the specific invoked
     method (``method_name``, decoded from ``<StateData>``); then one row per
-    remaining terminal (its real name, already decoded by
-    ``extract_xtunnel_name`` at parse time), excluding the reference/error
-    pass-through pair (see ``_is_xnode_passthrough``). Terminal order follows
-    the heap's own termList order (``node.terminals`` is already index-
-    sorted) -- never re-sorted by name."""
+    remaining terminal, excluding the reference/error pass-through pair (see
+    ``_is_xnode_passthrough``). Terminal order follows the heap's own
+    termList order (``node.terminals`` is already index-sorted) -- never
+    re-sorted by name.
+
+    A row's label is its own ``<englishName>``-decoded name
+    (``extract_xtunnel_name`` at parse time) when present; some XNode
+    classes never set that at all ("FPGA I/O Node", "FPGA I/O Property
+    Node"), so an empty one falls back to the next unused entry in
+    ``xnode_row_names`` (decoded from ``<StateData>`` -- see XNodeNode's own
+    docstring), consumed in order. Still "" (never a placeholder guess) if
+    both sources are exhausted."""
     class_name = (node.object_name or "").strip() or "xNode"
     method = (node.method_name or "").strip()
-    rows = tuple(
-        (
-            t.display_name or t.name or "",
-            t.direction == "input",
-            t.direction == "output",
-        )
-        for t in node.terminals
-        if not _is_xnode_passthrough(t)
-    )
-    return XNodeGlyph(class_name=class_name, method=method, rows=rows)
+    fallback_names = iter(node.xnode_row_names)
+    rows = []
+    for t in node.terminals:
+        if _is_xnode_passthrough(t):
+            continue
+        label = t.display_name or t.name or next(fallback_names, "")
+        rows.append((label, t.direction == "input", t.direction == "output"))
+    return XNodeGlyph(class_name=class_name, method=method, rows=tuple(rows))
 
 
 def _row_terminal_present(term: Terminal | None) -> bool:

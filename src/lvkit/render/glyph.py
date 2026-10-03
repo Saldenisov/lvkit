@@ -67,6 +67,7 @@ from .glyphs.nodes.refnum_glyph import RefnumGlyph, TypeTerminalGlyph
 from .glyphs.nodes.unbundle import UnbundleGlyph
 from .glyphs.nodes.variant import VariantGlyph
 from .glyphs.nodes.wrapped_box import WrappedBoxGlyph
+from .glyphs.nodes.xnode import XNodeGlyph
 
 __all__ = [
     "ArithGlyph",
@@ -107,6 +108,7 @@ __all__ = [
     "UnbundleGlyph",
     "VariantGlyph",
     "WrappedBoxGlyph",
+    "XNodeGlyph",
     "_ARRAY_ELEMENTS_N",
     "_CLUSTER_ARROW",
     "_CPD_ARITH_SYMBOL",

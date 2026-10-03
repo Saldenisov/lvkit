@@ -5907,6 +5907,131 @@ def test_explicit_invoke_node_in_corpus_keeps_class_header():
     assert target.glyph.class_name == "VI"
 
 
+def _xnode_term(idx, direction, name, *, underlying_type="NumUInt32", fields=None):
+    from lvkit.models import Terminal
+
+    kind = LVTypeKind.CLUSTER if fields is not None else LVTypeKind.PRIMITIVE
+    return Terminal(
+        id=f"VI::{idx}",
+        index=idx,
+        direction=direction,
+        name=name,
+        display_name=name,
+        lv_type=LVType(
+            kind=kind,
+            underlying_type=underlying_type,
+            fields=fields,
+        ),
+    )
+
+
+def _xnode_error_fields():
+    from lvkit.models import ClusterField
+
+    bool_t = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="Boolean")
+    int_t = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="NumInt32")
+    str_t = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="String")
+    return [
+        ClusterField(name="status", type=bool_t),
+        ClusterField(name="code", type=int_t),
+        ClusterField(name="source", type=str_t),
+    ]
+
+
+def _xnode_passthrough_terminals():
+    """The reference + error pair every real XNode carries (#107) -- same
+    shape confirmed on RT_v1.vi's actual terminals."""
+    return [
+        _xnode_term(0, "input", "FPGA VI Reference In", underlying_type="Refnum"),
+        _xnode_term(1, "output", "FPGA VI Reference Out", underlying_type="Refnum"),
+        _xnode_term(2, "input", "error in", fields=_xnode_error_fields()),
+        _xnode_term(3, "output", "error out", fields=_xnode_error_fields()),
+    ]
+
+
+def test_xnode_glyph_excludes_reference_and_error_from_rows():
+    """A "Read/Write Control" XNode (#107): header = its real class
+    (``object_name``, decoded ``<displayName>``), no method row, and rows
+    for its OWN params only -- the reference/error pass-through pair
+    (identified by TYPE: Refnum / is_error_cluster, never by name text) gets
+    no row, same convention as Property/Invoke nodes' permDCOList pair."""
+    from lvkit.render.glyph import XNodeGlyph
+    from lvkit.render.nodes import _xnode_glyph
+
+    node = PrimitiveNode(
+        id="VI::2194",
+        vi_path="VI",
+        node_type="xNode",
+        name="xNode",
+        object_name="Read/Write Control",
+        method_name="",
+        terminals=[
+            *_xnode_passthrough_terminals(),
+            _xnode_term(4, "input", "resource name", underlying_type="Tag"),
+            _xnode_term(
+                5, "output", "FPGA Timekeeper locked", underlying_type="Boolean"
+            ),
+        ],
+    )
+    glyph = _xnode_glyph(node)
+    assert isinstance(glyph, XNodeGlyph)
+    assert glyph.class_name == "Read/Write Control"
+    assert glyph.method == ""
+    assert glyph.rows == (
+        ("resource name", True, False),
+        ("FPGA Timekeeper locked", False, True),
+    )
+
+
+def test_xnode_glyph_shows_method_row_for_invoke_method():
+    """An "Invoke Method" XNode additionally draws its real invoked method
+    (``method_name``, decoded ``<StateData>``) as a header-adjacent row --
+    verified against RT_v1.vi's real "Raw data to RT.Configure" node."""
+    from lvkit.render.glyph import XNodeGlyph
+    from lvkit.render.nodes import _xnode_glyph
+
+    node = PrimitiveNode(
+        id="VI::2938",
+        vi_path="VI",
+        node_type="xNode",
+        name="xNode",
+        object_name="Invoke Method",
+        method_name="Raw data to RT.Configure",
+        terminals=[
+            *_xnode_passthrough_terminals(),
+            _xnode_term(4, "input", "Requested Depth"),
+            _xnode_term(5, "output", "Actual Depth"),
+        ],
+    )
+    glyph = _xnode_glyph(node)
+    assert isinstance(glyph, XNodeGlyph)
+    assert glyph.class_name == "Invoke Method"
+    assert glyph.method == "Raw data to RT.Configure"
+    assert glyph.rows == (
+        ("Requested Depth", True, False),
+        ("Actual Depth", False, True),
+    )
+
+
+def test_xnode_glyph_falls_back_to_generic_class_name_when_undecoded():
+    """A class name that failed to decode (absent/corrupt ``<displayName>``)
+    falls back to the generic "xNode" label -- never an empty header."""
+    from lvkit.render.nodes import _xnode_glyph
+
+    node = PrimitiveNode(
+        id="VI::1",
+        vi_path="VI",
+        node_type="xNode",
+        name="xNode",
+        object_name="",
+        method_name="",
+        terminals=list(_xnode_passthrough_terminals()),
+    )
+    glyph = _xnode_glyph(node)
+    assert glyph.class_name == "xNode"
+    assert glyph.rows == ()
+
+
 def test_event_reg_node_glyph_draws_growable_rows_and_grow_handle():
     """``_event_reg_node_glyph``/``EventRegNodeGlyph`` (task #56): a
     Register-For-Events node draws a header naming this node's own

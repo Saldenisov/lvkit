@@ -17,7 +17,7 @@ from typing import Any
 from ..models import LVType
 from .models import ParsedNode
 from .nodes.base import extract_label
-from .utils import clean_labview_string, extract_caption
+from .utils import clean_labview_string, decode_hex_ascii, extract_caption
 
 # =============================================================================
 # Node Subclasses
@@ -735,6 +735,44 @@ class EventRegNode(ParsedNode):
     event_row_terminal_uids: list[str] = field(default_factory=list)
 
 
+@dataclass
+class XNodeNode(ParsedNode):
+    """An FPGA Interface XNode (class="xNode", #107) -- the family behind
+    every FPGA Interface palette function: Open/Close FPGA VI Reference,
+    Read/Write Control, Invoke Method, Wait/Acknowledge on IRQ, etc.
+
+    A property-node-style drawer, but keyed by its OWN two hex-encoded text
+    fields rather than ``<nodeName>``/``<methName>``:
+
+    - ``class_name`` -- the node's own real kind, from its direct
+      ``<displayName>`` child (e.g. ``"Invoke Method"``, ``"Read/Write
+      Control"``, ``"Open FPGA VI Reference"``) -- confirmed corpus-wide:
+      every real instance across two real projects decoded to one of these
+      exact FPGA Interface palette names.
+    - ``method_name`` -- for an "Invoke Method" node ONLY, the specific
+      invoked method (e.g. ``"Run"``, ``"Wait on IRQ"``,
+      ``"Raw data to RT.Configure"``) -- the FIRST 4-byte-length-prefixed
+      ASCII string in its ``<StateData>`` blob. Verified against 6 real
+      "Invoke Method" instances: in every case this exact string is the
+      method shown in LabVIEW's own drawer. ``StateData`` is otherwise an
+      opaque, node-kind-specific binary blob -- nothing else in it is
+      decoded, and a "Read/Write Control"/"Open FPGA VI Reference" node's
+      leading bytes here are NOT a string (empty/non-printable), so
+      ``method_name`` is "" for those, never a garbled guess.
+
+    Each terminal's own name comes from its ``xTunnel`` dco's
+    ``<englishName>`` (``extract_xtunnel_name``, already applied generically
+    in ``_process_element_terminals``) -- including the reference
+    (``FPGA VI Reference In``/``Out``) and error (``error in``/``out``) pass-
+    through pair, which the render layer identifies by TYPE (a refnum / the
+    standard Error cluster), never by this name text, and excludes from the
+    drawer -- same convention as ``PropertyNode``/``InvokeNode``'s
+    permDCOList pair."""
+
+    class_name: str = ""
+    method_name: str = ""
+
+
 class PropertyNodeHandler(NodeTypeHandler):
     """Handler for Property Node (class="propNode")."""
 
@@ -822,6 +860,53 @@ class EventRegNodeHandler(NodeTypeHandler):
             object_name=clean_labview_string(elem.findtext("nodeName")),
             object_method_id=elem.findtext("oMId") or "",
             event_row_terminal_uids=_dco_list_terminal_uids(elem),
+        )
+
+
+def _xnode_state_method_name(state_data_hex: str | None) -> str:
+    """The FIRST 4-byte-big-endian-length-prefixed ASCII string in an
+    "Invoke Method" XNode's ``<StateData>`` blob -- empirically the exact
+    invoked method name (see ``XNodeNode``'s own docstring for the
+    verification). Returns "" when the blob is absent, too short, the
+    declared length doesn't fit, or the bytes aren't printable ASCII --
+    never a garbled partial string."""
+    if not state_data_hex:
+        return ""
+    try:
+        raw = bytes.fromhex(state_data_hex.strip())
+    except ValueError:
+        return ""
+    if len(raw) < 4:
+        return ""
+    n = int.from_bytes(raw[:4], "big")
+    if n <= 0 or 4 + n > len(raw):
+        return ""
+    try:
+        s = raw[4 : 4 + n].decode("ascii")
+    except UnicodeDecodeError:
+        return ""
+    return s if s.isprintable() else ""
+
+
+class XNodeHandler(NodeTypeHandler):
+    """Handler for an FPGA Interface XNode (class="xNode", #107). See
+    ``XNodeNode``'s own docstring for the field decoding."""
+
+    xml_class = "xNode"
+    display_name = "xNode"
+
+    def parse(self, elem: ET.Element) -> XNodeNode:
+        common = self._extract_common(elem)
+        class_name = decode_hex_ascii(elem.findtext("displayName")) or ""
+        method_name = (
+            _xnode_state_method_name(elem.findtext("StateData"))
+            if class_name == "Invoke Method"
+            else ""
+        )
+        return XNodeNode(
+            **common,
+            class_name=class_name,
+            method_name=method_name,
         )
 
 
@@ -1351,6 +1436,7 @@ _HANDLERS: list[NodeTypeHandler] = [
     PropertyNodeHandler(),
     InvokeNodeHandler(),
     EventRegNodeHandler(),
+    XNodeHandler(),
     FlatSequenceHandler(),
     StackedSequenceHandler(),
     _SequenceAliasHandler(),

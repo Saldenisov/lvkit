@@ -1394,6 +1394,77 @@ class TestParseVI:
         ti = bd.terminal_info["t1"]
         assert ti.name == "FPGA Timekeeper locked"
 
+    def test_xnode_class_name_and_invoke_method_decoded(self, tmp_path: Path):
+        """An XNode's own real class comes from its hex-encoded
+        <displayName> ("Invoke Method", "Read/Write Control", "Open/Close
+        FPGA VI Reference"); for "Invoke Method" ONLY, the specific invoked
+        method is the first 4-byte-length-prefixed ASCII string in its
+        <StateData> blob (#107) -- verified against 6 real corpus
+        instances, see XNodeNode's own docstring."""
+        from lvkit.parser.node_types import XNodeNode
+
+        xml_content = """<?xml version="1.0"?>
+<root>
+    <SL__arrayElement class="xNode" uid="xn1">
+        <bounds>(0, 0, 50, 30)</bounds>
+        <termList></termList>
+        <displayName>496e766f6b65204d6574686f64</displayName>
+        <StateData>0000000352756e</StateData>
+    </SL__arrayElement>
+    <SL__arrayElement class="xNode" uid="xn2">
+        <bounds>(0, 0, 50, 30)</bounds>
+        <termList></termList>
+        <displayName>526561642f577269746520436f6e74726f6c</displayName>
+    </SL__arrayElement>
+    <signalList></signalList>
+</root>"""
+        xml_file = tmp_path / "test_BDHb.xml"
+        xml_file.write_text(xml_content)
+
+        vi = parse_vi(bd_xml=xml_file)
+        nodes = {n.uid: n for n in vi.block_diagram.nodes}
+        invoke = nodes["xn1"]
+        assert isinstance(invoke, XNodeNode)
+        assert invoke.class_name == "Invoke Method"
+        assert invoke.method_name == "Run"
+
+        rw_control = nodes["xn2"]
+        assert isinstance(rw_control, XNodeNode)
+        assert rw_control.class_name == "Read/Write Control"
+        # method_name is ONLY decoded for "Invoke Method" -- a "Read/Write
+        # Control" node's StateData isn't even attempted (it's absent here
+        # entirely, confirming no crash either).
+        assert rw_control.method_name == ""
+
+    def test_xnode_class_name_threads_onto_the_graph_node(self, tmp_path: Path):
+        """The parser's XNodeNode.class_name/method_name reach the GRAPH
+        node's object_name/method_name -- the same fields _xnode_glyph
+        (render/nodes.py) reads, closing the loop from parse to render
+        (#107)."""
+        from lvkit.graph.core import InMemoryVIGraph
+        from lvkit.load_mode import LoadMode
+
+        xml_content = """<?xml version="1.0"?>
+<root>
+    <SL__arrayElement class="xNode" uid="xn1">
+        <bounds>(0, 0, 50, 30)</bounds>
+        <termList></termList>
+        <displayName>496e766f6b65204d6574686f64</displayName>
+        <StateData>0000000352756e</StateData>
+    </SL__arrayElement>
+    <signalList></signalList>
+</root>"""
+        xml_file = tmp_path / "test_BDHb.xml"
+        xml_file.write_text(xml_content)
+
+        graph = InMemoryVIGraph()
+        vi_key = graph.load_vi(xml_file, LoadMode.NONE)
+        assert vi_key is not None
+        node = graph._graph.nodes[f"{vi_key}::xn1"]["node"]
+        assert node.node_type == "xNode"
+        assert node.object_name == "Invoke Method"
+        assert node.method_name == "Run"
+
     def test_parse_property_node_implicit_vs_explicit(self, tmp_path: Path):
         """A Property Node's ``bound_control_uid`` (task #51) comes ONLY from
         its own DIRECT ``<ddo>`` CHILD -- a sibling of ``<termList>``, never a
@@ -2084,18 +2155,26 @@ def test_every_registered_handler_is_reachable_by_extraction() -> None:
     'Replace Array Subset' drop). This test fails loudly if the two lists
     diverge again.
 
-    "commentNode" is the one intentional exception: class="commentNode" is
+    "commentNode" is one intentional exception: class="commentNode" is
     used for BOTH a Disable structure (has subdiagrams) and, in principle, a
     plain free-text comment -- so it can't be bucketed unconditionally like
     every other OPERATION_NODE_CLASSES member (that would misparse a plain
     comment as a structure). _extract_nodes instead reaches it through a
     separate, gated pass keyed on
     parser.nodes.disable.is_disable_structure -- see that module's docstring
-    and DisableStructureHandler's."""
+    and DisableStructureHandler's.
+
+    "xNode" (#107, an FPGA Interface node -- Open/Close FPGA VI Reference,
+    Read/Write Control, Invoke Method) is the other: it's deliberately NOT
+    in OPERATION_NODE_CLASSES (an XNode is one of arbitrarily many unknown
+    classes the generic sweep exists to catch), reached instead via
+    _extract_nodes's `_is_generic_operation_node` sweep (has class+bounds+
+    termList, not in any allowlist) -- confirmed end to end against real
+    corpus FPGA VIs, not just by this handler's registration."""
     from lvkit.parser.constants import OPERATION_NODE_CLASSES
     from lvkit.parser.node_types import NODE_HANDLERS
 
-    reachable = set(OPERATION_NODE_CLASSES) | {"commentNode"}
+    reachable = set(OPERATION_NODE_CLASSES) | {"commentNode", "xNode"}
     unreachable = sorted(set(NODE_HANDLERS) - reachable)
     assert not unreachable, (
         f"Node handlers registered but not in OPERATION_NODE_CLASSES "

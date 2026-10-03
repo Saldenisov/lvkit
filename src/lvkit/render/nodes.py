@@ -96,6 +96,7 @@ from .glyph import (
     UnbundleGlyph,
     VariantGlyph,
     WrappedBoxGlyph,
+    XNodeGlyph,
 )
 from .icons import resolve_icon_png
 from .style import lv_type_label, numeric_repr, type_family, type_repr, wire_style
@@ -942,6 +943,43 @@ def _event_reg_node_glyph(node: PrimitiveNode) -> EventRegNodeGlyph | None:
     return EventRegNodeGlyph(row_count=len(row_ids), class_name=class_name)
 
 
+def _is_xnode_passthrough(term: Terminal) -> bool:
+    """The reference (Refnum-typed) and error (``is_error_cluster``) pair
+    every XNode carries -- identified by TYPE, never by terminal name text,
+    same principle as ``_row_terminal_present``'s Void check below. These
+    thread the box edges from their own real heap geometry (like any
+    Property/Invoke node's permDCOList pair) and never get a drawer row."""
+    if term.is_error_cluster:
+        return True
+    lt = term.lv_type
+    return lt is not None and lt.underlying_type == "Refnum"
+
+
+def _xnode_glyph(node: PrimitiveNode) -> XNodeGlyph:
+    """An FPGA Interface XNode glyph (#107): header = the node's own real
+    class (``object_name``, decoded from ``<displayName>`` -- "Invoke
+    Method", "Read/Write Control", "Open FPGA VI Reference", "Close FPGA VI
+    Reference"); for "Invoke Method", an extra row for the specific invoked
+    method (``method_name``, decoded from ``<StateData>``); then one row per
+    remaining terminal (its real name, already decoded by
+    ``extract_xtunnel_name`` at parse time), excluding the reference/error
+    pass-through pair (see ``_is_xnode_passthrough``). Terminal order follows
+    the heap's own termList order (``node.terminals`` is already index-
+    sorted) -- never re-sorted by name."""
+    class_name = (node.object_name or "").strip() or "xNode"
+    method = (node.method_name or "").strip()
+    rows = tuple(
+        (
+            t.display_name or t.name or "",
+            t.direction == "input",
+            t.direction == "output",
+        )
+        for t in node.terminals
+        if not _is_xnode_passthrough(t)
+    )
+    return XNodeGlyph(class_name=class_name, method=method, rows=rows)
+
+
 def _row_terminal_present(term: Terminal | None) -> bool:
     """Whether a dcoList row-side terminal is a real, wireable connection
     point. LabVIEW's invoke-node heap always allocates a left+right DCO slot
@@ -1070,6 +1108,8 @@ class OriginalGlyphResolver:
             return _invoke_node_glyph(node)
         if node.node_type == "eventRegNode":
             return _event_reg_node_glyph(node)
+        if node.node_type == "xNode":
+            return _xnode_glyph(node)
         symbol = _COMPARE_SYMBOL.get(node.name or "")
         if symbol is not None:
             return ArithGlyph(symbol)

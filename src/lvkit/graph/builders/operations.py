@@ -20,6 +20,7 @@ from lvkit.parser.node_types import (
     InvokeNode,
     PropertyNode,
     SubVINode,
+    XNodeNode,
 )
 from lvkit.parser.node_types import (
     FormulaNode as ParserFormulaNode,
@@ -123,6 +124,15 @@ class PrimitiveBuildHandler(NodeBuildHandler):
                 prim_kwargs["event_row_terminal_ids"] = [
                     ctx.qid(uid) for uid in node.event_row_terminal_uids
                 ]
+        elif isinstance(node, XNodeNode):
+            # An XNode (#107) carries no object_method_id/bound-control
+            # concept -- just its own real class + (for "Invoke Method")
+            # method name, both already fully decoded by the parser. Reuses
+            # the SAME object_name/method_name fields Property/Invoke nodes
+            # use for their own header/drawer text (render/nodes.py's
+            # _xnode_glyph reads them the same way _invoke_node_glyph does).
+            prim_kwargs["object_name"] = node.class_name
+            prim_kwargs["method_name"] = node.method_name
 
         return GraphPrimitiveNode(
             id=q_node_uid,

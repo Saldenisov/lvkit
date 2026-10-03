@@ -34,6 +34,8 @@ from ...output_cache import (
     cached_render,
     diff_options_tag,
     diff_slot,
+    read_diff_identity,
+    read_render_identity,
     render_options_tag,
     render_slot,
 )
@@ -216,9 +218,10 @@ async def render(
 
     Returns ``{render_path, bytes, vi_name, vi_path}``: ``render_path`` is a
     local ``.html`` file to open in a browser (same shape as ``diff``'s
-    output); ``vi_name``/``vi_path`` identify the INPUT VI this render is of
-    (read these, not the request you sent, to tell results apart when several
-    render/diff calls are in flight at once). The markup is written to disk,
+    output); ``vi_name`` (the VI's qualified name, e.g. ``Class.lvclass:vi.vi``)
+    and ``vi_path`` identify the INPUT VI this render is of (read these, not
+    the request you sent, to tell results apart when several render/diff
+    calls are in flight at once). The markup is written to disk,
     NOT inlined — a diagram is large and would flood the context — so
     **relay the path; do NOT read the file back**. You cannot reconstruct this
     geometry from ``read_vi``; only lvkit can.
@@ -254,13 +257,18 @@ async def render(
         # vi_name/vi_path identify the INPUT (#114: a tool result read apart
         # from the call that produced it -- several render/diff calls run
         # concurrently, not serialized -- had no way to say which VI it was
-        # for). Bare filename, not the graph's qualified display name: a cache
-        # HIT above never loads the graph, and forcing one just for a nicer
-        # name would defeat that fast path.
+        # for). The qualified name (not a bare filename, which collides across
+        # LabVIEW dynamic dispatch's many same-named "run.vi"s) comes from
+        # read_render_identity's cache-meta read -- the MISS that just built
+        # `html` above already had the graph in hand and stored its name
+        # alongside the body, so this is a cheap metadata read, never a second
+        # graph load, on either a hit or a miss. Only an old slot written
+        # before this field existed falls back to the bare filename.
+        name = read_render_identity(p, "html") or p.name
         return {
             "render_path": str(render_slot(p, "html")),
             "bytes": len(html),
-            "vi_name": p.name,
+            "vi_name": name,
             "vi_path": str(p),
         }
 
@@ -321,13 +329,17 @@ async def diff(
                 f"Could not render diff for {pa.name} (unresolvable diagram)."
             )
         # before/after identify the INPUT pair, same shape as --format json's
-        # diff_to_dict (#114) and the same cache-hit-friendly bare filename as
-        # render's vi_name above (a hit never loads either graph).
+        # diff_to_dict (#114). The qualified names come from read_diff_identity
+        # -- a cache-meta read, never a graph load -- same rationale as
+        # render's vi_name above. Falls back to the bare filename only for an
+        # old slot written before this field existed.
+        names = read_diff_identity(pa, pb, "html")
+        before_name, after_name = names if names is not None else (pa.name, pb.name)
         return {
             "diff_path": str(diff_slot(pa, pb, "html")),
             "bytes": len(body),
-            "before": {"name": pa.name, "path": str(pa)},
-            "after": {"name": pb.name, "path": str(pb)},
+            "before": {"name": before_name, "path": str(pa)},
+            "after": {"name": after_name, "path": str(pb)},
         }
 
     return await asyncio.to_thread(_work)

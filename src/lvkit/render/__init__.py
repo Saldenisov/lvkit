@@ -685,6 +685,42 @@ def render_vi_file_titled(
     return svg, graph.vi_display_name(name)
 
 
+def render_vi_body_with_name(
+    path: Path,
+    *,
+    fmt: str = "html",
+    search_paths: list[Path] | None = None,
+    vilib_root: Path | None = None,
+    userlib_root: Path | None = None,
+    mode: LoadMode = LoadMode.MINIMAL,
+    theme_mode: ThemeMode = "auto",
+    ref: str | None = None,
+) -> tuple[str, str] | None:
+    """Like :func:`render_vi_body`, but also returns the VI's resolved
+    qualified name (e.g. ``Class.lvclass:vi.vi``, else its bare stem) —
+    ALREADY computed by :func:`render_vi_file_titled` below regardless of
+    ``fmt`` (it loads the graph either way), so surfacing it costs nothing
+    extra. The one entry point that exposes it; ``render_vi_body`` is a thin
+    wrapper that discards it. Lets a cache layer persist VI identity
+    alongside the body without a second graph load just to recover it later
+    (#114's follow-up)."""
+    svg, vi_title = render_vi_file_titled(
+        path,
+        search_paths=search_paths,
+        vilib_root=vilib_root,
+        userlib_root=userlib_root,
+        mode=mode,
+        theme_mode=theme_mode,
+    )
+    if svg is None:
+        return None
+    name = vi_title or path.stem.replace("_BDHb", "")
+    if fmt != "html":
+        return svg, name
+    title = f"{name} ({ref})" if ref else name
+    return build_render_viewer(svg, title=title), name
+
+
 def render_vi_body(
     path: Path,
     *,
@@ -706,20 +742,14 @@ def render_vi_body(
     This is the pure builder shared by every entry point. The cached wrappers in
     :mod:`lvkit.output_cache` (``cached_render``) add lookup/store around it; call
     this directly only for a deliberately uncached build."""
-    svg, vi_title = render_vi_file_titled(
+    result = render_vi_body_with_name(
         path,
+        fmt=fmt,
         search_paths=search_paths,
         vilib_root=vilib_root,
         userlib_root=userlib_root,
         mode=mode,
         theme_mode=theme_mode,
+        ref=ref,
     )
-    if svg is None:
-        return None
-    if fmt != "html":
-        return svg
-    stem = path.stem.replace("_BDHb", "")
-    title = vi_title or stem
-    if ref:
-        title = f"{title} ({ref})"
-    return build_render_viewer(svg, title=title)
+    return result[0] if result is not None else None

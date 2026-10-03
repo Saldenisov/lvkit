@@ -13,8 +13,25 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import NamedTuple
 
 from .load_mode import LoadMode
+
+
+class DiffBody(NamedTuple):
+    """One ``diff_vi_files`` result: the rendered ``body`` plus each side's
+    fully-qualified display name (e.g. ``Class.lvclass:vi.vi``) — ALREADY
+    resolved from the graphs this function had to load anyway, so surfacing
+    them costs nothing extra. Lets a cache layer (``output_cache.cached_diff``)
+    persist VI identity alongside the body without a second graph load just to
+    recover it later (see #114's follow-up: the MCP ``diff`` tool used to fall
+    back to a bare, collision-prone filename on every call because the richer
+    name seemed to require re-loading on a cache HIT — it doesn't, the miss
+    that built the cached body already had it)."""
+
+    body: str
+    before_name: str
+    after_name: str
 
 
 def diff_vi_files(
@@ -30,8 +47,9 @@ def diff_vi_files(
     vilib_root: Path | None = None,
     userlib_root: Path | None = None,
     warm_index: bool = True,
-) -> str | None:
-    """Diff two VI versions -> a body string in ``fmt``.
+) -> DiffBody | None:
+    """Diff two VI versions -> a :class:`DiffBody` (the body string in ``fmt``
+    plus each side's qualified name).
 
     ``before_path`` is the BEFORE side, ``after_path`` the AFTER. Loads both with
     one ``mode``/``search_paths``, then projects the UID-keyed change set:
@@ -80,10 +98,19 @@ def diff_vi_files(
         warm_index_for_vi(graph_a, name_a, before_path)
         warm_index_for_vi(graph_b, name_b, after_path)
 
+    # DISPLAY-only names (qualified, never the vi_key = absolute source path).
+    # name_a/name_b stay the vi_key for every graph op below (render, diff_uid,
+    # diff_to_dict) -- display_a/display_b are read-only labels, computed once
+    # here so every fmt branch (not just html) can return them for free.
+    display_a = graph_a.vi_display_name(name_a)
+    display_b = graph_b.vi_display_name(name_b)
+
     if fmt == "text":
-        return format_diff(graph_a, graph_b, name_a, name_b, verbose=verbose) or ""
+        body = format_diff(graph_a, graph_b, name_a, name_b, verbose=verbose) or ""
+        return DiffBody(body, display_a, display_b)
     if fmt == "json":
-        return json.dumps(diff_to_dict(graph_a, graph_b, name_a, name_b), indent=2)
+        body = json.dumps(diff_to_dict(graph_a, graph_b, name_a, name_b), indent=2)
+        return DiffBody(body, display_a, display_b)
 
     # html — both diagrams render "auto" so the viewer's light/dark toggle can
     # re-theme them (a baked palette couldn't respond to the data-theme flip).
@@ -97,11 +124,6 @@ def diff_vi_files(
     cmap = diff_uid(graph_a, graph_b, name_a, name_b)
     rows = netlist_diff_rows(graph_a, graph_b, name_a, name_b)
 
-    # DISPLAY-only names (qualified, never the vi_key = absolute source path) —
-    # same rule as render titles. name_a/name_b stay the vi_key for the graph
-    # ops above (render, diff_uid).
-    display_a = graph_a.vi_display_name(name_a)
-    display_b = graph_b.vi_display_name(name_b)
     # Rewrite each change's ``full_id`` prefix from the vi_key to the qualified
     # display name — its intended form ("Class.lvclass:vi.vi::uid") — so the
     # serialized change-map never carries the source path. Synthetic ids (no
@@ -122,7 +144,7 @@ def diff_vi_files(
         if before_label == after_label
         else f'{before_label} <span class="t-arr">&#8594; {after_label}</span>'
     )
-    return build_diff_viewer(
+    body = build_diff_viewer(
         cmap,
         before_svg,
         after_svg,
@@ -131,3 +153,4 @@ def diff_vi_files(
         after_label=after_label,
         netlist_rows=rows_to_json(rows),
     )
+    return DiffBody(body, display_a, display_b)

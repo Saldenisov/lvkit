@@ -54,6 +54,27 @@ def test_dispatcher_sends_a_ctl_to_the_control_renderer(monkeypatch) -> None:
     assert calls["vi"]["vilib_root"] == Path("/v")
 
 
+def test_with_name_dispatcher_mirrors_render_body(monkeypatch) -> None:
+    """render_body_with_name is a SEPARATE dispatcher (not a wrapper around
+    render_body) so it must independently route to the *_with_name renderer
+    pair, the same way render_body routes to the plain pair above."""
+    from lvkit.render.body import render_body_with_name
+
+    calls: dict[str, dict] = {}
+    def stub(kind: str):
+        return lambda path, **kw: calls.setdefault(kind, kw)
+
+    monkeypatch.setattr(render_body_module, "_render_ctl_body_with_name", stub("ctl"))
+    monkeypatch.setattr(render_body_module, "_render_vi_body_with_name", stub("vi"))
+    render_body_with_name(
+        Path("A.CTL"), fmt="svg", vilib_root=Path("/v"), mode=LoadMode.FULL, ref="r"
+    )
+    assert set(calls) == {"ctl"}
+    assert set(calls["ctl"]) == {"fmt", "search_paths", "theme_mode", "ref"}
+    render_body_with_name(Path("A.vi"), fmt="svg", vilib_root=Path("/v"))
+    assert calls["vi"]["vilib_root"] == Path("/v")
+
+
 def test_theme_modes_follow_the_block_diagram_renderer() -> None:
     light = render_front_panel_svg(_panel())
     auto = render_front_panel_svg(_panel(), theme_mode="auto")
@@ -89,6 +110,26 @@ def test_a_real_control_renders_as_svg_and_html():
     assert svg is not None and svg.startswith("<svg") and ">Text color<" in svg
     page = render_ctl_body(_CTL, fmt="html", ref="abc1234")
     assert page is not None and "<b>API_Test Settings.ctl (abc1234)</b>" in page
+
+
+@pytest.mark.needs_samples
+@pytest.mark.skipif(not _CTL.exists(), reason="icon-editor sample absent")
+def test_with_name_returns_the_same_body_plus_the_typedef_name():
+    """render_ctl_body_with_name must be a pure addition: same body
+    render_ctl_body returns, plus the control's own (un-ref-suffixed) name --
+    the value #114's output-cache identity feature persists."""
+    from lvkit.render.ctl import render_ctl_body_with_name
+
+    result = render_ctl_body_with_name(_CTL, fmt="svg", theme_mode="light")
+    assert result is not None
+    svg, name = result
+    assert svg == render_ctl_body(_CTL, fmt="svg", theme_mode="light")
+    assert name == "API_Test Settings.ctl"
+
+    result_html = render_ctl_body_with_name(_CTL, fmt="html", ref="abc1234")
+    assert result_html is not None
+    _, name_html = result_html
+    assert name_html == "API_Test Settings.ctl"  # the ref suffix is NOT in name
 
 
 @pytest.mark.needs_samples

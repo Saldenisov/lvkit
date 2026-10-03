@@ -4,6 +4,7 @@ lvkit follows semantic versioning.
 
 ## [Unreleased]
 - **`diff` output identifies which VI pair it's for** — `--format json` gains top-level `before`/`after` (`{name, path}`), and the MCP `render`/`diff` tools return the input VI's `vi_name`/`vi_path` (or `before`/`after`) alongside their output path, so a result read apart from the call that produced it — routine once several diffs are in flight — can still be matched to its files (#114).
+- **The MCP `render`/`diff` tools' `vi_name`/`name` is the real qualified name, not a collision-prone bare filename** — persisted in the render/diff output cache at build time (free: the graph was already loaded to build the output) and read back on every call, including a cache hit, with no extra graph load (#114).
 
 ## [0.8.6] - 2026-09-28
 - **`lvkit document` is the new name for `lvkit docs`** — matches every other subcommand's verb naming (`describe`, `generate`, `render`); `docs` still works as an alias.

@@ -68,6 +68,33 @@ class TestRenderCache:
         output_cache.store_render(vi, "html", OPT, V, "OUT")
         assert output_cache.lookup_render(vi, "html", "svg|dark", V) is None
 
+
+class TestRenderIdentity:
+    """``read_render_identity`` (#114 follow-up): a cache HIT must still be
+    able to report the VI's real (qualified, collision-free) name without
+    loading a graph -- it was already captured once, at store time."""
+
+    def test_round_trips_the_name(self, tmp_path: Path) -> None:
+        vi = _project_vi(tmp_path)
+        output_cache.store_render(
+            vi, "html", OPT, V, "<html/>", name="TestCase.lvclass:run.vi"
+        )
+        assert (
+            output_cache.read_render_identity(vi, "html")
+            == "TestCase.lvclass:run.vi"
+        )
+
+    def test_no_slot_returns_none(self, tmp_path: Path) -> None:
+        vi = _project_vi(tmp_path)
+        assert output_cache.read_render_identity(vi, "html") is None
+
+    def test_slot_without_a_name_returns_none(self, tmp_path: Path) -> None:
+        # A slot written before this field existed (or by a caller that never
+        # passed `name`) must degrade gracefully, not raise.
+        vi = _project_vi(tmp_path)
+        output_cache.store_render(vi, "html", OPT, V, "<html/>")
+        assert output_cache.read_render_identity(vi, "html") is None
+
     def test_source_fingerprint_change_invalidates(
         self,
         tmp_path: Path,
@@ -166,6 +193,40 @@ class TestDiffCache:
         output_cache.store_diff(before, after, "html", OPT, V, "D")
         after.write_bytes(b"AFTER-EDITED")
         assert output_cache.lookup_diff(before, after, "html", OPT, V) is None
+
+
+class TestDiffIdentity:
+    """``read_diff_identity`` (#114 follow-up): same rationale as
+    ``TestRenderIdentity``, for both sides of a diff."""
+
+    def test_round_trips_both_names(self, tmp_path: Path) -> None:
+        before = _vi(tmp_path / "t" / "old.vi", b"BEFORE")
+        after = _project_vi(tmp_path, b"AFTER")
+        output_cache.store_diff(
+            before,
+            after,
+            "html",
+            OPT,
+            V,
+            "<diff/>",
+            before_name="TestCase.lvclass:run.vi",
+            after_name="TestSuite.lvclass:run.vi",
+        )
+        assert output_cache.read_diff_identity(before, after, "html") == (
+            "TestCase.lvclass:run.vi",
+            "TestSuite.lvclass:run.vi",
+        )
+
+    def test_no_slot_returns_none(self, tmp_path: Path) -> None:
+        before = _vi(tmp_path / "t" / "old.vi", b"BEFORE")
+        after = _project_vi(tmp_path, b"AFTER")
+        assert output_cache.read_diff_identity(before, after, "html") is None
+
+    def test_slot_without_names_returns_none(self, tmp_path: Path) -> None:
+        before = _vi(tmp_path / "t" / "old.vi", b"BEFORE")
+        after = _project_vi(tmp_path, b"AFTER")
+        output_cache.store_diff(before, after, "html", OPT, V, "<diff/>")
+        assert output_cache.read_diff_identity(before, after, "html") is None
 
 
 # ── compatibility: coexist, never clobber (the anti-thrash property) ─────────

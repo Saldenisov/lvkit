@@ -38,6 +38,7 @@ ping-ponging over one slot.
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import time
@@ -229,26 +230,54 @@ def lookup_render(input_path: Path, fmt: str, options: str, version: str) -> str
 
 
 def store_render(
-    input_path: Path, fmt: str, options: str, version: str, body: str
+    input_path: Path,
+    fmt: str,
+    options: str,
+    version: str,
+    body: str,
+    *,
+    name: str | None = None,
 ) -> Path:
-    """Cache ``body`` as the render of ``input_path``; return the slot path."""
+    """Cache ``body`` as the render of ``input_path``; return the slot path.
+
+    ``name`` (the VI's qualified name, or a ``.ctl``'s typedef name) is
+    recorded purely for :func:`read_render_identity` to read back later — it
+    is NOT a freshness key (``lookup_render`` never compares it), just an
+    extra informational field, the same role ``source`` already plays. Lets a
+    cache HIT answer "what VI is this" without a second graph load (#114's
+    follow-up — the name was already in hand at build time, from the SAME
+    graph that produced ``body``)."""
     body_path, meta_path, source_label, _ = _render_paths(input_path, fmt)
-    _write(
-        body_path,
-        meta_path,
-        input_path,
-        body,
-        {
-            "lvkit_version": version,
-            "options": options,
-            "kind": "render",
-            "text_encoding": labview_text_encoding(),
-            # The fixed ``vi.<ext>`` body name carries no source info by
-            # itself — record the real path (mirrors extraction's meta.json).
-            "source": source_label,
-        },
-    )
+    extra: dict[str, object] = {
+        "lvkit_version": version,
+        "options": options,
+        "kind": "render",
+        "text_encoding": labview_text_encoding(),
+        # The fixed ``vi.<ext>`` body name carries no source info by
+        # itself — record the real path (mirrors extraction's meta.json).
+        "source": source_label,
+    }
+    if name is not None:
+        extra["name"] = name
+    _write(body_path, meta_path, input_path, body, extra)
     return body_path
+
+
+def read_render_identity(input_path: Path, fmt: str) -> str | None:
+    """The VI's qualified name recorded by the last :func:`store_render` for
+    ``input_path``/``fmt``, or ``None`` when there's no slot or it predates
+    this field. A pure metadata read (no freshness check, no graph load) —
+    the caller already has a fresh body (or doesn't care) and just wants the
+    identity that went with it."""
+    _, meta_path, _, _ = _render_paths(input_path, fmt)
+    if not meta_path.exists():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    name = meta.get("name")
+    return name if isinstance(name, str) else None
 
 
 def lookup_diff(
@@ -276,28 +305,56 @@ def store_diff(
     options: str,
     version: str,
     body: str,
+    *,
+    before_name: str | None = None,
+    after_name: str | None = None,
 ) -> Path:
-    """Cache ``body`` as the diff of ``(before, after)``; return the slot path."""
+    """Cache ``body`` as the diff of ``(before, after)``; return the slot path.
+
+    ``before_name``/``after_name`` (each side's qualified name) are recorded
+    purely for :func:`read_diff_identity` to read back later — not a
+    freshness key, just an extra informational field alongside ``source``.
+    Same rationale as :func:`store_render`'s ``name`` (#114's follow-up)."""
     body_path, meta_path, before_sha, source_label, _ = _diff_paths(
         before_path, after_path, fmt
     )
-    _write(
-        body_path,
-        meta_path,
-        after_path,
-        body,
-        {
-            "lvkit_version": version,
-            "options": options,
-            "before_sha": before_sha,
-            "kind": "diff",
-            "text_encoding": labview_text_encoding(),
-            # The fixed ``vi.<sha>.<ext>`` body name carries no source info by
-            # itself — record the AFTER VI's real path (mirrors extraction).
-            "source": source_label,
-        },
-    )
+    extra: dict[str, object] = {
+        "lvkit_version": version,
+        "options": options,
+        "before_sha": before_sha,
+        "kind": "diff",
+        "text_encoding": labview_text_encoding(),
+        # The fixed ``vi.<sha>.<ext>`` body name carries no source info by
+        # itself — record the AFTER VI's real path (mirrors extraction).
+        "source": source_label,
+    }
+    if before_name is not None:
+        extra["before_name"] = before_name
+    if after_name is not None:
+        extra["after_name"] = after_name
+    _write(body_path, meta_path, after_path, body, extra)
     return body_path
+
+
+def read_diff_identity(
+    before_path: Path, after_path: Path, fmt: str
+) -> tuple[str, str] | None:
+    """``(before_name, after_name)`` recorded by the last :func:`store_diff`
+    for this ``(before, after, fmt)``, or ``None`` when there's no slot, it
+    predates this field, or either half is missing. A pure metadata read (no
+    freshness check, no graph load)."""
+    _, meta_path, _, _, _ = _diff_paths(before_path, after_path, fmt)
+    if not meta_path.exists():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    before_name = meta.get("before_name")
+    after_name = meta.get("after_name")
+    if isinstance(before_name, str) and isinstance(after_name, str):
+        return before_name, after_name
+    return None
 
 
 # ── Options keys + cached build wrappers ────────────────────────────────────
@@ -348,11 +405,16 @@ def cached_render(
         hit = lookup_render(input_path, fmt, options, version)
         if hit is not None:
             return hit
-    from lvkit.render.body import render_body
+    from lvkit.render.body import render_body_with_name
 
-    body = render_body(input_path, fmt=fmt, **build_kw)  # type: ignore[arg-type]
-    if body is not None:
-        store_render(input_path, fmt, options, version, body)
+    # render_body_with_name has already loaded the graph to build the body --
+    # capturing its name here is free; store it so a later HIT can read it
+    # back via read_render_identity without loading anything (#114 follow-up).
+    result = render_body_with_name(input_path, fmt=fmt, **build_kw)  # type: ignore[arg-type]
+    if result is None:
+        return None
+    body, name = result
+    store_render(input_path, fmt, options, version, body, name=name)
     return body
 
 
@@ -376,10 +438,23 @@ def cached_diff(
             return hit
     from lvkit.vi_diff import diff_vi_files
 
-    body = diff_vi_files(before_path, after_path, fmt=fmt, **build_kw)  # type: ignore[arg-type]
-    if body is not None:
-        store_diff(before_path, after_path, fmt, options, version, body)
-    return body
+    # diff_vi_files has already loaded both graphs -- capturing each side's
+    # name here is free; store it so a later HIT can read it back via
+    # read_diff_identity without loading anything (#114 follow-up).
+    result = diff_vi_files(before_path, after_path, fmt=fmt, **build_kw)  # type: ignore[arg-type]
+    if result is None:
+        return None
+    store_diff(
+        before_path,
+        after_path,
+        fmt,
+        options,
+        version,
+        result.body,
+        before_name=result.before_name,
+        after_name=result.after_name,
+    )
+    return result.body
 
 
 # ── TTL sweep (opportunistic, once per process) ─────────────────────────────

@@ -67,6 +67,27 @@ def _run_diff(*args: str) -> subprocess.CompletedProcess:
     )
 
 
+# ── diff_vi_files / DiffBody (#114 follow-up) ───────────────────────────────
+
+
+class TestDiffVIFilesNames:
+    def test_returns_a_diffbody_with_both_qualified_names(self) -> None:
+        from lvkit.vi_diff import DiffBody, diff_vi_files
+
+        _require_pair()
+        ga, na = _load(BASE_VI, layout=True)
+        gb, nb = _load(HEAD_VI, layout=True)
+        expected_before = ga.vi_display_name(na)
+        expected_after = gb.vi_display_name(nb)
+
+        for fmt in ("text", "json", "html"):
+            result = diff_vi_files(BASE_VI, HEAD_VI, fmt=fmt)
+            assert isinstance(result, DiffBody)
+            assert result.before_name == expected_before
+            assert result.after_name == expected_after
+            assert isinstance(result.body, str) and result.body
+
+
 # ── --format json ────────────────────────────────────────────────────────
 
 

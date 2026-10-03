@@ -113,6 +113,52 @@ def test_render_and_diff_return_a_path_not_the_content(tmp_path: Path) -> None:
     )
 
 
+_RUN_TESTCASE = TESTCASE_DIR / "run.vi"
+_RUN_TESTSUITE = TESTCASE_DIR.parent / "TestSuite" / "run.vi"
+
+
+def test_render_and_diff_identify_same_named_but_different_vis() -> None:
+    """Two real, DIFFERENT VIs that share a bare filename (routine under
+    LabVIEW dynamic dispatch: every class's override of a method is literally
+    ``run.vi``) must still come back correctly and distinctly identified --
+    proof for #114's follow-up that the qualified name (not the collision-
+    prone bare filename) is what render/diff now report."""
+    if not (_RUN_TESTCASE.exists() and _RUN_TESTSUITE.exists()):
+        pytest.skip("JKI-VI-Tester run.vi pair not available")
+
+    r1 = _run(srv.render(str(_RUN_TESTCASE)))
+    r2 = _run(srv.render(str(_RUN_TESTSUITE)))
+    assert r1["vi_name"] == "TestCase.lvclass:run.vi"
+    assert r2["vi_name"] == "TestSuite.lvclass:run.vi"
+    assert r1["vi_name"] != r2["vi_name"]  # NOT both the bare "run.vi"
+
+    d = _run(srv.diff(str(_RUN_TESTCASE), str(_RUN_TESTSUITE)))
+    assert d["before"]["name"] == "TestCase.lvclass:run.vi"
+    assert d["after"]["name"] == "TestSuite.lvclass:run.vi"
+
+
+def test_render_identity_on_a_cache_hit_never_loads_a_graph(monkeypatch) -> None:
+    """The whole point of #114's follow-up: a cache HIT must report the real
+    qualified name WITHOUT re-parsing the VI. Render once (a miss -- loads the
+    graph normally), then break graph loading and render again: if the second
+    call still returns the right name, it never touched the loader."""
+    if not SAMPLE.exists():
+        pytest.skip(f"sample VI not available: {SAMPLE}")
+    vi = str(SAMPLE)
+
+    first = _run(srv.render(vi))
+    assert first["vi_name"]  # sanity: the miss actually captured a name
+
+    from lvkit.graph import InMemoryVIGraph
+
+    def _boom(self, *a, **kw):
+        raise AssertionError("load_vi called on what should be a cache HIT")
+
+    monkeypatch.setattr(InMemoryVIGraph, "load_vi", _boom)
+    second = _run(srv.render(vi))
+    assert second == first  # identical result, no graph load needed to get it
+
+
 def test_index_tools() -> None:
     if not TESTCASE_DIR.exists():
         pytest.skip(f"sample class not available: {TESTCASE_DIR}")

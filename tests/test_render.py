@@ -1982,7 +1982,9 @@ def test_flat_sequence_frames_tile_and_have_dividers():
 
     svg = render_vi_file(FLAT_SEQ_VI, mode=LoadMode.NONE)
     assert svg is not None
-    assert svg.count("<line") >= len(structure.dividers)
+    # Each divider (plus the two outer edges and two rails) is a real
+    # film-rail-fill band now, not a thin <line> -- the film-strip look.
+    assert svg.count(DEFAULT_THEME.film_rail_fill) >= len(structure.dividers)
 
 
 def test_sequence_tunnels_get_geometry_and_render():
@@ -5109,6 +5111,30 @@ class TestCaseInsensitiveBadge:
         assert "A=a" not in _draw_case_border_svg(False)
 
 
+def test_case_border_dithers_at_one_pixel_granularity():
+    """The dither checker tile is ~1px -- fine enough that it reads as a flat
+    grey from a normal viewing distance, not a coarse, obviously-checkered
+    pattern (per the real reference image)."""
+    from lvkit.render.glyphs.structures.base import _DITHER_TILE, THICK_FRAME_BORDER_W
+
+    assert _DITHER_TILE <= 1.0
+    # The top dither strip is THICK_FRAME_BORDER_W wide and spans the full
+    # structure width -- at a ~1px tile, that is dozens of individual tiles.
+    svg = _draw_case_border_svg(False)
+    assert svg.count("<rect") > (120 / THICK_FRAME_BORDER_W) * 2
+
+
+def test_case_border_draws_thin_outline_on_top_of_dither():
+    """A crisp, thin outline frames the dither band, drawn AFTER it -- the
+    dither alone reads as unbounded (per the real reference image)."""
+    from lvkit.render.glyphs.structures.base import DEFAULT_BORDER_W
+    from lvkit.render.style import DEFAULT_THEME
+
+    svg = _draw_case_border_svg(False)
+    assert f'stroke-width="{DEFAULT_BORDER_W}"' in svg
+    assert f'fill="none" stroke="{DEFAULT_THEME.struct_border}"' in svg
+
+
 # ---------------------------------------------------------------------------
 # "Use Default If Unwired" — output tunnel drawn hollow when a case frame
 # leaves it unwired (per-frame inner-tunnel wiredness).
@@ -5978,8 +6004,8 @@ def test_xnode_glyph_excludes_reference_and_error_from_rows():
     assert glyph.class_name == "Read/Write Control"
     assert glyph.method == ""
     assert glyph.rows == (
-        ("resource name", True, False),
-        ("FPGA Timekeeper locked", False, True),
+        ("resource name", True, False, (0.0, 0.0)),
+        ("FPGA Timekeeper locked", False, True, (0.0, 0.0)),
     )
 
 
@@ -6008,8 +6034,8 @@ def test_xnode_glyph_shows_method_row_for_invoke_method():
     assert glyph.class_name == "Invoke Method"
     assert glyph.method == "Raw data to RT.Configure"
     assert glyph.rows == (
-        ("Requested Depth", True, False),
-        ("Actual Depth", False, True),
+        ("Requested Depth", True, False, (0.0, 0.0)),
+        ("Actual Depth", False, True, (0.0, 0.0)),
     )
 
 
@@ -6066,10 +6092,10 @@ def test_xnode_glyph_falls_back_to_state_row_names_when_unnamed():
     glyph = _xnode_glyph(node)
     assert glyph.class_name == "FPGA I/O Property Node"
     assert glyph.rows == (
-        ("Antenna Status", False, True),
-        ("Satellites Available", False, True),
-        ("UTC Offset", False, True),
-        ("UTC Offset Valid", False, True),
+        ("Antenna Status", False, True, (0.0, 0.0)),
+        ("Satellites Available", False, True, (0.0, 0.0)),
+        ("UTC Offset", False, True, (0.0, 0.0)),
+        ("UTC Offset Valid", False, True, (0.0, 0.0)),
     )
 
 
@@ -6095,8 +6121,8 @@ def test_xnode_glyph_fallback_only_fills_unnamed_terminals():
     )
     glyph = _xnode_glyph(node)
     assert glyph.rows == (
-        ("Real Name", True, False),
-        ("Fallback Name", False, True),
+        ("Real Name", True, False, (0.0, 0.0)),
+        ("Fallback Name", False, True, (0.0, 0.0)),
     )
 
 
@@ -6368,3 +6394,151 @@ def test_embedded_dark_css_rejects_bad_mode():
 
     with pytest.raises(ValueError):
         embedded_dark_css("light")
+
+
+def test_feedback_node_glyph_single_cell_without_initializer_terminal():
+    """A hiddenFBNode (#107 follow-up, parser.node_types.FeedbackNode's
+    master/read side) with only its mandatory output terminal -- no
+    initializer terminal in the heap at all, same shape as FPGA_v1.vi's
+    "T"-latched Feedback Node (real uid 1478: 1 terminal, output only) --
+    resolves to a ``FeedbackNodeGlyph`` with ``init_cell=None`` (a single
+    bare-arrow cell, no stacked second row). Conflating "no initializer
+    terminal" with "unwired initializer terminal" was the prior bug: both
+    produced the same two-cell render, growing a phantom default-marker
+    cell on a node that never had an initializer terminal to default."""
+    from lvkit.models import LVType, LVTypeKind
+    from lvkit.render.glyph import FeedbackNodeGlyph
+    from lvkit.render.nodes import resolve_glyph
+
+    node = _prim("hiddenFBNode", name="Feedback Node", dirs=("output",))
+    node.terminals[0].lv_type = LVType(
+        kind=LVTypeKind.PRIMITIVE, underlying_type="Boolean"
+    )
+    glyph = resolve_glyph(node, _ctx())
+    assert isinstance(glyph, FeedbackNodeGlyph)
+    assert glyph.init_cell is None
+
+
+def test_feedback_node_glyph_shows_default_marker_when_initializer_unwired():
+    """The initializer terminal can be PRESENT in the heap (a second,
+    'input' terminal) yet still have no real incoming wire -- real-corpus-
+    verified on FPGA_v1.vi's own "Or"-latched Feedback Node (real uid 1430:
+    2 terminals, output + initializer, initializer never wired).
+    ``init_cell`` must key off the real edge, not merely the terminal's
+    presence, and read "default" (the stacked asterisk/sparkle marker)."""
+    from lvkit.render.glyph import FeedbackNodeGlyph
+    from lvkit.render.nodes import resolve_glyph
+
+    node = _prim("hiddenFBNode", name="Feedback Node", dirs=("output", "input"))
+    glyph = resolve_glyph(node, _ctx())
+    assert isinstance(glyph, FeedbackNodeGlyph)
+    assert glyph.init_cell == "default"
+
+
+def test_feedback_node_glyph_shows_wired_merge_when_initializer_wired():
+    """When the initializer terminal DOES have a real incoming wire,
+    ``init_cell`` reads "wired" (a small merge arrow, not the unwired
+    default-value asterisk) -- no corpus example of a wired initializer in
+    FPGA_v1.vi, but the two states must stay distinguishable since they draw
+    different cells."""
+    from lvkit.graph.models import WireEnd
+    from lvkit.render.glyph import FeedbackNodeGlyph
+    from lvkit.render.nodes import resolve_glyph
+
+    node = _prim("hiddenFBNode", name="Feedback Node", dirs=("output", "input"))
+    ctx = _ctx()
+    ctx.graph._graph.add_node("n0")
+    ctx.graph._graph.add_node("src")
+    ctx.graph._term_to_node["t1"] = "n0"
+    ctx.graph._graph.add_edge(
+        "src",
+        "n0",
+        source=WireEnd(terminal_id="s0", node_id="src"),
+        dest=WireEnd(terminal_id="t1", node_id="n0"),
+    )
+    glyph = resolve_glyph(node, ctx)
+    assert isinstance(glyph, FeedbackNodeGlyph)
+    assert glyph.init_cell == "wired"
+
+
+def test_feedback_node_glyph_arrow_direction_follows_output_bmps():
+    """``arrow_left`` follows the master's own ``leftFeedback`` dco
+    ``<termBMPs>`` code (``get_feedback_output_bmps``) -- verified against
+    two real instances in FPGA_v1.vi cross-checked against the issue's own
+    reference screenshots: 209 -> left, 211 -> right. An undecoded/missing
+    code defaults to left."""
+    from lvkit.render.glyph import FeedbackNodeGlyph
+    from lvkit.render.nodes import resolve_glyph
+
+    node = _prim("hiddenFBNode", name="Feedback Node", dirs=("output",))
+    ctx = _ctx()
+    ctx.graph._graph.add_node("n0", feedback_output_bmps=211)
+    glyph = resolve_glyph(node, ctx)
+    assert isinstance(glyph, FeedbackNodeGlyph)
+    assert glyph.arrow_left is False
+
+    ctx2 = _ctx()
+    ctx2.graph._graph.add_node("n0", feedback_output_bmps=209)
+    glyph2 = resolve_glyph(node, ctx2)
+    assert isinstance(glyph2, FeedbackNodeGlyph)
+    assert glyph2.arrow_left is True
+
+    glyph3 = resolve_glyph(node, _ctx())
+    assert isinstance(glyph3, FeedbackNodeGlyph)
+    assert glyph3.arrow_left is True
+
+
+def test_feedback_node_glyph_color_follows_output_wire_type():
+    """The glyph's color is the retained value's own wire-type color (its
+    OUTPUT terminal's ``lv_type``), not a fixed neutral."""
+    from lvkit.models import LVType, LVTypeKind
+    from lvkit.render.glyph import FeedbackNodeGlyph
+    from lvkit.render.nodes import resolve_glyph
+    from lvkit.render.style import wire_style
+
+    node = _prim("hiddenFBNode", name="Feedback Node", dirs=("output",))
+    node.terminals[0].lv_type = LVType(
+        kind=LVTypeKind.PRIMITIVE, underlying_type="Boolean"
+    )
+    glyph = resolve_glyph(node, _ctx())
+    assert isinstance(glyph, FeedbackNodeGlyph)
+    assert glyph.color == wire_style(node.terminals[0].lv_type).color
+
+
+def test_feedback_node_glyph_keeps_full_node_bounds_not_terminal_span():
+    """Regression: master and slave share IDENTICAL heap bounds (one combined
+    visual box), but each side's OWN terminal only covers HALF that box when
+    there's no initializer cell (verified on FPGA_v1.vi's "T"-latched pair:
+    the master's sole output terminal spans only its own half of the real
+    32-wide box; the slave's terminal, on a SEPARATE RenderNode, covers the
+    other half and is never unioned in). Sizing from the terminal span alone
+    drew a box HALF as wide as the real one. FeedbackNodeGlyph must be in
+    draw._OWN_ASPECT_GLYPHS so it keeps the node's own (full, shared)
+    bounds."""
+    from lvkit.render.draw import _glyph_bounds
+    from lvkit.render.glyph import FeedbackNodeGlyph
+
+    node = _prim_render_node(
+        FeedbackNodeGlyph(color="#4a9c3e", arrow_left=False, init_cell=None),
+        [_term(0, "output", (16.0, 3.0, 32.0, 15.0))],  # only the right half
+        node_bounds=(0.0, 3.0, 32.0, 15.0),  # the real, shared, full-width box
+    )
+    assert _glyph_bounds(node) == (0.0, 3.0, 32.0, 15.0)
+
+
+def test_feedback_slave_node_draws_nothing():
+    """The Feedback Node's write side (``slaveFBInputNode``) has its own
+    real heap bounds but no visual of its own -- real LabVIEW shows ONE icon
+    per feedback loop (the master's), never a second box for the write side
+    (#107 follow-up: this previously fell through to the generic
+    FallbackBoxResolver and drew an orphaned-looking second "Fee..." box)."""
+    from lvkit.render.nodes import resolve_glyph
+
+    node = _prim("slaveFBInputNode", name="Feedback Node", dirs=("input",))
+    glyph = resolve_glyph(node, _ctx())
+    backend = SvgBackend()
+    glyph.draw(backend, (0.0, 0.0, 10.0, 10.0), DEFAULT_THEME)
+    svg = backend.render((0.0, 0.0, 10.0, 10.0))
+    assert "<rect" not in svg
+    assert "<polygon" not in svg
+    assert "<line" not in svg

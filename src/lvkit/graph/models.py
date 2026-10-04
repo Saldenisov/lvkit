@@ -166,6 +166,18 @@ class PrimitiveNode(GraphNode):
     # "FPGA I/O Property Node"), even though LabVIEW's own drawer shows real
     # row names. See render/nodes.py:_xnode_glyph.
     xnode_row_names: list[str] = []
+    # XNode only (#107): the bound resource/module identifier (e.g. "Mod4"),
+    # decoded from <StateData> (parser.node_types.XNodeNode.resource_name)
+    # -- LabVIEW's own real header text for "FPGA I/O Property Node". ""
+    # draws a BLANK header band (an "FPGA I/O Node" reading raw channels),
+    # never the generic class name. See render/nodes.py:_xnode_glyph.
+    xnode_resource_name: str = ""
+    # XNode only (#107): each real terminal's own (y1, y2) vertical span, as
+    # a fraction of the node's own height, in termList order (parser.
+    # node_types.XNodeNode.terminal_y_fracs) -- real row heights are NOT
+    # uniform, so the drawer glyph positions each row at its own real
+    # fraction instead of equal-dividing. See render/nodes.py:_xnode_glyph.
+    xnode_terminal_y_fracs: list[tuple[float, float]] = []
     # Property node only: qualified terminal ids from the parser's dcoList,
     # ``properties[i]`` correlates to the terminal whose id is
     # ``property_value_terminal_ids[i]`` -- LabVIEW's real dcoList/permDCOList
@@ -204,6 +216,22 @@ class StructureNode(GraphNode):
     """
 
     kind: Literal["structure"] = "structure"
+    # This structure's own saved background fill (LabVIEW's "Background
+    # Color"), on the COMMON base so every structure kind renders it the
+    # same way with no per-kind special-casing. A loop has ONE diagram, so
+    # this is that diagram's own color directly (ParsedLoopStructure.
+    # bg_color). A multi-frame structure (case/disable/stacked-sequence/
+    # event) has no single diagram of its own -- each FRAME is its own
+    # ``<diag>`` (``Frame.bg_color``) -- so the build handler stamps this
+    # with its FIRST frame's color as the one representative value (the
+    # body draws ONCE, before any frame's content; real-corpus evidence
+    # shows a structure's own color is uniform across its frames in
+    # practice, never genuinely per-frame-varying). A flat sequence ALSO
+    # exposes true per-compartment colors separately (every frame shows at
+    # once, side by side) -- see RenderStructure/composite.py's
+    # ``frame_colors`` plumbing for that -- this field is its own
+    # single-color fallback/representative, same as every other kind.
+    bg_color: str | None = None
 
 
 class CaseStructureNode(StructureNode):

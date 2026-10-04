@@ -48,6 +48,14 @@ class Theme:
     prim_fill: str = "#fff6d8"
     prim_stroke: str = "#b07d10"
     prim_text: str = "#1a1a1a"  # label text on prim_fill (Arith/Bundle/…)
+    # An FPGA Interface XNode's own distinct chrome (#107 follow-up) — LabVIEW
+    # draws these in magenta/purple on a WHITE body, never the tan prim_fill
+    # (verified against raph's real screenshot: FPGA_v1.vi's "Antenna Status"/
+    # "Raw data to RT" nodes, header fill #efb8ff, border/divider #9f008e, row
+    # background white).
+    xnode_fill: str = "#ffffff"  # row background (never prim_fill's tan)
+    xnode_header_fill: str = "#efb8ff"  # header band fill
+    xnode_stroke: str = "#9f008e"  # border + row dividers
     term_fill: str = "#fff3e2"
     const_fill: str = "#ffffff"  # numeric/string constant box background
     const_text: str = "#1a1a1a"  # label text on const_fill
@@ -59,8 +67,16 @@ class Theme:
     subvi_fill: str = "#eef0e6"
     subvi_stroke: str = "#7a7d63"
     subvi_text: str = "#1a1a1a"  # wrapped subVI name text on subvi_fill
-    case_bar_fill: str = "#e9e6d2"
+    # White, per the real reference image -- stands out against ANY structure
+    # body color (never tinted to match it, even when bg_color is set).
+    case_bar_fill: str = "#ffffff"
     case_bar_text: str = "#4a4636"
+    # A flat sequence's own film-strip grey -- the inter-frame divider band
+    # and the rail band's own fill, per the real reference image (a
+    # light-grey band, thin black outline for the divider; the SAME grey
+    # with a row of punched holes -- filled with ``canvas`` -- for the
+    # top/bottom rails).
+    film_rail_fill: str = "#c8c8c8"
     case_no_error_border: str = "#2e9e3f"  # green — error-cluster "No Error" frame
     case_error_border: str = "#d32f2f"  # red — error-cluster "Error" frame
     # Event Structure border — a distinct warm amber/gold (LabVIEW's own

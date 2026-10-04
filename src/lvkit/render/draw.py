@@ -32,6 +32,7 @@ from .glyph import (
     ConstantGlyph,
     ErrorClusterGlyph,
     EventDataGlyph,
+    FeedbackNodeGlyph,
     FormulaNodeGlyph,
     IconImageGlyph,
     InlineSvgGlyph,
@@ -270,6 +271,16 @@ def _draw_panel_icon_glyph(
 # (task #75) before this exemption. ``EventDataGlyph`` (the Event Data/Filter
 # Node's own white named-rows glyph, replacing the tan ``BundleByNameGlyph``
 # it used to borrow) inherits the exact same exemption for the same reason.
+#
+# ``FeedbackNodeGlyph`` needs it for a related but distinct reason: master
+# and slave share IDENTICAL heap bounds (one combined visual box), but each
+# side's OWN terminal only covers HALF that box when there's no initializer
+# cell (the master's sole output terminal spans only its own half; the
+# slave's own terminal -- on a SEPARATE RenderNode, so never unioned in at
+# all -- covers the other half). Sizing from the terminal span alone drew a
+# box exactly half as wide as the real one, with the slave's half left
+# blank. The node's own heap ``bounds`` (shared by both sides) is always the
+# full, correct box.
 _OWN_ASPECT_GLYPHS = (
     IconImageGlyph,
     InlineSvgGlyph,
@@ -278,6 +289,7 @@ _OWN_ASPECT_GLYPHS = (
     BundleGlyph,
     UnbundleGlyph,
     EventDataGlyph,
+    FeedbackNodeGlyph,
 )
 
 # Floor for the recovered icon footprint: a unary primitive (one input, one
@@ -735,6 +747,16 @@ def _term_side_and_frac(
         fx = min(1.0, max(0.0, (tcx - x1) / bw))
         fy = min(1.0, max(0.0, (tcy - y1) / bh))
         if min(gl, gr) <= min(gt, gb):  # horizontal wins ties
+            if gl == gr:
+                # A terminal box flush to BOTH edges at once (an XNode
+                # drawer row's termBounds spans the node's full width, e.g.
+                # every "FPGA I/O Property Node" row) can't be told apart by
+                # geometry -- fall back to the terminal's own real direction
+                # rather than always defaulting to "left" (verified bug:
+                # every such OUTPUT row, e.g. Longitude/Latitude, was
+                # misclassified as an input and drawn on the wrong side).
+                side = "right" if rt.terminal.direction == "output" else "left"
+                return side, fy
             return ("left" if gl <= gr else "right"), fy
         return ("top" if gt <= gb else "bottom"), fx
     side = "right" if rt.terminal.direction == "output" else "left"

@@ -4,11 +4,9 @@ from __future__ import annotations
 
 from ...backend import Backend
 from ...style import Theme
-from .base import Rect, StructureBodyGlyph
+from .base import THICK_FRAME_BORDER_W, Rect, StructureBodyGlyph
 
-# As wide as the For loop's whole 3-card stack (2*_O offset + line) ≈ 5.2px, and
-# a matching corner radius — both read from the reference.
-WHILE_BORDER_W = 5.2
+# A matching corner radius -- read from the reference.
 WHILE_RADIUS = 5.75
 
 
@@ -17,12 +15,15 @@ class WhileLoopGlyph(StructureBodyGlyph):
     (vs the For loop's thin near-black stacked cards), plus the bottom-right
     loop-back arrowhead that marks it as a While loop."""
 
-    border_width = WHILE_BORDER_W
+    border_width = THICK_FRAME_BORDER_W
     radius = WHILE_RADIUS
 
     def draw_body(self, backend: Backend, bounds: Rect, theme: Theme) -> None:
         x1, y1, x2, y2 = bounds
-        backend.rect(x1, y1, x2, y2, rx=self.radius, fill=theme.canvas, stroke=None)
+        backend.rect(
+            x1, y1, x2, y2, rx=self.radius, fill=self.bg_color or theme.canvas,
+            stroke=None,
+        )
 
     def draw_outline(self, backend: Backend, bounds: Rect, theme: Theme) -> None:
         x1, y1, x2, y2 = bounds
@@ -40,7 +41,8 @@ class WhileLoopGlyph(StructureBodyGlyph):
         a = w * 1.75  # arrow leg, scaled with the border
         ax, ay = x2, y2
         backend.polygon([(ax, ay - a), (ax, ay), (ax - a, ay - a)], fill=c, stroke=None)
-        gap = w * 0.5  # erase a short border segment above the arrow, back to canvas
+        gap = w * 0.5  # erase a short border segment above the arrow, back to the fill
         backend.rect(
-            x2 - w, ay - a - gap, x2 + w, ay - a, fill=theme.canvas, stroke=None
+            x2 - w, ay - a - gap, x2 + w, ay - a,
+            fill=self.bg_color or theme.canvas, stroke=None,
         )

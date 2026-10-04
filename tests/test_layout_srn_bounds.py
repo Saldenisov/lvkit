@@ -48,6 +48,101 @@ def test_srn_own_bounds_excluded_from_node_bounds():
     assert y2 - y1 < 200
 
 
+def test_feedback_node_master_terminal_bounds_stay_inside_node_box():
+    """Regression (#107): a Feedback Node MASTER's (``hiddenFBNode``) own
+    ``leftFeedback``/``initFeedback`` dco ``<termBounds>`` are ALREADY
+    diagram-relative -- the exact same quirk as an sRN's termList (see the
+    module docstring above) -- verified on two real instances in a real
+    corpus VI (FPGA_v1.vi): a terminal's ``<termBounds>`` sit in the SAME
+    numeric range as the node's own ``<bounds>``, not a 0-based offset within
+    it like an ordinary primitive's termBounds.
+
+    Before the fix, ``_visit`` added the node's own absolute corner on top
+    of that already-diagram-relative termBounds, double-counting the node's
+    local offset and placing the terminal (and the glyph's terminal-span
+    box, ``draw._glyph_bounds``) hundreds of units away -- outside its own
+    structure's clip region and invisible, even though the node's OWN
+    ``<bounds>`` (and its sibling nodes) landed correctly."""
+    root = ET.fromstring(
+        """
+        <root>
+          <zPlaneList>
+            <SL__arrayElement class="forLoop" uid="loop1">
+              <bounds>(25, 37, 191, 392)</bounds>
+              <diagramList>
+                <SL__arrayElement class="diag" uid="d1">
+                  <zPlaneList>
+                    <SL__arrayElement class="hiddenFBNode" uid="fb1">
+                      <bounds>(133, 230, 157, 262)</bounds>
+                      <termList>
+                        <SL__arrayElement class="term" uid="t1">
+                          <dco class="leftFeedback" uid="dco1">
+                            <termBounds>(133, 230, 145, 246)</termBounds>
+                          </dco>
+                        </SL__arrayElement>
+                      </termList>
+                    </SL__arrayElement>
+                  </zPlaneList>
+                </SL__arrayElement>
+              </diagramList>
+            </SL__arrayElement>
+          </zPlaneList>
+        </root>
+        """
+    )
+    layout = build_layout_from_root(root)
+    node_box = layout.node_bounds["fb1"]
+    term_box = layout.node_bounds["t1"]
+    # The master's own terminal must land WITHIN its node's own box -- not
+    # hundreds of units away from double-counting the local offset.
+    nx1, ny1, nx2, ny2 = node_box
+    tx1, ty1, tx2, ty2 = term_box
+    assert nx1 - 1 <= tx1 <= tx2 <= nx2 + 1
+    assert ny1 - 1 <= ty1 <= ty2 <= ny2 + 1
+
+
+def test_feedback_node_slave_terminal_unaffected():
+    """The SLAVE's (``slaveFBInputNode``) own ``rightFeedback`` termBounds do
+    NOT have the master's quirk -- they're genuinely node-relative, like any
+    other primitive's -- so the sRN-style exemption must stay scoped to
+    ``hiddenFBNode`` only; applying it to the slave too would double-REMOVE
+    its offset and break it the other way."""
+    root = ET.fromstring(
+        """
+        <root>
+          <zPlaneList>
+            <SL__arrayElement class="forLoop" uid="loop1">
+              <bounds>(25, 37, 191, 392)</bounds>
+              <diagramList>
+                <SL__arrayElement class="diag" uid="d1">
+                  <zPlaneList>
+                    <SL__arrayElement class="slaveFBInputNode" uid="fb1s">
+                      <bounds>(133, 230, 157, 262)</bounds>
+                      <termList>
+                        <SL__arrayElement class="term" uid="t2">
+                          <dco class="rightFeedback" uid="dco2">
+                            <termBounds>(0, 16, 12, 32)</termBounds>
+                          </dco>
+                        </SL__arrayElement>
+                      </termList>
+                    </SL__arrayElement>
+                  </zPlaneList>
+                </SL__arrayElement>
+              </diagramList>
+            </SL__arrayElement>
+          </zPlaneList>
+        </root>
+        """
+    )
+    layout = build_layout_from_root(root)
+    node_box = layout.node_bounds["fb1s"]
+    term_box = layout.node_bounds["t2"]
+    nx1, ny1, nx2, ny2 = node_box
+    tx1, ty1, tx2, ty2 = term_box
+    assert nx1 - 1 <= tx1 <= tx2 <= nx2 + 1
+    assert ny1 - 1 <= ty1 <= ty2 <= ny2 + 1
+
+
 def test_non_srn_own_bounds_still_recorded():
     # Sanity: the exclusion is specific to class="sRN", not a blanket
     # nodeList-vs-zPlaneList distinction -- a decompose-structure border tab
@@ -66,3 +161,60 @@ def test_non_srn_own_bounds_still_recorded():
     )
     layout = build_layout_from_root(root)
     assert "d1" in layout.node_bounds
+
+
+def test_feedback_node_master_right_pointing_hotpoint_mirrors():
+    """Regression: the master's own leftFeedback termHotPoint is recorded for
+    the LEFT-pointing arrow variant regardless of which way THIS instance
+    renders (verified: both real pairs in FPGA_v1.vi carry the identical
+    (-4, 0) hot point even though one instance's termBMPs renders right) --
+    the right-pointing code (211) must mirror the x offset, or the wire
+    visually enters behind the arrowhead instead of at its tip."""
+    common = """
+              <bounds>(133, 230, 157, 262)</bounds>
+              <termList>
+                <SL__arrayElement class="term" uid="t1">
+                  <dco class="leftFeedback" uid="dco1">
+                    <termBounds>(133, 230, 145, 246)</termBounds>
+                    <termHotPoint>(-4, 0)</termHotPoint>
+                    <termBMPs>{bmps}</termBMPs>
+                    </dco>
+                  </SL__arrayElement>
+                </termList>
+    """
+    left_root = ET.fromstring(
+        f"""
+        <root>
+          <zPlaneList>
+            <SL__arrayElement class="hiddenFBNode" uid="fb1">
+              {common.format(bmps=209)}
+              </SL__arrayElement>
+            </zPlaneList>
+        </root>
+        """
+    )
+    right_root = ET.fromstring(
+        f"""
+        <root>
+          <zPlaneList>
+            <SL__arrayElement class="hiddenFBNode" uid="fb1">
+              {common.format(bmps=211)}
+              </SL__arrayElement>
+            </zPlaneList>
+        </root>
+        """
+    )
+    left_layout = build_layout_from_root(left_root)
+    right_layout = build_layout_from_root(right_root)
+    left_cx, _ = left_layout.terminal_centers["t1"]
+    right_cx, _ = right_layout.terminal_centers["t1"]
+    # termBounds raw text is (top, left, bottom, right) -- _rect() reorders
+    # it to (x1, y1, x2, y2) = (230, 133, 246, 145); the center x is from
+    # the (left, right) pair (230, 246), not the raw tuple's own order.
+    box_cx = (230 + 246) / 2
+    # Left-pointing (209): heap hot point (-4) applied verbatim -- left of
+    # the box's own center.
+    assert left_cx == box_cx - 4
+    # Right-pointing (211): mirrored -- right of the box's own center, not
+    # left (the un-mirrored, wrong reading).
+    assert right_cx == box_cx + 4

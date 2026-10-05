@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "nonfinite_constants",
+  "vi_file": "nonfinite_constants.vi",
+  "function": "nonfinite_constants",
+  "labview_version": "2020 SP1 64-bit (20.0.1f1)",
+  "description": "Three independent DBL constants (NaN, positive infinity, negative infinity) wired directly to connector-pane indicators; no inputs, arithmetic, subVIs or hardware dependencies.",
+  "inputs": {},
+  "outputs": {
+    "nan_result": {"type": "float64", "comparison": "is_nan"},
+    "positive_inf": {"type": "float64", "comparison": "is_positive_infinity"},
+    "negative_inf": {"type": "float64", "comparison": "is_negative_infinity"}
+  },
+  "encoding": "Nonfinite numbers use tagged JSON objects: {\"float\":\"nan\"}, {\"float\":\"inf\"}, {\"float\":\"-inf\"}. Finite negative zero uses {\"float\":\"-0.0\"} where relevant. JSON NaN/Infinity tokens are never used.",
+  "limits": "Numeric class and infinity sign are compared; NaN payload/sign, status flags and other LabVIEW versions are not established.",
+  "cases": [{"id": "constant_outputs", "inputs": {}}]
+}

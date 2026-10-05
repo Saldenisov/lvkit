@@ -7,6 +7,10 @@
     "bytes": 4504,
     "sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"
   },
+  "capture_numeric_labview.py": {
+    "bytes": 3391,
+    "sha256": "60e3a93cdadc582e556c241a8d5affd8f8264804e75a29803287bc147059d8e4"
+  },
   "evidence/array_add_literal/patched-0.8.7/conversion.log": {
     "bytes": 481,
     "sha256": "c4a161e477da21219fea4f27713dd815dc97ce6715993b234bf343b319574985"
@@ -99,6 +103,58 @@
     "bytes": 1866,
     "sha256": "6ac93b9d4dc87744b85b07dd0f43c058f40a074c1f40099f44dd0f2bc4fd0ad9"
   },
+  "evidence/nonfinite_constants/patched-0.8.7/conversion.log": {
+    "bytes": 497,
+    "sha256": "d200e998c29a0b1fe1653d9688a7c14c1308711abcf9081c0c64bef79fdee612"
+  },
+  "evidence/nonfinite_constants/patched-0.8.7/generated/nonfinite_constants/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/nonfinite_constants/patched-0.8.7/generated/nonfinite_constants/devpyconlysetoolslvkit_upstreamfixturesnonfinite_constantsnonfinite_constants.py": {
+    "bytes": 365,
+    "sha256": "28092f06e6320f06fa920b5e405284518a9c213959ca1a7adca541e72370ac8c"
+  },
+  "evidence/nonfinite_constants/patched-0.8.7/report.json": {
+    "bytes": 1860,
+    "sha256": "ec47a5954f8b2bb30eb7add23699b6dc0de85fbbecd0d935ff6e3b72f3b190e4"
+  },
+  "evidence/nonfinite_constants/pytest/nonfinite-baseline-312.xml": {
+    "bytes": 8951,
+    "sha256": "fc07f13c75abdde16073cd425a933f72a8f4182bc74187ca6a59e402b788b83d"
+  },
+  "evidence/nonfinite_constants/pytest/nonfinite-native-baseline.xml": {
+    "bytes": 976,
+    "sha256": "fed6389c402786c80020340a9e0a73faffd4aded23bc6fc9d16105ef0b248913"
+  },
+  "evidence/nonfinite_constants/pytest/nonfinite-native-patched.xml": {
+    "bytes": 631,
+    "sha256": "9eebeaa0771b69a4951150289440d1164d05ebefe90bd1ac5c2854ee08173a33"
+  },
+  "evidence/nonfinite_constants/pytest/nonfinite-related-312.xml": {
+    "bytes": 16398,
+    "sha256": "e40353dc647f8526cab077ac0bcbf768e5f64f752c754e73619772035d462574"
+  },
+  "evidence/nonfinite_constants/pytest/summary.json": {
+    "bytes": 609,
+    "sha256": "c07cc79abbd8a80ccf7f54f600119be1488ba481088f45a48402c5c20f3ed1e2"
+  },
+  "evidence/nonfinite_constants/upstream-0.8.7/conversion.log": {
+    "bytes": 498,
+    "sha256": "ed7de6dc5da0ee625355624b8b0383e4b94c2c231d082059260e0322ff6300f3"
+  },
+  "evidence/nonfinite_constants/upstream-0.8.7/generated/nonfinite_constants/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/nonfinite_constants/upstream-0.8.7/generated/nonfinite_constants/devpyconlysetoolslvkit_upstreamfixturesnonfinite_constantsnonfinite_constants.py": {
+    "bytes": 338,
+    "sha256": "f29dca8ed9622a7b6aa4343d92ac5abce8b5b0c26ecfe05b480e8ffdba1612e0"
+  },
+  "evidence/nonfinite_constants/upstream-0.8.7/report.json": {
+    "bytes": 1868,
+    "sha256": "de4c5b6d1382bdceee08904de131e2d44ef330fdc75c24fdd0908da48ef1b629"
+  },
   "evidence/python-3.12/array-312.xml": {
     "bytes": 327302,
     "sha256": "059c81263c991b0433504359a5c855b7d5681fe310bb409a716f64998f2bed3c"
@@ -147,6 +203,26 @@
     "bytes": 812,
     "sha256": "6ed022df9c7980869bd2933cc627d3617911761ea7df8cd60eb2c0e3e078880f"
   },
+  "fixtures/nonfinite_constants/golden_labview.json": {
+    "bytes": 992,
+    "sha256": "47a7ddcda97b0fa8c6a0ee39fe45079bb91b2b13ef38f8032074c8a9d9102416"
+  },
+  "fixtures/nonfinite_constants/nonfinite_constants.vi": {
+    "bytes": 6679,
+    "sha256": "5ca55a6e8cec6ba49b76ad4ea51c8343fcee61d61b2acfd255b62918f841e18e"
+  },
+  "fixtures/nonfinite_constants/README.md": {
+    "bytes": 3101,
+    "sha256": "3cef11e3c4d020a06e247ee629c67d729fc53ab03d30a1011bae6d614b4392cc"
+  },
+  "fixtures/nonfinite_constants/spec.json": {
+    "bytes": 1060,
+    "sha256": "71cac753bab55fd321a05ac08127f7d8db89ecae26b7e8b7c9cbd6736f406223"
+  },
+  "numeric_values.py": {
+    "bytes": 737,
+    "sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
   "patches/0001-numeric-add-array-literals.patch": {
     "bytes": 6489,
     "sha256": "6b0d13ddf5c77708a50db6bc453ac783972424cd5ed6a2c76f0515d7a60d7a86"
@@ -155,17 +231,29 @@
     "bytes": 2349,
     "sha256": "17b29de8f6243a59731eecd83e6cbd485430f236913a2bd8d198c6428a5ef1cf"
   },
+  "patches/nonfinite-constants.patch": {
+    "bytes": 5456,
+    "sha256": "2eec8f22a11b91bdc733043efeaf10710276c7a676dde0d46a2dd5501aed8676"
+  },
   "README.md": {
-    "bytes": 13769,
-    "sha256": "de91a665035c8cc4a02ee97243f652c3382bb38d92e2d35a56d86ba00b9a0b3c"
+    "bytes": 14012,
+    "sha256": "0bd37f0c50a7b4afb76f19d0334e2ee08896c4ee2192237dd77ab533baac70f4"
   },
   "test_native_fixture.py": {
     "bytes": 1742,
     "sha256": "987527bda609055ac4f55e225fdec73d6f2fefaa0d6d5d661c1679f89b8b8bee"
   },
+  "test_nonfinite_native.py": {
+    "bytes": 1317,
+    "sha256": "283e81bd3db40a3228d3e117c03e8d62c86d6ac46845ac56eee85e6aeeda9877"
+  },
   "verify_fixture.py": {
     "bytes": 3930,
     "sha256": "98ffa9b54b1b71690618d6a88d18dcb92f589e94929f2a972e4cc904099cda33"
+  },
+  "verify_numeric_fixture.py": {
+    "bytes": 3940,
+    "sha256": "ac349bf4bb18bd97ab3361d083e7fab8e2219de16515fa237642ff5477b59f83"
   },
   "version_audit.json": {
     "bytes": 2183,

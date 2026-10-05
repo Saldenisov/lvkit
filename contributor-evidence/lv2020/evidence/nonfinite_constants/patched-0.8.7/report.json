@@ -1,0 +1,62 @@
+{
+  "fixture_id": "nonfinite_constants",
+  "vi_sha256": "5ca55a6e8cec6ba49b76ad4ea51c8343fcee61d61b2acfd255b62918f841e18e",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-nonfinite-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\nonfinite_constants\\patched-0.8.7\\generated\\nonfinite_constants\\devpyconlysetoolslvkit_upstreamfixturesnonfinite_constantsnonfinite_constants.py",
+  "generated_sha256": "28092f06e6320f06fa920b5e405284518a9c213959ca1a7adca541e72370ac8c",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\nonfinite_constants\\nonfinite_constants.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\nonfinite_constants\\patched-0.8.7\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 3,
+  "total": 3,
+  "comparisons": [
+    {
+      "case": "constant_outputs",
+      "output": "nan_result",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "constant_outputs",
+      "output": "positive_inf",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "constant_outputs",
+      "output": "negative_inf",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

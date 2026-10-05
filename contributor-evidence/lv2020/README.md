@@ -247,3 +247,9 @@ VI's on-disk bytes remain unchanged. It does not save a VI or access the
 application's large acquisition project.
 The reset method is listed in NI's public
 [VI Methods (ActiveX) reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-m.html).
+
+## Additional independent fixture
+
+[Scalar NaN and infinity constants](fixtures/nonfinite_constants/README.md):
+new native LabVIEW 2020 VI, strict JSON specification, native receipts,
+37 synthetic cases and an independent source patch.

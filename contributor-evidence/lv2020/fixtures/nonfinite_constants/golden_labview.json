@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "fixture_id": "nonfinite_constants",
+  "vi_sha256": "5ca55a6e8cec6ba49b76ad4ea51c8343fcee61d61b2acfd255b62918f841e18e",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T08:32:52.808590+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_numeric_labview.py",
+    "source_script_sha256": "60e3a93cdadc582e556c241a8d5affd8f8264804e75a29803287bc147059d8e4",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "constant_outputs",
+      "effective_inputs": {},
+      "outputs": {
+        "nan_result": {
+          "float": "nan"
+        },
+        "positive_inf": {
+          "float": "inf"
+        },
+        "negative_inf": {
+          "float": "-inf"
+        }
+      }
+    }
+  ]
+}

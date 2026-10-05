@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "27ce18682e3f402e43368be9c0cd19ec669ffba4",
+  "python": "3.12.14",
+  "runs": {
+    "nonfinite-baseline-312": {
+      "tests": 37,
+      "failures": 24,
+      "errors": 0,
+      "skipped": 0
+    },
+    "nonfinite-related-312": {
+      "tests": 138,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "nonfinite-native-baseline": {
+      "tests": 3,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 0
+    },
+    "nonfinite-native-patched": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

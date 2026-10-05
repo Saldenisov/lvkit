@@ -707,7 +707,7 @@ def build_result_class(vi_context: VIContext) -> ast.ClassDef | None:
             continue
 
         name = to_var_name(out.name or "output")
-        type_hint = out.python_type()
+        type_hint = _terminal_python_type(out)
         fields.append((name, type_hint))
 
     # If all outputs were error clusters, no result class needed
@@ -790,10 +790,9 @@ def build_args(inputs: list[Terminal]) -> ast.arguments:
         if inp.is_error_cluster:
             continue
 
-        # Array inputs default to None (see build_array_input_normalization), so
-        # their annotation is honestly `<type> | None`.
-        type_hint = inp.python_type()
-        if _is_array_input(inp):
+        # Arrays and anonymous clusters use a conservative None default.
+        type_hint = _terminal_python_type(inp)
+        if _is_array_input(inp) or _is_anonymous_cluster(inp):
             type_hint = f"{type_hint} | None"
         args.append(
             ast.arg(
@@ -854,6 +853,21 @@ def _param_default_expr(inp: Terminal) -> ast.expr:
     except (ValueError, TypeError):
         pass
     return default_value_expr(inp.lv_type)
+
+
+def _is_anonymous_cluster(term: Terminal) -> bool:
+    lv_type = term.lv_type
+    return (
+        lv_type is not None
+        and lv_type.kind == LVTypeKind.CLUSTER
+        and not lv_type.typedef_name
+        and not lv_type.classname
+    )
+
+
+def _terminal_python_type(term: Terminal) -> str:
+    """Codegen represents anonymous clusters as positional tuples."""
+    return "tuple" if _is_anonymous_cluster(term) else term.python_type()
 
 
 def build_result_class_name(vi_name: str) -> str:

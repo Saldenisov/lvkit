@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "fixture_id": "anonymous_cluster_identity",
+  "vi_sha256": "2cf3c68dd89ca61e481415b76018f72236520a13cb3e93e3446a785200d9fcee",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T10:03:52.744187+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_cluster_labview.py",
+    "source_script_sha256": "d3ce1698d3a8f7181119f5da0c48e5c85e07d585fd8206bfb73669e135bcf883",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "explicit_zero",
+      "effective_inputs": {
+        "cluster_in": [
+          0.0,
+          0.0
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "positive",
+      "effective_inputs": {
+        "cluster_in": [
+          1.0,
+          42.0
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          1.0,
+          42.0
+        ]
+      }
+    },
+    {
+      "id": "negative",
+      "effective_inputs": {
+        "cluster_in": [
+          -3.0,
+          -17.0
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          -3.0,
+          -17.0
+        ]
+      }
+    },
+    {
+      "id": "mixed_sign",
+      "effective_inputs": {
+        "cluster_in": [
+          -1.5,
+          2.25
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          -1.5,
+          2.25
+        ]
+      }
+    },
+    {
+      "id": "signed_zero",
+      "effective_inputs": {
+        "cluster_in": [
+          {
+            "float": "-0.0"
+          },
+          0.0
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          {
+            "float": "-0.0"
+          },
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "large",
+      "effective_inputs": {
+        "cluster_in": [
+          1e+300,
+          -1e+300
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          1e+300,
+          -1e+300
+        ]
+      }
+    },
+    {
+      "id": "small",
+      "effective_inputs": {
+        "cluster_in": [
+          1e-300,
+          -1e-300
+        ]
+      },
+      "outputs": {
+        "cluster_out": [
+          1e-300,
+          -1e-300
+        ]
+      }
+    }
+  ]
+}

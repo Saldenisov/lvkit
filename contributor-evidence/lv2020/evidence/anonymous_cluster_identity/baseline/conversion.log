@@ -1,0 +1,11 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\anonymous_cluster_identity\anonymous_cluster_identity.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\anonymous_cluster_identity\anonymous_cluster_identity.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesanonymous_cluster_identityanonymous_cluster_identity.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\anonymous_cluster_identity\baseline\generated\anonymous_cluster_identity
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0

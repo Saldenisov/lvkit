@@ -1,0 +1,148 @@
+{
+  "fixture_id": "anonymous_cluster_identity",
+  "vi_sha256": "2cf3c68dd89ca61e481415b76018f72236520a13cb3e93e3446a785200d9fcee",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-cluster-types-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\anonymous_cluster_identity\\patched\\generated\\anonymous_cluster_identity\\devpyconlysetoolslvkit_upstreamfixturesanonymous_cluster_identityanonymous_cluster_identity.py",
+  "generated_sha256": "dc491ff287923d09aeda7d904a1b7767bb4a88b1b88f13b2405944551adf7907",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\anonymous_cluster_identity\\anonymous_cluster_identity.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\anonymous_cluster_identity\\patched\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 9,
+  "total": 9,
+  "value_passed": 7,
+  "value_total": 7,
+  "annotation_passed": 2,
+  "annotation_total": 2,
+  "comparisons": [
+    {
+      "case": "explicit_zero",
+      "output": "cluster_out",
+      "expected": [
+        0.0,
+        0.0
+      ],
+      "actual": [
+        0.0,
+        0.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive",
+      "output": "cluster_out",
+      "expected": [
+        1.0,
+        42.0
+      ],
+      "actual": [
+        1.0,
+        42.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative",
+      "output": "cluster_out",
+      "expected": [
+        -3.0,
+        -17.0
+      ],
+      "actual": [
+        -3.0,
+        -17.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "mixed_sign",
+      "output": "cluster_out",
+      "expected": [
+        -1.5,
+        2.25
+      ],
+      "actual": [
+        -1.5,
+        2.25
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "signed_zero",
+      "output": "cluster_out",
+      "expected": [
+        {
+          "float": "-0.0"
+        },
+        0.0
+      ],
+      "actual": [
+        {
+          "float": "-0.0"
+        },
+        0.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "large",
+      "output": "cluster_out",
+      "expected": [
+        1e+300,
+        -1e+300
+      ],
+      "actual": [
+        1e+300,
+        -1e+300
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "small",
+      "output": "cluster_out",
+      "expected": [
+        1e-300,
+        -1e-300
+      ],
+      "actual": [
+        1e-300,
+        -1e-300
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "input_annotation",
+      "expected": "tuple | None",
+      "actual": "tuple | None",
+      "passed": true
+    },
+    {
+      "case": "output_annotation",
+      "expected": "tuple",
+      "actual": "<class 'tuple'>",
+      "passed": true
+    }
+  ]
+}

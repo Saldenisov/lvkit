@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "anonymous_cluster_identity",
+  "vi_file": "anonymous_cluster_identity.vi",
+  "function": "anonymous_cluster_identity",
+  "description": "A two-DBL anonymous cluster control wired directly to an anonymous cluster indicator.",
+  "inputs": {
+    "cluster_in": {
+      "type": "cluster<float64,float64>",
+      "saved_default": [
+        0.0,
+        0.0
+      ],
+      "python_annotation": "tuple | None"
+    }
+  },
+  "outputs": {
+    "cluster_out": {
+      "type": "cluster<float64,float64>",
+      "python_annotation": "tuple",
+      "comparison": "exact_numeric_classification_and_zero_sign"
+    }
+  },
+  "cases": [
+    {
+      "id": "explicit_zero",
+      "inputs": {
+        "cluster_in": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "positive",
+      "inputs": {
+        "cluster_in": [
+          1.0,
+          42.0
+        ]
+      }
+    },
+    {
+      "id": "negative",
+      "inputs": {
+        "cluster_in": [
+          -3.0,
+          -17.0
+        ]
+      }
+    },
+    {
+      "id": "mixed_sign",
+      "inputs": {
+        "cluster_in": [
+          -1.5,
+          2.25
+        ]
+      }
+    },
+    {
+      "id": "signed_zero",
+      "inputs": {
+        "cluster_in": [
+          {
+            "float": "-0.0"
+          },
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "large",
+      "inputs": {
+        "cluster_in": [
+          1e+300,
+          -1e+300
+        ]
+      }
+    },
+    {
+      "id": "small",
+      "inputs": {
+        "cluster_in": [
+          1e-300,
+          -1e-300
+        ]
+      }
+    }
+  ],
+  "limits": [
+    "Top-level anonymous cluster annotations only.",
+    "Output values already match on v0.8.7; the defect is the advertised dict annotation.",
+    "Every comparison supplies an explicit cluster input; unwired/saved cluster defaults are outside this patch.",
+    "Named typedef/class annotations and array annotations retain their existing contracts."
+  ]
+}

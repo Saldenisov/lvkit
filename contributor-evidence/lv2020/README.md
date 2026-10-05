@@ -262,3 +262,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [real64_log10_array](fixtures/real64_log10_array/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[anonymous_cluster_identity](fixtures/anonymous_cluster_identity/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

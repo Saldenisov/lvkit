@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "id": "real64_log10_array",
+  "vi_file": "real64_log10_array.vi",
+  "function": "real64_log10_array",
+  "description": "One 1D DBL array input wired to native Logarithm Base 10; one 1D DBL array output.",
+  "inputs": {
+    "values": {
+      "type": "array<float64>"
+    }
+  },
+  "outputs": {
+    "log_values": {
+      "type": "array<float64>",
+      "comparison": "numeric_classification_and_zero_sign_with_finite_tolerance",
+      "relative_tolerance": 1e-14,
+      "absolute_tolerance": 1e-14
+    }
+  },
+  "cases": [
+    {
+      "id": "empty",
+      "inputs": {
+        "values": []
+      }
+    },
+    {
+      "id": "singleton_one",
+      "inputs": {
+        "values": [
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "powers_of_ten",
+      "inputs": {
+        "values": [
+          0.01,
+          0.1,
+          1.0,
+          10.0,
+          100.0,
+          1000.0
+        ]
+      }
+    },
+    {
+      "id": "positive_nonpowers",
+      "inputs": {
+        "values": [
+          2.0,
+          3.0,
+          3.141592653589793
+        ]
+      }
+    },
+    {
+      "id": "positive_zero",
+      "inputs": {
+        "values": [
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "negative_zero",
+      "inputs": {
+        "values": [
+          {
+            "float": "-0.0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "negative_values",
+      "inputs": {
+        "values": [
+          -1.0,
+          -10.0,
+          -0.01
+        ]
+      }
+    },
+    {
+      "id": "positive_infinity",
+      "inputs": {
+        "values": [
+          {
+            "float": "inf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "negative_infinity",
+      "inputs": {
+        "values": [
+          {
+            "float": "-inf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nan",
+      "inputs": {
+        "values": [
+          {
+            "float": "nan"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mixed_classes",
+      "inputs": {
+        "values": [
+          0.0,
+          {
+            "float": "-0.0"
+          },
+          -1.0,
+          1.0,
+          10.0,
+          {
+            "float": "nan"
+          },
+          {
+            "float": "inf"
+          },
+          {
+            "float": "-inf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "finite_extremes",
+      "inputs": {
+        "values": [
+          1e-300,
+          1e+300
+        ]
+      }
+    },
+    {
+      "id": "smallest_subnormal",
+      "inputs": {
+        "values": [
+          5e-324
+        ]
+      }
+    }
+  ],
+  "limits": [
+    "Native evidence covers 1D DBL arrays in LabVIEW 2020 only.",
+    "Scalar and nested-list paths have synthetic tests; no native multi-dimensional evidence.",
+    "NaN payload/sign and floating-point status flags are not compared.",
+    "Other numeric representations remain explicitly unsupported by this handler."
+  ]
+}

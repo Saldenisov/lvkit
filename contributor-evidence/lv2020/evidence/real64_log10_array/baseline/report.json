@@ -1,0 +1,218 @@
+{
+  "fixture_id": "real64_log10_array",
+  "vi_sha256": "1b147f2fbb86ef894386a3f86ed03a817e5591061d8cdec0db2cd9500ea94db8",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\real64_log10_array\\baseline\\generated\\real64_log10_array\\devpyconlysetoolslvkit_upstreamfixturesreal64_log10_arrayreal64_log10_array.error.py",
+  "generated_sha256": "0eabc947d43919fd3f07fa4ecaa9bfef68680db28198de6682bbbf500dc35b58",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\real64_log10_array\\real64_log10_array.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\real64_log10_array\\baseline\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "conversion_returncode": 1,
+  "comparison_policy": {
+    "log_values": {
+      "type": "array<float64>",
+      "comparison": "numeric_classification_and_zero_sign_with_finite_tolerance",
+      "relative_tolerance": 1e-14,
+      "absolute_tolerance": 1e-14
+    }
+  },
+  "passed": 0,
+  "total": 13,
+  "comparisons": [
+    {
+      "case": "empty",
+      "output": "log_values",
+      "expected": [],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "singleton_one",
+      "output": "log_values",
+      "expected": [
+        0.0
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "powers_of_ten",
+      "output": "log_values",
+      "expected": [
+        -2.0,
+        -1.0,
+        0.0,
+        1.0,
+        2.0,
+        3.0
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "positive_nonpowers",
+      "output": "log_values",
+      "expected": [
+        0.3010299956639812,
+        0.47712125471966244,
+        0.49714987269413385
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "positive_zero",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "-inf"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "negative_zero",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "-inf"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "negative_values",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "nan"
+        },
+        {
+          "float": "nan"
+        },
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "positive_infinity",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "inf"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "negative_infinity",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "nan",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "mixed_classes",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "-inf"
+        },
+        {
+          "float": "-inf"
+        },
+        {
+          "float": "nan"
+        },
+        0.0,
+        1.0,
+        {
+          "float": "nan"
+        },
+        {
+          "float": "inf"
+        },
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "finite_extremes",
+      "output": "log_values",
+      "expected": [
+        -300.0,
+        300.0
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    },
+    {
+      "case": "smallest_subnormal",
+      "output": "log_values",
+      "expected": [
+        -323.3062153431158
+      ],
+      "actual": null,
+      "error": "Conversion failed (exit 1); see conversion.log",
+      "input_unchanged": null,
+      "passed": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "27ce18682e3f402e43368be9c0cd19ec669ffba4",
+  "python": "3.12.14",
+  "runs": {
+    "log10-baseline": {
+      "tests": 32,
+      "failures": 32,
+      "errors": 0,
+      "skipped": 0
+    },
+    "log10-related": {
+      "tests": 92,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "log10-native-baseline": {
+      "tests": 13,
+      "failures": 13,
+      "errors": 0,
+      "skipped": 0
+    },
+    "log10-native-patched": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

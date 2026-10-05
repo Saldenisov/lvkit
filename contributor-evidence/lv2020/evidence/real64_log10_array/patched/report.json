@@ -1,0 +1,287 @@
+{
+  "fixture_id": "real64_log10_array",
+  "vi_sha256": "1b147f2fbb86ef894386a3f86ed03a817e5591061d8cdec0db2cd9500ea94db8",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-log10-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\real64_log10_array\\patched\\generated\\real64_log10_array\\devpyconlysetoolslvkit_upstreamfixturesreal64_log10_arrayreal64_log10_array.py",
+  "generated_sha256": "911c51d7c39c879fca73a165b897a4428bf07bdc2629998bdabb516cb9a52cac",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\real64_log10_array\\real64_log10_array.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\real64_log10_array\\patched\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "conversion_returncode": 0,
+  "comparison_policy": {
+    "log_values": {
+      "type": "array<float64>",
+      "comparison": "numeric_classification_and_zero_sign_with_finite_tolerance",
+      "relative_tolerance": 1e-14,
+      "absolute_tolerance": 1e-14
+    }
+  },
+  "passed": 13,
+  "total": 13,
+  "comparisons": [
+    {
+      "case": "empty",
+      "output": "log_values",
+      "expected": [],
+      "actual": [],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "singleton_one",
+      "output": "log_values",
+      "expected": [
+        0.0
+      ],
+      "actual": [
+        0.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "powers_of_ten",
+      "output": "log_values",
+      "expected": [
+        -2.0,
+        -1.0,
+        0.0,
+        1.0,
+        2.0,
+        3.0
+      ],
+      "actual": [
+        -2.0,
+        -1.0,
+        0.0,
+        1.0,
+        2.0,
+        3.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_nonpowers",
+      "output": "log_values",
+      "expected": [
+        0.3010299956639812,
+        0.47712125471966244,
+        0.49714987269413385
+      ],
+      "actual": [
+        0.3010299956639812,
+        0.47712125471966244,
+        0.49714987269413385
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_zero",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "-inf"
+        }
+      ],
+      "actual": [
+        {
+          "float": "-inf"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_zero",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "-inf"
+        }
+      ],
+      "actual": [
+        {
+          "float": "-inf"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_values",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "nan"
+        },
+        {
+          "float": "nan"
+        },
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": [
+        {
+          "float": "nan"
+        },
+        {
+          "float": "nan"
+        },
+        {
+          "float": "nan"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_infinity",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "inf"
+        }
+      ],
+      "actual": [
+        {
+          "float": "inf"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_infinity",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": [
+        {
+          "float": "nan"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nan",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": [
+        {
+          "float": "nan"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "mixed_classes",
+      "output": "log_values",
+      "expected": [
+        {
+          "float": "-inf"
+        },
+        {
+          "float": "-inf"
+        },
+        {
+          "float": "nan"
+        },
+        0.0,
+        1.0,
+        {
+          "float": "nan"
+        },
+        {
+          "float": "inf"
+        },
+        {
+          "float": "nan"
+        }
+      ],
+      "actual": [
+        {
+          "float": "-inf"
+        },
+        {
+          "float": "-inf"
+        },
+        {
+          "float": "nan"
+        },
+        0.0,
+        1.0,
+        {
+          "float": "nan"
+        },
+        {
+          "float": "inf"
+        },
+        {
+          "float": "nan"
+        }
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "finite_extremes",
+      "output": "log_values",
+      "expected": [
+        -300.0,
+        300.0
+      ],
+      "actual": [
+        -300.0,
+        300.0
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "smallest_subnormal",
+      "output": "log_values",
+      "expected": [
+        -323.3062153431158
+      ],
+      "actual": [
+        -323.3062153431158
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

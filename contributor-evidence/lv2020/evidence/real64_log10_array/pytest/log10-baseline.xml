@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="32" skipped="0" tests="32" time="1.037" timestamp="2026-10-05T11:45:01.633488+02:00" hostname="everest"><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[0.01--2.0]" time="0.028"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[1.0-0.0]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[10.0-1.0]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[2.0-0.3010299956639812]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[0.0--inf]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[-0.0--inf]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[-1.0-nan]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[inf-inf]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[-inf-nan]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[nan-nan]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[1e+300-300.0]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[1e-300--300.0]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_scalar[5e-324--323.3062153431158]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_arrays[values0-1-expected0]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_arrays[values1-1-expected1]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_arrays[values2-1-expected2]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_arrays[values3-1-expected3]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_arrays[values4-2-expected4]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_generated_dbl_arrays[values5-2-expected5]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumFloat32-input]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat32 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat32 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumFloat32-output]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloat32 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloat32 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumComplex128-input]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumComplex128 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumComplex128 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumComplex128-output]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumComplex128 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumComplex128 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumFloatExt-input]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloatExt wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloatExt wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumFloatExt-output]" time="0.001"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumFloatExt wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumFloatExt wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumInt32-input]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumInt32 wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumInt32 wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[NumInt32-output]" time="0.003"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=NumInt32 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=NumInt32 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[None-input]" time="0.003"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=None wired&#x0A;    - index=0 direction=output type=NumFloat64 wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=None wired
+        - index=0 direction=output type=NumFloat64 wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_unqualified_representation_is_rejected[None-output]" time="0.002"><failure message="lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).&#x0A;  In VI: Log10 Test.vi&#x0A;  Full connector pane (every terminal the heap serialized — wired&#x0A;  AND unwired — with its declared type; identify by this whole&#x0A;  signature, not just the wired ones):&#x0A;    - index=1 direction=input type=NumFloat64 wired&#x0A;    - index=0 direction=output type=None wired&#x0A;&#x0A;  Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)">E   lvkit.primitive_resolver.exceptions.PrimitiveResolutionNeeded: Primitive resolution needed for 1210 (Logarithm Base 10).
+      In VI: Log10 Test.vi
+      Full connector pane (every terminal the heap serialized — wired
+      AND unwired — with its declared type; identify by this whole
+      signature, not just the wired ones):
+        - index=1 direction=input type=NumFloat64 wired
+        - index=0 direction=output type=None wired
+    
+      Fix: add primitive 1210 to .lvkit/primitives.json (project-local) or data/primitives.json (cleanroom upstream)</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_runtime_log10_handles_lists_without_mutation[values0-expected0]" time="0.001"><failure message="TypeError: '&gt;' not supported between instances of 'list' and 'int'">E   TypeError: '&gt;' not supported between instances of 'list' and 'int'</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_runtime_log10_handles_lists_without_mutation[values1-expected1]" time="0.001"><failure message="TypeError: '&gt;' not supported between instances of 'list' and 'int'">E   TypeError: '&gt;' not supported between instances of 'list' and 'int'</failure></testcase><testcase classname="lvkit-pr-tools.baseline-regressions.test_log10" name="test_runtime_log10_handles_lists_without_mutation[values2-expected2]" time="0.001"><failure message="TypeError: '&gt;' not supported between instances of 'list' and 'int'">E   TypeError: '&gt;' not supported between instances of 'list' and 'int'</failure></testcase></testsuite></testsuites>

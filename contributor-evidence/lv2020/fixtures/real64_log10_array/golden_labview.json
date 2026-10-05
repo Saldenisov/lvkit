@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "fixture_id": "real64_log10_array",
+  "vi_sha256": "1b147f2fbb86ef894386a3f86ed03a817e5591061d8cdec0db2cd9500ea94db8",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T09:37:17.731781+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_log10_labview.py",
+    "source_script_sha256": "ebb1747aebcc157c1a9a24ee75ebb798643e0dfaa0eb0240388402766aac7025",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "empty",
+      "effective_inputs": {
+        "values": []
+      },
+      "outputs": {
+        "log_values": []
+      }
+    },
+    {
+      "id": "singleton_one",
+      "effective_inputs": {
+        "values": [
+          1.0
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "powers_of_ten",
+      "effective_inputs": {
+        "values": [
+          0.01,
+          0.1,
+          1.0,
+          10.0,
+          100.0,
+          1000.0
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          -2.0,
+          -1.0,
+          0.0,
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "positive_nonpowers",
+      "effective_inputs": {
+        "values": [
+          2.0,
+          3.0,
+          3.141592653589793
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          0.3010299956639812,
+          0.47712125471966244,
+          0.49714987269413385
+        ]
+      }
+    },
+    {
+      "id": "positive_zero",
+      "effective_inputs": {
+        "values": [
+          0.0
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "-inf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "negative_zero",
+      "effective_inputs": {
+        "values": [
+          {
+            "float": "-0.0"
+          }
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "-inf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "negative_values",
+      "effective_inputs": {
+        "values": [
+          -1.0,
+          -10.0,
+          -0.01
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "nan"
+          },
+          {
+            "float": "nan"
+          },
+          {
+            "float": "nan"
+          }
+        ]
+      }
+    },
+    {
+      "id": "positive_infinity",
+      "effective_inputs": {
+        "values": [
+          {
+            "float": "inf"
+          }
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "inf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "negative_infinity",
+      "effective_inputs": {
+        "values": [
+          {
+            "float": "-inf"
+          }
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "nan"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nan",
+      "effective_inputs": {
+        "values": [
+          {
+            "float": "nan"
+          }
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "nan"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mixed_classes",
+      "effective_inputs": {
+        "values": [
+          0.0,
+          {
+            "float": "-0.0"
+          },
+          -1.0,
+          1.0,
+          10.0,
+          {
+            "float": "nan"
+          },
+          {
+            "float": "inf"
+          },
+          {
+            "float": "-inf"
+          }
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          {
+            "float": "-inf"
+          },
+          {
+            "float": "-inf"
+          },
+          {
+            "float": "nan"
+          },
+          0.0,
+          1.0,
+          {
+            "float": "nan"
+          },
+          {
+            "float": "inf"
+          },
+          {
+            "float": "nan"
+          }
+        ]
+      }
+    },
+    {
+      "id": "finite_extremes",
+      "effective_inputs": {
+        "values": [
+          1e-300,
+          1e+300
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          -300.0,
+          300.0
+        ]
+      }
+    },
+    {
+      "id": "smallest_subnormal",
+      "effective_inputs": {
+        "values": [
+          5e-324
+        ]
+      },
+      "outputs": {
+        "log_values": [
+          -323.3062153431158
+        ]
+      }
+    }
+  ]
+}

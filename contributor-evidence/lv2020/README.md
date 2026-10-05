@@ -259,3 +259,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [real64_divide](fixtures/real64_divide/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[real64_log10_array](fixtures/real64_log10_array/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

@@ -1,0 +1,11 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\real64_log10_array\real64_log10_array.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\real64_log10_array\real64_log10_array.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesreal64_log10_arrayreal64_log10_array.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\real64_log10_array\patched\generated\real64_log10_array
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0

@@ -1,0 +1,13 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\llb_stream_lifetime\lazy_members.llb
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\ELYSE-ACQ-analysis\converter\lvkit-pr-tools\llb-native-cache\baseline-qualified\llb\lazy_members.llb-119adb7d\first.vi
+         -> AST: develyse_acq_analysisconverterlvkit_pr_toolsllb_native_cachebaseline_qualifiedllblazy_membersllb_119adb7dfirst.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\llb_stream_lifetime\baseline\generated\lazy_members
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0
+C:\dev\ELYSE-ACQ-analysis\converter\lvkit-pr-tools\llb-native-cache\baseline-qualified\llb\lazy_members.llb-119adb7d\first.vi: Warning: Block b'VICD' section 0 patches parse exception: No parsing made for MCLVRTPatches.
+Warning: Identifier has more than one special character.

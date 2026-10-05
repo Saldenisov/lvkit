@@ -1,0 +1,259 @@
+{
+  "fixture_id": "llb_stream_lifetime",
+  "archive_sha256": "5a713f2edb4ba4f82305b171cdd363bababbafa7081ce1b67fdb944057f5b547",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "cache_directory": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\llb-native-cache\\baseline-qualified",
+  "inventory": {
+    "first.vi": {
+      "sha256": "23eb2100baebdaece671b3f6706da4b6ccb67848ced4a21e2ad0c972511c2a16",
+      "expected": "23eb2100baebdaece671b3f6706da4b6ccb67848ced4a21e2ad0c972511c2a16",
+      "passed": true
+    },
+    "second.vi": {
+      "sha256": null,
+      "expected": "e772ebead9f397c50639813f559e322cc846ca96541eb0f5853ca538773e08af",
+      "passed": false
+    }
+  },
+  "members_matched": 1,
+  "members_total": 2,
+  "generated": {
+    "first.vi": {
+      "path": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\llb_stream_lifetime\\baseline\\generated\\lazy_members\\develyse_acq_analysisconverterlvkit_pr_toolsllb_native_cachebaseline_qualifiedllblazy_membersllb_119adb7dfirst.py",
+      "sha256": "40d8d9d90947e845f85f38e7e9b625e616b9427ca9ad7d77cc0bf4b23d5e6609"
+    }
+  },
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\llb_stream_lifetime\\lazy_members.llb",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\llb_stream_lifetime\\baseline\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "conversion_returncode": 0,
+  "passed": 8,
+  "total": 16,
+  "comparisons": [
+    {
+      "member": "first.vi",
+      "case": "positive",
+      "expected": {
+        "result": 3.125
+      },
+      "actual": {
+        "result": 3.125
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "negative",
+      "expected": {
+        "result": -7.5
+      },
+      "actual": {
+        "result": -7.5
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "zero",
+      "expected": {
+        "result": 0.0
+      },
+      "actual": {
+        "result": 0.0
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "negative_zero",
+      "expected": {
+        "result": {
+          "float": "-0.0"
+        }
+      },
+      "actual": {
+        "result": {
+          "float": "-0.0"
+        }
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "positive_infinity",
+      "expected": {
+        "result": {
+          "float": "inf"
+        }
+      },
+      "actual": {
+        "result": {
+          "float": "inf"
+        }
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "negative_infinity",
+      "expected": {
+        "result": {
+          "float": "-inf"
+        }
+      },
+      "actual": {
+        "result": {
+          "float": "-inf"
+        }
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "nan",
+      "expected": {
+        "result": {
+          "float": "nan"
+        }
+      },
+      "actual": {
+        "result": {
+          "float": "nan"
+        }
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "first.vi",
+      "case": "large_finite",
+      "expected": {
+        "result": 1e+300
+      },
+      "actual": {
+        "result": 1e+300
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "member": "second.vi",
+      "case": "positive",
+      "expected": {
+        "result": 3.125
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "negative",
+      "expected": {
+        "result": -7.5
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "zero",
+      "expected": {
+        "result": 0.0
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "negative_zero",
+      "expected": {
+        "result": {
+          "float": "-0.0"
+        }
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "positive_infinity",
+      "expected": {
+        "result": {
+          "float": "inf"
+        }
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "negative_infinity",
+      "expected": {
+        "result": {
+          "float": "-inf"
+        }
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "nan",
+      "expected": {
+        "result": {
+          "float": "nan"
+        }
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "member": "second.vi",
+      "case": "large_finite",
+      "expected": {
+        "result": 1e+300
+      },
+      "actual": null,
+      "error": "Member missing or extracted bytes differ from independent inventory",
+      "input_unchanged": true,
+      "passed": false
+    }
+  ]
+}

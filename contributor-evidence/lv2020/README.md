@@ -271,3 +271,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [nested_cluster_fields](fixtures/nested_cluster_fields/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[llb_stream_lifetime](fixtures/llb_stream_lifetime/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

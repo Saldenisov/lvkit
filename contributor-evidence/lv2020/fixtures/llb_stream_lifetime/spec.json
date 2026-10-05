@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "llb_stream_lifetime",
+  "vi_file": "lazy_members.llb",
+  "container_kind": "LabVIEW LLB",
+  "members": ["first.vi", "second.vi"],
+  "inputs": {"value": {"type": "float64", "saved_default": 0.0}},
+  "outputs": {"result": {"type": "float64"}},
+  "cases": [
+    {"id": "positive", "inputs": {"value": 3.125}},
+    {"id": "negative", "inputs": {"value": -7.5}},
+    {"id": "zero", "inputs": {"value": 0.0}},
+    {"id": "negative_zero", "inputs": {"value": {"float": "-0.0"}}},
+    {"id": "positive_infinity", "inputs": {"value": {"float": "inf"}}},
+    {"id": "negative_infinity", "inputs": {"value": {"float": "-inf"}}},
+    {"id": "nan", "inputs": {"value": {"float": "nan"}}},
+    {"id": "large_finite", "inputs": {"value": 1e300}}
+  ],
+  "comparison": "Exact tagged JSON values, nonfinite classification and signed zero",
+  "description": "Two independently authored DBL pass-through VIs saved in one native LabVIEW 2020 LLB. Qualification concerns container extraction; no code-generation patch is required by either member."
+}

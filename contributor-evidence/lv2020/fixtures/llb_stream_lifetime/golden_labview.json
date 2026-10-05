@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "fixture_id": "llb_stream_lifetime",
+  "vi_sha256": "5a713f2edb4ba4f82305b171cdd363bababbafa7081ce1b67fdb944057f5b547",
+  "archive_sha256": "5a713f2edb4ba4f82305b171cdd363bababbafa7081ce1b67fdb944057f5b547",
+  "member_sha256": {
+    "first.vi": "23eb2100baebdaece671b3f6706da4b6ccb67848ced4a21e2ad0c972511c2a16",
+    "second.vi": "e772ebead9f397c50639813f559e322cc846ca96541eb0f5853ca538773e08af"
+  },
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T11:46:51.468369+00:00",
+    "method": "LLB member GetVIReference / ReinitializeAllToDefault / VT_R8 SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_llb_labview.py",
+    "source_script_sha256": "f165d6b2705f7b8d6860fd717ddd38d2cf2175a43b22f15ee158309c015a3fb6",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680",
+    "inventory_file_sha256": "f9f0cad7d855234ad0fd030c6ded9782fb605bd315c5fc89f476e62c7fc448a4"
+  },
+  "cases": [
+    {
+      "member": "first.vi",
+      "id": "positive",
+      "effective_inputs": {
+        "value": 3.125
+      },
+      "outputs": {
+        "result": 3.125
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "negative",
+      "effective_inputs": {
+        "value": -7.5
+      },
+      "outputs": {
+        "result": -7.5
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "zero",
+      "effective_inputs": {
+        "value": 0.0
+      },
+      "outputs": {
+        "result": 0.0
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "negative_zero",
+      "effective_inputs": {
+        "value": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "positive_infinity",
+      "effective_inputs": {
+        "value": {
+          "float": "inf"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "negative_infinity",
+      "effective_inputs": {
+        "value": {
+          "float": "-inf"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "nan",
+      "effective_inputs": {
+        "value": {
+          "float": "nan"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "member": "first.vi",
+      "id": "large_finite",
+      "effective_inputs": {
+        "value": 1e+300
+      },
+      "outputs": {
+        "result": 1e+300
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "positive",
+      "effective_inputs": {
+        "value": 3.125
+      },
+      "outputs": {
+        "result": 3.125
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "negative",
+      "effective_inputs": {
+        "value": -7.5
+      },
+      "outputs": {
+        "result": -7.5
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "zero",
+      "effective_inputs": {
+        "value": 0.0
+      },
+      "outputs": {
+        "result": 0.0
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "negative_zero",
+      "effective_inputs": {
+        "value": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "positive_infinity",
+      "effective_inputs": {
+        "value": {
+          "float": "inf"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "negative_infinity",
+      "effective_inputs": {
+        "value": {
+          "float": "-inf"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "nan",
+      "effective_inputs": {
+        "value": {
+          "float": "nan"
+        }
+      },
+      "outputs": {
+        "result": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "member": "second.vi",
+      "id": "large_finite",
+      "effective_inputs": {
+        "value": 1e+300
+      },
+      "outputs": {
+        "result": 1e+300
+      }
+    }
+  ]
+}

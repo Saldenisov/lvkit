@@ -19,6 +19,10 @@
     "bytes": 4504,
     "sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"
   },
+  "capture_llb_labview.py": {
+    "bytes": 3714,
+    "sha256": "f165d6b2705f7b8d6860fd717ddd38d2cf2175a43b22f15ee158309c015a3fb6"
+  },
   "capture_log10_labview.py": {
     "bytes": 3549,
     "sha256": "ebb1747aebcc157c1a9a24ee75ebb798643e0dfaa0eb0240388402766aac7025"
@@ -234,6 +238,70 @@
   "evidence/expanded_index_array/pytest/summary.json": {
     "bytes": 588,
     "sha256": "7332964f007f6984053f8c3b051a4a7c6bd8dfa50ce0edec1821d37a59fd62b5"
+  },
+  "evidence/llb_stream_lifetime/baseline/conversion.log": {
+    "bytes": 827,
+    "sha256": "5319ed5c711d2f842f32586fb641cd54f3bb108985a436563fb4bf814b60ff35"
+  },
+  "evidence/llb_stream_lifetime/baseline/generated/lazy_members/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/llb_stream_lifetime/baseline/generated/lazy_members/develyse_acq_analysisconverterlvkit_pr_toolsllb_native_cachebaseline_qualifiedllblazy_membersllb_119adb7dfirst.py": {
+    "bytes": 208,
+    "sha256": "40d8d9d90947e845f85f38e7e9b625e616b9427ca9ad7d77cc0bf4b23d5e6609"
+  },
+  "evidence/llb_stream_lifetime/baseline/report.json": {
+    "bytes": 6536,
+    "sha256": "73b3456d1a82777b31c9c0609ba6e3d7bb12c293b25585ed45dec9cd0b80da5e"
+  },
+  "evidence/llb_stream_lifetime/patched/conversion.log": {
+    "bytes": 1369,
+    "sha256": "844f37e00b1d29c82b5844fe37cec69e0c46acc64a33c8dd7a2ff8905d618866"
+  },
+  "evidence/llb_stream_lifetime/patched/generated/lazy_members/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/llb_stream_lifetime/patched/generated/lazy_members/develyse_acq_analysisconverterlvkit_pr_toolsllb_native_cachepatched_qualifiedllblazy_membersllb_119adb7dfirst.py": {
+    "bytes": 208,
+    "sha256": "40d8d9d90947e845f85f38e7e9b625e616b9427ca9ad7d77cc0bf4b23d5e6609"
+  },
+  "evidence/llb_stream_lifetime/patched/generated/lazy_members/develyse_acq_analysisconverterlvkit_pr_toolsllb_native_cachepatched_qualifiedllblazy_membersllb_119adb7dsecond.py": {
+    "bytes": 212,
+    "sha256": "56f0dc6a0ecdb8f6efdc99288867b12320baf6741e36d6aedc68a3611eb2969e"
+  },
+  "evidence/llb_stream_lifetime/patched/report.json": {
+    "bytes": 6800,
+    "sha256": "aa3ce0d072d3a8e93b833f3e7ba67d3318c66048fbc8dd718b5c2f382c0d0189"
+  },
+  "evidence/llb_stream_lifetime/pytest/llb-baseline.xml": {
+    "bytes": 7398,
+    "sha256": "bc6147dcdc06e74328453a23d5b8392826b733ea254f78219a192daf15dc9da4"
+  },
+  "evidence/llb_stream_lifetime/pytest/llb-existing-baseline.xml": {
+    "bytes": 8200,
+    "sha256": "85ec406f9b378a720fecf9256be78a1e189fa7fc9608f40cbcdba3c310c00c05"
+  },
+  "evidence/llb_stream_lifetime/pytest/llb-native-baseline.xml": {
+    "bytes": 8283,
+    "sha256": "fb9e87a50ca40e4cf3d2590a2bc3c4f6cd0adb68d7d72cc6d255c942e2f02ea0"
+  },
+  "evidence/llb_stream_lifetime/pytest/llb-native-patched.xml": {
+    "bytes": 2610,
+    "sha256": "17ae0da0c71788e2bb86b86aeab6fd8ca4ba1f49d280a054a2021d3f9f9b5fd5"
+  },
+  "evidence/llb_stream_lifetime/pytest/llb-patched.xml": {
+    "bytes": 2219,
+    "sha256": "f009ab3d3a0767dc591c4c050645d9b80a943dd5625f7edd14abfbfd97cf40f1"
+  },
+  "evidence/llb_stream_lifetime/pytest/llb-related.xml": {
+    "bytes": 10183,
+    "sha256": "8495634a7e554bd94dac987d8d6d3f6311ff83d1818d05b7dc4fdddd2ca13194"
+  },
+  "evidence/llb_stream_lifetime/pytest/summary.json": {
+    "bytes": 812,
+    "sha256": "2b9d8a98855825b7ece5ab403031c0c920f83e928683e13da313756c387145f6"
   },
   "evidence/nested_cluster_fields/baseline/conversion.log": {
     "bytes": 755,
@@ -575,6 +643,26 @@
     "bytes": 3359,
     "sha256": "458e57784829b29d53572c2fcf72d1f5b4c250860f38600b389c684a1b00c49b"
   },
+  "fixtures/llb_stream_lifetime/archive_inventory.json": {
+    "bytes": 813,
+    "sha256": "f9f0cad7d855234ad0fd030c6ded9782fb605bd315c5fc89f476e62c7fc448a4"
+  },
+  "fixtures/llb_stream_lifetime/golden_labview.json": {
+    "bytes": 4654,
+    "sha256": "9d4c78dedb82ee03bcfcfe3fcdfaa97747c889cf7f8495e12cbdc73ee43613c1"
+  },
+  "fixtures/llb_stream_lifetime/lazy_members.llb": {
+    "bytes": 17796,
+    "sha256": "5a713f2edb4ba4f82305b171cdd363bababbafa7081ce1b67fdb944057f5b547"
+  },
+  "fixtures/llb_stream_lifetime/README.md": {
+    "bytes": 4829,
+    "sha256": "2b5958b27a1393b739d9f958a4dee18eef810578ae6be2f4712dca73feeb87f2"
+  },
+  "fixtures/llb_stream_lifetime/spec.json": {
+    "bytes": 1063,
+    "sha256": "c569788886cb8511ee6b0cc4cf0fd9254815a687bae9558a4b3f4381ceacba1e"
+  },
   "fixtures/nested_cluster_fields/golden_labview.json": {
     "bytes": 4522,
     "sha256": "4cafb46fa7e6c02bf670a075393b69096a408df7ba475a0817b13b76ac7f72f8"
@@ -655,6 +743,10 @@
     "bytes": 6025,
     "sha256": "1b5e43caec48f9a9bcb5dd8d01557150d0bb0506a9ce38603617fbc0704127be"
   },
+  "inventory_llb_fixture.py": {
+    "bytes": 2509,
+    "sha256": "76987741fe168d22d3a2a633f871e8699c077ffe0480c8b793e03f55a3488e13"
+  },
   "numeric_values.py": {
     "bytes": 737,
     "sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
@@ -679,6 +771,10 @@
     "bytes": 16281,
     "sha256": "039d8e34852c877def56e7c401179e51745e747f200d3feb10c5a403b5f8919b"
   },
+  "patches/llb-stream-lifetime.patch": {
+    "bytes": 4536,
+    "sha256": "0cc49480cf5af80a165da1c8f58cc69e4462747f89f38955a2a8001e847b481e"
+  },
   "patches/nested-anonymous-clusters.patch": {
     "bytes": 19790,
     "sha256": "e8fdaa07d459012e129807699462936284479d0546a5a5d20adf0934dcb73e8c"
@@ -696,8 +792,8 @@
     "sha256": "3613734f7184231462248342ae68bab70e3b0b66a6400e78f9b1d7b5a8d24498"
   },
   "README.md": {
-    "bytes": 15034,
-    "sha256": "0ffa770d54b3eba9bc45c3de7dc888e91f2e81547d78ef58117b5af402e0d54e"
+    "bytes": 15204,
+    "sha256": "3f3d6f2d018f7c27f986ef2274bf33f66e8d8625fa49b8398f53d2f11c78d797"
   },
   "test_cluster_types_native.py": {
     "bytes": 2319,
@@ -710,6 +806,10 @@
   "test_index_native.py": {
     "bytes": 2259,
     "sha256": "2ed818d1d2d614c5c2312283ee758bcec0e20cf773c2c594be2eb7a94ae05d3c"
+  },
+  "test_llb_native.py": {
+    "bytes": 2278,
+    "sha256": "3c0d3afd910ae28b883c19db4796a173d28211cb5bc14a8fd701a0a86dd7211d"
   },
   "test_log10_native.py": {
     "bytes": 1865,
@@ -738,6 +838,10 @@
   "verify_fixture.py": {
     "bytes": 3930,
     "sha256": "98ffa9b54b1b71690618d6a88d18dcb92f589e94929f2a972e4cc904099cda33"
+  },
+  "verify_llb_fixture.py": {
+    "bytes": 6113,
+    "sha256": "4f19496b0db27f98a869286ef9d2d5d0fa40be8df9b144fd1c238af5035d940f"
   },
   "verify_log10_fixture.py": {
     "bytes": 5031,

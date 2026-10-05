@@ -1,0 +1,24 @@
+{
+  "fixture_id": "llb_stream_lifetime",
+  "archive_sha256": "5a713f2edb4ba4f82305b171cdd363bababbafa7081ce1b67fdb944057f5b547",
+  "source_script": "inventory_llb_fixture.py",
+  "source_script_sha256": "76987741fe168d22d3a2a633f871e8699c077ffe0480c8b793e03f55a3488e13",
+  "method": "pylabview VI/getData while original filesystem stream remains open; independent of _open_llb_vi/extract_llb",
+  "blocks": {
+    "UCRF": 2
+  },
+  "members": {
+    "first.vi": {
+      "sha256": "23eb2100baebdaece671b3f6706da4b6ccb67848ced4a21e2ad0c972511c2a16",
+      "size": 5981,
+      "block": "UCRF",
+      "section": 1
+    },
+    "second.vi": {
+      "sha256": "e772ebead9f397c50639813f559e322cc846ca96541eb0f5853ca538773e08af",
+      "size": 5982,
+      "block": "UCRF",
+      "section": 2
+    }
+  }
+}

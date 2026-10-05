@@ -1,0 +1,11 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\property_write_read\property_write_read.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\property_write_read\property_write_read.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesproperty_write_readproperty_write_read.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\property_write_read\baseline\generated\property_write_read
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0

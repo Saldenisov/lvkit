@@ -277,3 +277,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [case_default_zero](fixtures/case_default_zero/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[property_write_read](fixtures/property_write_read/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

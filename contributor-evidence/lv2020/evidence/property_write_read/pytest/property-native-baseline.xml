@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="8" time="1.444" timestamp="2026-10-05T15:00:52.056513+02:00" hostname="everest"><testcase classname="tools.lvkit_upstream.test_property_native" name="test_native_property_rows_are_write_then_read" time="0.097" /><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[zero]" time="0.002"><failure message="AssertionError: assert {'result': 123456789} == {'result': 0}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 123456789} != {'result': 0}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 123456789} == {'result': 0}
+      
+      Differing items:
+      {'result': 123456789} != {'result': 0}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[one]" time="0.002"><failure message="AssertionError: assert {'result': 123456789} == {'result': 1}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 123456789} != {'result': 1}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 123456789} == {'result': 1}
+      
+      Differing items:
+      {'result': 123456789} != {'result': 1}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[signed_max]" time="0.001"><failure message="AssertionError: assert {'result': 123456789} == {'result': 2147483647}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 123456789} != {'result': 2147483647}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 123456789} == {'result': 2147483647}
+      
+      Differing items:
+      {'result': 123456789} != {'result': 2147483647}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[signed_boundary]" time="0.001"><failure message="AssertionError: assert {'result': 123456789} == {'result': 2147483648}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 123456789} != {'result': 2147483648}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 123456789} == {'result': 2147483648}
+      
+      Differing items:
+      {'result': 123456789} != {'result': 2147483648}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[u32_max]" time="0.001"><failure message="AssertionError: assert {'result': 123456789} == {'result': 4294967295}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 123456789} != {'result': 4294967295}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 123456789} == {'result': 4294967295}
+      
+      Differing items:
+      {'result': 123456789} != {'result': 4294967295}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[ordinary]" time="0.002"><failure message="AssertionError: assert {'result': 123456789} == {'result': 42}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 123456789} != {'result': 42}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 123456789} == {'result': 42}
+      
+      Differing items:
+      {'result': 123456789} != {'result': 42}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_property_native" name="test_generated_write_read_matches_native_result_state_and_order[initial_equal]" time="0.001"><failure message="AssertionError: assert [['read', 123...', 123456789]] == [['write', 12...', 123456789]]&#x0A;  &#x0A;  At index 0 diff: ['read', 123456789] != ['write', 123456789]&#x0A;  Use -v to get more diff">E   AssertionError: assert [['read', 123...', 123456789]] == [['write', 12...', 123456789]]
+      
+      At index 0 diff: ['read', 123456789] != ['write', 123456789]
+      Use -v to get more diff</failure></testcase></testsuite></testsuites>

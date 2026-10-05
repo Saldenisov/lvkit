@@ -1,0 +1,42 @@
+{
+  "baseline_commit": "27ce18682e3f402e43368be9c0cd19ec669ffba4",
+  "python": "3.12.14",
+  "runs": {
+    "property-baseline": {
+      "tests": 37,
+      "failures": 35,
+      "errors": 0,
+      "skipped": 0
+    },
+    "property-patched": {
+      "tests": 37,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "property-existing-baseline": {
+      "tests": 77,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 3
+    },
+    "property-related": {
+      "tests": 114,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 3
+    },
+    "property-native-baseline": {
+      "tests": 8,
+      "failures": 7,
+      "errors": 0,
+      "skipped": 0
+    },
+    "property-native-patched": {
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

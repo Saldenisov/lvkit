@@ -1,0 +1,289 @@
+{
+  "fixture_id": "property_write_read",
+  "vi_sha256": "896b63fabfac6d64c982eb9b93e03a59c8cffdb8c145e1f578665893023821e3",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\property_write_read\\baseline\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\property_write_read\\baseline\\generated\\property_write_read\\devpyconlysetoolslvkit_upstreamfixturesproperty_write_readproperty_write_read.py",
+  "generated_sha256": "3486b1365e5b0dda85bb490ea0bb3f649337ae4aa9adfd7a6e8ca5468423dee4",
+  "passed": 0,
+  "total": 7,
+  "comparisons": [
+    {
+      "id": "zero",
+      "expected_outputs": {
+        "result": 0
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 0,
+      "actual_target": 0,
+      "expected_events": [
+        [
+          "write",
+          0
+        ],
+        [
+          "read",
+          0
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": false,
+        "target_state": true,
+        "event_order": false
+      }
+    },
+    {
+      "id": "one",
+      "expected_outputs": {
+        "result": 1
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 1,
+      "actual_target": 1,
+      "expected_events": [
+        [
+          "write",
+          1
+        ],
+        [
+          "read",
+          1
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          1
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": false,
+        "target_state": true,
+        "event_order": false
+      }
+    },
+    {
+      "id": "signed_max",
+      "expected_outputs": {
+        "result": 2147483647
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 2147483647,
+      "actual_target": 2147483647,
+      "expected_events": [
+        [
+          "write",
+          2147483647
+        ],
+        [
+          "read",
+          2147483647
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          2147483647
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": false,
+        "target_state": true,
+        "event_order": false
+      }
+    },
+    {
+      "id": "signed_boundary",
+      "expected_outputs": {
+        "result": 2147483648
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 2147483648,
+      "actual_target": 2147483648,
+      "expected_events": [
+        [
+          "write",
+          2147483648
+        ],
+        [
+          "read",
+          2147483648
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          2147483648
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": false,
+        "target_state": true,
+        "event_order": false
+      }
+    },
+    {
+      "id": "u32_max",
+      "expected_outputs": {
+        "result": 4294967295
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 4294967295,
+      "actual_target": 4294967295,
+      "expected_events": [
+        [
+          "write",
+          4294967295
+        ],
+        [
+          "read",
+          4294967295
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          4294967295
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": false,
+        "target_state": true,
+        "event_order": false
+      }
+    },
+    {
+      "id": "ordinary",
+      "expected_outputs": {
+        "result": 42
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 42,
+      "actual_target": 42,
+      "expected_events": [
+        [
+          "write",
+          42
+        ],
+        [
+          "read",
+          42
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          42
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": false,
+        "target_state": true,
+        "event_order": false
+      }
+    },
+    {
+      "id": "initial_equal",
+      "expected_outputs": {
+        "result": 123456789
+      },
+      "actual_outputs": {
+        "result": 123456789
+      },
+      "expected_target": 123456789,
+      "actual_target": 123456789,
+      "expected_events": [
+        [
+          "write",
+          123456789
+        ],
+        [
+          "read",
+          123456789
+        ]
+      ],
+      "actual_events": [
+        [
+          "read",
+          123456789
+        ],
+        [
+          "write",
+          123456789
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "checks": {
+        "result": true,
+        "target_state": true,
+        "event_order": false
+      }
+    }
+  ]
+}

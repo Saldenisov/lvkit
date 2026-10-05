@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "fixture_id": "property_write_read",
+  "vi_sha256": "896b63fabfac6d64c982eb9b93e03a59c8cffdb8c145e1f578665893023821e3",
+  "native_files_sha256": {
+    "property_write_read.vi": "896b63fabfac6d64c982eb9b93e03a59c8cffdb8c145e1f578665893023821e3",
+    "property_write_read_harness.vi": "3669415e863cf17c1870e640aa7713e97954659725b1672d0c08b9aad9e51272"
+  },
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T12:54:37.663779+00:00",
+    "method": "Native harness / ReinitializeAllToDefault / VT_UI4 SetControlValue / Run(True) / fixed 200 ms delay / GetControlValue / 50 ms stable confirmation",
+    "source_script": "capture_property_labview.py",
+    "source_script_sha256": "14bbb5891a7a8eb358bb5e41eb0106ed026b76db453cbc8f7a21b8a48bb79efb",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "zero",
+      "effective_inputs": {
+        "value": 0
+      },
+      "outputs": {
+        "result": 0
+      },
+      "target_before": 123456789,
+      "target_after": 0,
+      "com_observations": {
+        "immediate": {
+          "result": 0,
+          "target": 0
+        },
+        "after_200_ms": {
+          "result": 0,
+          "target": 0
+        },
+        "after_250_ms": {
+          "result": 0,
+          "target": 0
+        }
+      }
+    },
+    {
+      "id": "one",
+      "effective_inputs": {
+        "value": 1
+      },
+      "outputs": {
+        "result": 1
+      },
+      "target_before": 123456789,
+      "target_after": 1,
+      "com_observations": {
+        "immediate": {
+          "result": 0,
+          "target": 1
+        },
+        "after_200_ms": {
+          "result": 1,
+          "target": 1
+        },
+        "after_250_ms": {
+          "result": 1,
+          "target": 1
+        }
+      }
+    },
+    {
+      "id": "signed_max",
+      "effective_inputs": {
+        "value": 2147483647
+      },
+      "outputs": {
+        "result": 2147483647
+      },
+      "target_before": 123456789,
+      "target_after": 2147483647,
+      "com_observations": {
+        "immediate": {
+          "result": 0,
+          "target": 2147483647
+        },
+        "after_200_ms": {
+          "result": 2147483647,
+          "target": 2147483647
+        },
+        "after_250_ms": {
+          "result": 2147483647,
+          "target": 2147483647
+        }
+      }
+    },
+    {
+      "id": "signed_boundary",
+      "effective_inputs": {
+        "value": 2147483648
+      },
+      "outputs": {
+        "result": 2147483648
+      },
+      "target_before": 123456789,
+      "target_after": 2147483648,
+      "com_observations": {
+        "immediate": {
+          "result": 2147483648,
+          "target": 2147483648
+        },
+        "after_200_ms": {
+          "result": 2147483648,
+          "target": 2147483648
+        },
+        "after_250_ms": {
+          "result": 2147483648,
+          "target": 2147483648
+        }
+      }
+    },
+    {
+      "id": "u32_max",
+      "effective_inputs": {
+        "value": 4294967295
+      },
+      "outputs": {
+        "result": 4294967295
+      },
+      "target_before": 123456789,
+      "target_after": 4294967295,
+      "com_observations": {
+        "immediate": {
+          "result": 0,
+          "target": 4294967295
+        },
+        "after_200_ms": {
+          "result": 4294967295,
+          "target": 4294967295
+        },
+        "after_250_ms": {
+          "result": 4294967295,
+          "target": 4294967295
+        }
+      }
+    },
+    {
+      "id": "ordinary",
+      "effective_inputs": {
+        "value": 42
+      },
+      "outputs": {
+        "result": 42
+      },
+      "target_before": 123456789,
+      "target_after": 42,
+      "com_observations": {
+        "immediate": {
+          "result": 0,
+          "target": 42
+        },
+        "after_200_ms": {
+          "result": 42,
+          "target": 42
+        },
+        "after_250_ms": {
+          "result": 42,
+          "target": 42
+        }
+      }
+    },
+    {
+      "id": "initial_equal",
+      "effective_inputs": {
+        "value": 123456789
+      },
+      "outputs": {
+        "result": 123456789
+      },
+      "target_before": 123456789,
+      "target_after": 123456789,
+      "com_observations": {
+        "immediate": {
+          "result": 123456789,
+          "target": 123456789
+        },
+        "after_200_ms": {
+          "result": 123456789,
+          "target": 123456789
+        },
+        "after_250_ms": {
+          "result": 123456789,
+          "target": 123456789
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "property_write_read",
+  "vi_file": "property_write_read.vi",
+  "harness_file": "property_write_read_harness.vi",
+  "function": "property_write_read",
+  "labview_version": "2020 (64-bit)",
+  "provenance": "Both VIs newly authored in LabVIEW 2020; the leaf was created by selecting the explicit strict Numeric Property Node and using Edit > Create SubVI. No application VI or NI sample was copied.",
+  "inputs": {"value": {"type": "uint32"}},
+  "outputs": {"result": {"type": "uint32"}},
+  "reference": {"native_input": "Digital in", "python_input": "digital_in", "native_target": "target", "adapter_attribute": "value", "initial_value": 123456789},
+  "semantics": {
+    "operation": "explicit_property_node",
+    "rows": [{"property": "Value", "direction": "write"}, {"property": "Value", "direction": "read"}],
+    "description": "Write the supplied U32 to the referenced Numeric control, then read Value from the same control. Return the written value; the target must hold that value.",
+    "boundary": "Generate and execute the leaf with an explicit Python attribute adapter. The native harness supplies a genuine control reference. This does not implement VI Server, implicit control references, reference constants or hardware drivers.",
+    "comparison": "Exact U32 result and target state; numeric input unchanged; Python adapter events must be write then read."
+  },
+  "cases": [
+    {"id": "zero", "inputs": {"value": 0}},
+    {"id": "one", "inputs": {"value": 1}},
+    {"id": "signed_max", "inputs": {"value": 2147483647}},
+    {"id": "signed_boundary", "inputs": {"value": 2147483648}},
+    {"id": "u32_max", "inputs": {"value": 4294967295}},
+    {"id": "ordinary", "inputs": {"value": 42}},
+    {"id": "initial_equal", "inputs": {"value": 123456789}}
+  ]
+}

@@ -1,0 +1,427 @@
+{
+  "vi_sha256": "896b63fabfac6d64c982eb9b93e03a59c8cffdb8c145e1f578665893023821e3",
+  "node": {
+    "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::43",
+    "vi_path": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi",
+    "name": "Property Node",
+    "label": null,
+    "caption": null,
+    "node_type": "propNode",
+    "terminals": [
+      {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::45",
+        "index": 0,
+        "direction": "input",
+        "name": null,
+        "display_name": null,
+        "field_path": null,
+        "lv_type": {
+          "kind": "primitive",
+          "underlying_type": "Refnum",
+          "ref_type": "LVObjCtl",
+          "classname": null,
+          "values": null,
+          "fields": null,
+          "element_type": {
+            "kind": "primitive",
+            "underlying_type": "NumUInt32",
+            "ref_type": null,
+            "classname": null,
+            "values": null,
+            "fields": null,
+            "element_type": null,
+            "dimensions": null,
+            "typedef_path": null,
+            "typedef_name": null,
+            "description": null,
+            "measure_flavor": null,
+            "wire_style": null
+          },
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      },
+      {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::48",
+        "index": 1,
+        "direction": "output",
+        "name": null,
+        "display_name": null,
+        "field_path": null,
+        "lv_type": {
+          "kind": "primitive",
+          "underlying_type": "Refnum",
+          "ref_type": "LVObjCtl",
+          "classname": null,
+          "values": null,
+          "fields": null,
+          "element_type": {
+            "kind": "primitive",
+            "underlying_type": "NumUInt32",
+            "ref_type": null,
+            "classname": null,
+            "values": null,
+            "fields": null,
+            "element_type": null,
+            "dimensions": null,
+            "typedef_path": null,
+            "typedef_name": null,
+            "description": null,
+            "measure_flavor": null,
+            "wire_style": null
+          },
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      },
+      {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::51",
+        "index": 2,
+        "direction": "input",
+        "name": null,
+        "display_name": null,
+        "field_path": null,
+        "lv_type": {
+          "kind": "cluster",
+          "underlying_type": "Cluster",
+          "ref_type": null,
+          "classname": null,
+          "values": null,
+          "fields": [
+            {
+              "name": "status",
+              "type": {
+                "kind": "primitive",
+                "underlying_type": "Boolean",
+                "ref_type": null,
+                "classname": null,
+                "values": null,
+                "fields": null,
+                "element_type": null,
+                "dimensions": null,
+                "typedef_path": null,
+                "typedef_name": null,
+                "description": null,
+                "measure_flavor": null,
+                "wire_style": null
+              }
+            },
+            {
+              "name": "code",
+              "type": {
+                "kind": "primitive",
+                "underlying_type": "NumInt32",
+                "ref_type": null,
+                "classname": null,
+                "values": null,
+                "fields": null,
+                "element_type": null,
+                "dimensions": null,
+                "typedef_path": null,
+                "typedef_name": null,
+                "description": null,
+                "measure_flavor": null,
+                "wire_style": null
+              }
+            },
+            {
+              "name": "source",
+              "type": {
+                "kind": "primitive",
+                "underlying_type": "String",
+                "ref_type": null,
+                "classname": null,
+                "values": null,
+                "fields": null,
+                "element_type": null,
+                "dimensions": null,
+                "typedef_path": null,
+                "typedef_name": null,
+                "description": null,
+                "measure_flavor": null,
+                "wire_style": null
+              }
+            }
+          ],
+          "element_type": null,
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      },
+      {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::54",
+        "index": 3,
+        "direction": "output",
+        "name": null,
+        "display_name": null,
+        "field_path": null,
+        "lv_type": {
+          "kind": "cluster",
+          "underlying_type": "Cluster",
+          "ref_type": null,
+          "classname": null,
+          "values": null,
+          "fields": [
+            {
+              "name": "status",
+              "type": {
+                "kind": "primitive",
+                "underlying_type": "Boolean",
+                "ref_type": null,
+                "classname": null,
+                "values": null,
+                "fields": null,
+                "element_type": null,
+                "dimensions": null,
+                "typedef_path": null,
+                "typedef_name": null,
+                "description": null,
+                "measure_flavor": null,
+                "wire_style": null
+              }
+            },
+            {
+              "name": "code",
+              "type": {
+                "kind": "primitive",
+                "underlying_type": "NumInt32",
+                "ref_type": null,
+                "classname": null,
+                "values": null,
+                "fields": null,
+                "element_type": null,
+                "dimensions": null,
+                "typedef_path": null,
+                "typedef_name": null,
+                "description": null,
+                "measure_flavor": null,
+                "wire_style": null
+              }
+            },
+            {
+              "name": "source",
+              "type": {
+                "kind": "primitive",
+                "underlying_type": "String",
+                "ref_type": null,
+                "classname": null,
+                "values": null,
+                "fields": null,
+                "element_type": null,
+                "dimensions": null,
+                "typedef_path": null,
+                "typedef_name": null,
+                "description": null,
+                "measure_flavor": null,
+                "wire_style": null
+              }
+            }
+          ],
+          "element_type": null,
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      },
+      {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::57",
+        "index": 4,
+        "direction": "input",
+        "name": null,
+        "display_name": "Value",
+        "field_path": null,
+        "lv_type": {
+          "kind": "primitive",
+          "underlying_type": "NumUInt32",
+          "ref_type": null,
+          "classname": null,
+          "values": null,
+          "fields": null,
+          "element_type": null,
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      },
+      {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::63",
+        "index": 5,
+        "direction": "output",
+        "name": null,
+        "display_name": "Value",
+        "field_path": null,
+        "lv_type": {
+          "kind": "primitive",
+          "underlying_type": "NumUInt32",
+          "ref_type": null,
+          "classname": null,
+          "values": null,
+          "fields": null,
+          "element_type": null,
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      }
+    ],
+    "description": null,
+    "parent": null,
+    "frame": null,
+    "children": [],
+    "kind": "primitive",
+    "prim_id": null,
+    "prim_index": null,
+    "operation": null,
+    "object_name": "DigNum (strict)",
+    "object_method_id": "0022",
+    "properties": [
+      {
+        "name": "Value"
+      },
+      {
+        "name": "Value"
+      }
+    ],
+    "method_name": null,
+    "method_code": null,
+    "invoke_row_terminal_ids": [],
+    "event_row_terminal_ids": [],
+    "xnode_row_names": [],
+    "xnode_resource_name": "",
+    "xnode_terminal_y_fracs": [],
+    "property_value_terminal_ids": [
+      "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::57",
+      "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::63"
+    ],
+    "bound_control_uid": "",
+    "bound_control_type": null
+  },
+  "ordered_properties": [
+    {
+      "name": "Value",
+      "terminal": {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::57",
+        "index": 4,
+        "direction": "input",
+        "name": null,
+        "display_name": "Value",
+        "field_path": null,
+        "lv_type": {
+          "kind": "primitive",
+          "underlying_type": "NumUInt32",
+          "ref_type": null,
+          "classname": null,
+          "values": null,
+          "fields": null,
+          "element_type": null,
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      }
+    },
+    {
+      "name": "Value",
+      "terminal": {
+        "id": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\property_write_read\\property_write_read.vi::63",
+        "index": 5,
+        "direction": "output",
+        "name": null,
+        "display_name": "Value",
+        "field_path": null,
+        "lv_type": {
+          "kind": "primitive",
+          "underlying_type": "NumUInt32",
+          "ref_type": null,
+          "classname": null,
+          "values": null,
+          "fields": null,
+          "element_type": null,
+          "dimensions": null,
+          "typedef_path": null,
+          "typedef_name": null,
+          "description": null,
+          "measure_flavor": null,
+          "wire_style": null
+        },
+        "var_name": null,
+        "nmux_role": null,
+        "nmux_field_index": null,
+        "wiring_rule": 0,
+        "default_value": null,
+        "inverted": false
+      }
+    }
+  ],
+  "xml_sha256": {
+    "vi_BDHb.xml": "fcfa91b9d8e41dd3a084e68784aca936383350f69a7ab1c79e51e43636e2cf24",
+    "vi_FPHb.xml": "9c04b9100b274a4cd83d18436f0d12e2cba4c82efba2faabaa114f4a3e04b7a7",
+    "vi.xml": "76e0384c59003e4b2eac1ea8e89ebd88b18795038d9ad6c2e84f58395eea58e8"
+  }
+}

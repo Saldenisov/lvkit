@@ -1,0 +1,469 @@
+diff --git a/src/lvkit/codegen/nodes/property_node.py b/src/lvkit/codegen/nodes/property_node.py
+index eb5fbf2..3246472 100644
+--- a/src/lvkit/codegen/nodes/property_node.py
++++ b/src/lvkit/codegen/nodes/property_node.py
+@@ -1,106 +1,105 @@
+-"""Code generator for Property Nodes (propNode).
+-
+-Property nodes read/write attributes on LabVIEW objects (VI Server refs,
+-class instances, hardware sessions). Generates Python attribute access.
+-"""
++"""Generate ordered attribute accesses for explicit Property Nodes."""
+ 
+ from __future__ import annotations
+ 
+ import ast
+ 
+ from lvkit.graph.models import PrimitiveNode
++from lvkit.graph.op_walk import correlate_property_terminals
+ 
+-from ..ast_utils import build_assign, parse_expr, to_var_name
++from ..ast_utils import parse_expr, to_var_name
+ from ..context import CodeGenContext
+ from ..fragment import CodeFragment
+-from .base import resolve_ref_input
++from .base import CodeGenError
+ 
+ 
+ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
+-    """Generate code for a property node.
++    """Use saved dcoList identities and order, separately from fixed ports.
+ 
+-    Produces attribute access:
+-      Read:  value = ref.property_name
+-      Write: ref.property_name = value
++    The caller supplies an object implementing the named Python attributes.
++    Implicit control bindings and error-channel execution require a separate
++    runtime model and are rejected instead of fabricating reference values.
+     """
+     properties = node.properties or []
+-    ref_var = resolve_ref_input(node, ctx)
++    value_ids = node.property_value_terminal_ids
++    if len(value_ids) != len(properties):
++        raise CodeGenError("Property value terminal identities are unresolved", node)
++    if len(set(value_ids)) != len(value_ids):
++        raise CodeGenError("Property value terminal identities are duplicated", node)
++    if len({term.id for term in node.terminals}) != len(node.terminals):
++        raise CodeGenError("Property node terminal identities are duplicated", node)
++    if node.bound_control_uid:
++        raise CodeGenError("Implicit property reference requires a binding model", node)
++    fixed = [term for term in node.terminals if term.id not in value_ids]
++    ref_inputs = [
++        term for term in fixed if term.direction == "input" and term.index == 0
++    ]
++    if len(ref_inputs) != 1:
++        raise CodeGenError("Property object reference is unresolved", node)
++    ref_var = ctx.resolve(ref_inputs[0].id)
++    if ref_var is None:
++        raise CodeGenError("Property object reference is unresolved", node)
++    if any(term.is_error_cluster and ctx.is_wired(term.id) for term in fixed):
++        raise CodeGenError("Property error terminals require an execution model", node)
+ 
+     statements: list[ast.stmt] = []
+     bindings: dict[str, str] = {}
+-
+-    input_terms = [t for t in node.terminals if t.direction == "input"]
+-    output_terms = [t for t in node.terminals if t.direction == "output"]
+-
+-    input_by_index = {t.index: t for t in input_terms}
+-    output_by_index = {t.index: t for t in output_terms}
+-
+-    seen_outputs: set[str] = set()
+-    seen_inputs: set[str] = set()
+-
+-    for prop in properties:
+-        prop_name = prop.name
+-        attr_name = to_var_name(prop_name) if prop_name else "unknown_prop"
+-
+-        # Generate reads
+-        for idx, term in output_by_index.items():
+-            if term.id in seen_outputs:
+-                continue
+-            if not ctx.is_wired(term.id):
+-                continue
+-            seen_outputs.add(term.id)
+-            var_name = to_var_name(f"{ref_var}_{attr_name}")
+-            ref_expr = parse_expr(ref_var)
+-            stmt = ast.Assign(
+-                targets=[ast.Name(id=var_name, ctx=ast.Store())],
+-                value=ast.Attribute(
+-                    value=ref_expr,
+-                    attr=attr_name,
+-                    ctx=ast.Load(),
+-                ),
++    attr_names: dict[str, str] = {}
++    for prop, term in correlate_property_terminals(
++        properties, node.terminals, value_ids
++    ):
++        if term is None:
++            raise CodeGenError("Property value terminal is missing", node)
++        if not prop.name:
++            raise CodeGenError("Property name is unresolved", node)
++        attr_name = to_var_name(prop.name)
++        if attr_name in attr_names and attr_names[attr_name] != prop.name:
++            raise CodeGenError("Normalized property names collide", node)
++        attr_names[attr_name] = prop.name
++        ref_expr = parse_expr(ref_var)
++        if term.direction == "output":
++            # Reads execute even when their result is unwired. Repeated accesses
++            # to the same property need distinct snapshots, not one shared name.
++            var_name = ctx.make_output_var(f"{ref_var}_{attr_name}", term.id, term.id)
++            statements.append(
++                ast.Assign(
++                    targets=[ast.Name(id=var_name, ctx=ast.Store())],
++                    value=ast.Attribute(value=ref_expr, attr=attr_name, ctx=ast.Load()),
++                )
+             )
+-            statements.append(stmt)
+             bindings[term.id] = var_name
+-            break
+-
+-        # Generate writes
+-        for idx, term in input_by_index.items():
+-            if idx == 0:
+-                continue
+-            if term.id in seen_inputs:
+-                continue
++        elif term.direction == "input":
+             if not ctx.is_wired(term.id):
+-                continue
+-            seen_inputs.add(term.id)
++                raise CodeGenError(
++                    "Unwired property write default is unqualified", node
++                )
+             value = ctx.resolve(term.id)
+             if value is None:
+-                continue
+-            ref_expr = parse_expr(ref_var)
+-            stmt = ast.Assign(
+-                targets=[
+-                    ast.Attribute(
+-                        value=ref_expr,
+-                        attr=attr_name,
+-                        ctx=ast.Store(),
+-                    )
+-                ],
+-                value=parse_expr(value),
++                raise CodeGenError("Property write value is unresolved", node)
++            statements.append(
++                ast.Assign(
++                    targets=[
++                        ast.Attribute(value=ref_expr, attr=attr_name, ctx=ast.Store())
++                    ],
++                    value=parse_expr(value),
++                )
+             )
+-            statements.append(stmt)
+-            break
+-
+-    # Bind remaining wired outputs
+-    for term in output_terms:
+-        if term.id not in bindings and ctx.is_wired(term.id):
+-            var_name = to_var_name(term.name or f"{ref_var}_prop_{term.index}")
+-            statements.append(build_assign(var_name, parse_expr(ref_var)))
+-            bindings[term.id] = var_name
+-
++        else:
++            raise CodeGenError("Property value direction is unresolved", node)
++
++    for term in fixed:
++        if term.direction != "output" or not ctx.is_wired(term.id):
++            continue
++        if (
++            term.index == 1
++            and term.lv_type
++            and term.lv_type.underlying_type == "Refnum"
++        ):
++            bindings[term.id] = ref_var
++        else:
++            raise CodeGenError("Property flow-through output is unresolved", node)
+     if not statements:
+-        comment = (
+-            f"# Property Node: {node.object_name or 'unknown'}"
+-            f" - {', '.join(p.name for p in properties)}"
++        statements.append(
++            ast.Expr(value=ast.Constant(value="# Property Node: no properties"))
+         )
+-        statements.append(ast.Expr(value=ast.Constant(value=comment)))
+-
+     return CodeFragment(statements=statements, bindings=bindings)
+diff --git a/tests/test_new_codegen.py b/tests/test_new_codegen.py
+index ea8812b..237d92c 100644
+--- a/tests/test_new_codegen.py
++++ b/tests/test_new_codegen.py
+@@ -260,12 +260,12 @@ class TestNMuxRoles:
+ # ── Property node dedup ────────────────────────────────────────────
+ 
+ 
+-class TestPropertyDedup:
+-    """Property node generates one read per output terminal, not per property."""
++class TestPropertyReads:
++    """Each saved property row executes exactly once."""
+ 
+-    def test_no_triple_reads(self):
+-        """3 properties + 1 wired output = 1 read, not 3."""
+-        graph = make_graph_with_terminals("ref_in", "out_1")
++    def test_three_rows_with_one_wired_result(self):
++        """Unwired read results do not remove their property accesses."""
++        graph = make_graph_with_terminals("ref_in", "out_1", "out_2", "out_3")
+         ctx = CodeGenContext(graph=graph)
+         ctx.bind("ref_in", "my_ref")
+ 
+@@ -287,18 +287,23 @@ class TestPropertyDedup:
+             node_type="propNode",
+             terminals=[
+                 Terminal(id="ref_in", index=0, direction="input"),
+-                Terminal(id="out_1", index=1, direction="output"),
++                Terminal(id="out_1", index=4, direction="output"),
++                Terminal(id="out_2", index=5, direction="output"),
++                Terminal(id="out_3", index=6, direction="output"),
+             ],
+             properties=[
+                 PropertyDef(name="controls"),
+                 PropertyDef(name="indicator"),
+                 PropertyDef(name="value"),
+             ],
++            property_value_terminal_ids=["out_1", "out_2", "out_3"],
+         )
+         fragment = property_node.generate(op, ctx)
+-        # Should only have 1 assignment, not 3
+         assigns = [s for s in fragment.statements if isinstance(s, ast.Assign)]
+-        assert len(assigns) == 1
++        assert len(assigns) == 3
++        assert [
++            s.value.attr for s in assigns if isinstance(s.value, ast.Attribute)
++        ] == ["controls", "indicator", "value"]
+ 
+ 
+ # ── Passthrough elimination ────────────────────────────────────────
+diff --git a/tests/test_property_terminal_order.py b/tests/test_property_terminal_order.py
+new file mode 100644
+index 0000000..05d4e33
+--- /dev/null
++++ b/tests/test_property_terminal_order.py
+@@ -0,0 +1,225 @@
++"""Execute Property Node fragments with exact row/terminal identities."""
++
++from __future__ import annotations
++
++import ast
++
++import pytest
++
++from lvkit.codegen.context import CodeGenContext
++from lvkit.codegen.nodes import property_node
++from lvkit.codegen.nodes.base import CodeGenError
++from lvkit.graph.models import PrimitiveNode, WireEnd
++from lvkit.models import ClusterField, LVType, LVTypeKind, PropertyDef, Terminal
++from tests.helpers import make_graph_with_terminals
++
++REF = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="Refnum")
++ERROR = LVType(
++    kind=LVTypeKind.CLUSTER,
++    underlying_type="Cluster",
++    fields=[
++        ClusterField(name="status"),
++        ClusterField(name="code"),
++        ClusterField(name="source"),
++    ],
++)
++
++
++class Reference:
++    def __init__(self):
++        self.__dict__["values"] = {"value": 100, "other": 200}
++        self.__dict__["events"] = []
++
++    def __getattr__(self, name):
++        value = self.values[name]
++        self.events.append(("read", name, value))
++        return value
++
++    def __setattr__(self, name, value):
++        self.events.append(("write", name, value))
++        self.values[name] = value
++
++
++def fixture(rows, *, reverse=False, ref_out=False, unwired=()):
++    fixed = [
++        Terminal(id="ref_in", index=0, direction="input", lv_type=REF),
++        Terminal(id="ref_out", index=1, direction="output", lv_type=REF),
++        Terminal(id="error_in", index=2, direction="input", lv_type=ERROR),
++        Terminal(id="error_out", index=3, direction="output", lv_type=ERROR),
++    ]
++    values = [
++        Terminal(id=f"row_{i}", index=4 + i, direction=direction)
++        for i, (_, direction) in enumerate(rows)
++    ]
++    terminals = fixed + values
++    node = PrimitiveNode(
++        id="property",
++        vi_path="test.vi",
++        name="Property Node",
++        node_type="propNode",
++        terminals=list(reversed(terminals)) if reverse else terminals,
++        properties=[PropertyDef(name=name) for name, _ in rows],
++        property_value_terminal_ids=[term.id for term in values],
++    )
++    ids = [term.id for term in terminals]
++    graph = make_graph_with_terminals(*ids, *(f"peer_{tid}" for tid in ids))
++    ctx = CodeGenContext(graph=graph)
++    ctx.bind("ref_in", "ref")
++    namespace = {"ref": Reference()}
++    for i, term in enumerate(values):
++        if term.id not in unwired:
++            connect(ctx, term.id, term.direction)
++        if term.direction == "input":
++            ctx.bind(f"peer_{term.id}", f"supplied_{i}")
++            namespace[f"supplied_{i}"] = 1000 + i
++    if ref_out:
++        connect(ctx, "ref_out", "output")
++    return node, ctx, namespace
++
++
++def connect(ctx, tid, direction):
++    assert ctx.graph is not None
++    src, dst = (f"peer_{tid}", tid) if direction == "input" else (tid, f"peer_{tid}")
++    src_node, dst_node = ctx.graph._term_to_node[src], ctx.graph._term_to_node[dst]
++    ctx.graph._graph.add_edge(
++        src_node,
++        dst_node,
++        source=WireEnd(terminal_id=src, node_id=src_node),
++        dest=WireEnd(terminal_id=dst, node_id=dst_node),
++    )
++
++
++def execute(node, ctx, namespace):
++    fragment = property_node.generate(node, ctx)
++    code = ast.fix_missing_locations(
++        ast.Module(body=fragment.statements, type_ignores=[])
++    )
++    exec(compile(code, "property-test", "exec"), namespace)
++    return {tid: namespace[name] for tid, name in fragment.bindings.items()}
++
++
++@pytest.mark.parametrize("reverse", [False, True])
++@pytest.mark.parametrize("ref_out", [False, True])
++@pytest.mark.parametrize(
++    "rows",
++    [
++        [("Value", "input"), ("Value", "output")],
++        [("Value", "output"), ("Value", "input")],
++        [("Value", "output"), ("Value", "input"), ("Value", "output")],
++        [
++            ("Value", "output"),
++            ("Value", "input"),
++            ("Value", "output"),
++            ("Value", "input"),
++            ("Value", "output"),
++        ],
++        [("Value", "input"), ("Other", "output"), ("Value", "output")],
++    ],
++)
++def test_ordered_accesses_are_independent_of_port_storage(rows, reverse, ref_out):
++    node, ctx, namespace = fixture(rows, reverse=reverse, ref_out=ref_out)
++    state = {"value": 100, "other": 200}
++    expected, events = {}, []
++    for i, (name, direction) in enumerate(rows):
++        attr = name.lower()
++        if direction == "input":
++            state[attr] = 1000 + i
++            events.append(("write", attr, state[attr]))
++        else:
++            events.append(("read", attr, state[attr]))
++            expected[f"row_{i}"] = state[attr]
++    if ref_out:
++        expected["ref_out"] = namespace["ref"]
++    assert execute(node, ctx, namespace) == expected
++    assert namespace["ref"].events == events
++    assert namespace["ref"].values == state
++
++
++def test_unwired_reads_still_execute_once_and_keep_distinct_snapshots():
++    rows = [
++        ("Value", "output"),
++        ("Value", "input"),
++        ("Value", "output"),
++        ("Value", "output"),
++    ]
++    node, ctx, namespace = fixture(rows, unwired=("row_0", "row_3"))
++    assert execute(node, ctx, namespace) == {"row_0": 100, "row_2": 1001, "row_3": 1001}
++    assert namespace["ref"].events == [
++        ("read", "value", 100),
++        ("write", "value", 1001),
++        ("read", "value", 1001),
++        ("read", "value", 1001),
++    ]
++
++
++@pytest.mark.parametrize("value_type", [REF, ERROR])
++def test_value_type_does_not_reclassify_a_property_as_fixed_port(value_type):
++    node, ctx, namespace = fixture([("Value", "output")], ref_out=True)
++    node.terminals[4].lv_type = value_type
++    sentinel = object()
++    namespace["ref"].values["value"] = sentinel
++    result = execute(node, ctx, namespace)
++    assert result["row_0"] is sentinel
++    assert result["ref_out"] is namespace["ref"]
++    assert namespace["ref"].events == [("read", "value", sentinel)]
++
++
++@pytest.mark.parametrize(
++    "failure",
++    [
++        "missing_ids",
++        "duplicate_ids",
++        "missing_terminal",
++        "duplicate_terminal",
++        "missing_name",
++        "name_collision",
++        "missing_ref",
++        "unresolved_ref",
++        "implicit_ref",
++        "unwired_write",
++        "unresolved_write",
++        "wired_error_in",
++        "wired_error_out",
++        "unknown_fixed_output",
++    ],
++)
++def test_unresolved_or_unsupported_nodes_fail_without_guessing(failure):
++    node, ctx, namespace = fixture([("Value", "input"), ("Value", "output")])
++    if failure == "missing_ids":
++        node.property_value_terminal_ids = []
++    elif failure == "duplicate_ids":
++        node.property_value_terminal_ids = ["row_0", "row_0"]
++    elif failure == "missing_terminal":
++        node.property_value_terminal_ids[1] = "absent"
++    elif failure == "duplicate_terminal":
++        node.terminals.append(node.terminals[-1].model_copy())
++    elif failure == "missing_name":
++        node.properties[0].name = ""
++    elif failure == "name_collision":
++        node.properties = [
++            PropertyDef(name="Some Value"),
++            PropertyDef(name="Some_Value"),
++        ]
++    elif failure == "missing_ref":
++        node.terminals = [term for term in node.terminals if term.id != "ref_in"]
++    elif failure == "unresolved_ref":
++        ctx.bind("ref_in", "None")
++    elif failure == "implicit_ref":
++        node.bound_control_uid = "stored-control-identity"
++    elif failure == "unwired_write":
++        node, ctx, namespace = fixture(
++            [("Value", "input"), ("Value", "output")], unwired=("row_0",)
++        )
++    elif failure == "unresolved_write":
++        ctx.bind("peer_row_0", "None")
++    elif failure == "wired_error_in":
++        connect(ctx, "error_in", "input")
++        ctx.bind("peer_error_in", "error")
++    elif failure == "wired_error_out":
++        connect(ctx, "error_out", "output")
++    else:
++        node.terminals[1].lv_type = None
++        connect(ctx, "ref_out", "output")
++    with pytest.raises(CodeGenError):
++        property_node.generate(node, ctx)
++    assert namespace["ref"].events == []

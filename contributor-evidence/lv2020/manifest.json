@@ -1,4 +1,8 @@
 {
+  ".gitattributes": {
+    "bytes": 146,
+    "sha256": "589476afa451c0ca402920c70cc58fc79d4a4c438d83b8bd46a82f7827464a41"
+  },
   "capture_labview.py": {
     "bytes": 4504,
     "sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"

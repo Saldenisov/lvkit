@@ -1,0 +1,3 @@
+# Native fixtures, capture scripts and machine-generated receipts are hashed.
+# Preserve their exact bytes on Windows and Unix checkouts.
+* -text

@@ -1,0 +1,13 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\real64_divide\real64_divide.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\real64_divide\real64_divide.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesreal64_dividereal64_divide.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\real64_divide\upstream-0.8.7\generated\real64_divide
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0
+C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\real64_divide\real64_divide.vi: Warning: Block b'VICD' section 0 patches parse exception: No parsing made for MCLVRTPatches.
+Warning: Identifier has more than one special character.

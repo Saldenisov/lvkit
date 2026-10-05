@@ -256,3 +256,6 @@ new native LabVIEW 2020 VI, strict JSON specification, native receipts,
 
 [underscore_output](fixtures/underscore_output/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[real64_divide](fixtures/real64_divide/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

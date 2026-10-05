@@ -1,0 +1,319 @@
+{
+  "fixture_id": "real64_divide",
+  "vi_sha256": "e771ed6df3f9932513f423e1c55d7f1b616334be6f3e683651fcf6e0da38ad89",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-divide-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\real64_divide\\patched-0.8.7\\generated\\real64_divide\\devpyconlysetoolslvkit_upstreamfixturesreal64_dividereal64_divide.py",
+  "generated_sha256": "a85bea2810ef14efadc798a95f8dc08bdf7a392c661e30d939bcad072da9a208",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\real64_divide\\real64_divide.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\real64_divide\\patched-0.8.7\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 24,
+  "total": 24,
+  "comparisons": [
+    {
+      "case": "positive_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_zero_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_zero_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_zero_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_zero_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nan_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nan_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_inf_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_inf_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_inf_over_positive_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_inf_over_negative_zero",
+      "output": "quotient",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_finite",
+      "output": "quotient",
+      "expected": 0.5,
+      "actual": 0.5,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_finite",
+      "output": "quotient",
+      "expected": -0.5,
+      "actual": -0.5,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "positive_zero_over_negative",
+      "output": "quotient",
+      "expected": {
+        "float": "-0.0"
+      },
+      "actual": {
+        "float": "-0.0"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_zero_over_negative",
+      "output": "quotient",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "infinity_over_infinity",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "finite_over_positive_inf",
+      "output": "quotient",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "finite_over_negative_inf",
+      "output": "quotient",
+      "expected": {
+        "float": "-0.0"
+      },
+      "actual": {
+        "float": "-0.0"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nan_over_finite",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "finite_over_nan",
+      "output": "quotient",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "finite_overflow",
+      "output": "quotient",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "fixture_id": "real64_divide",
+  "vi_sha256": "e771ed6df3f9932513f423e1c55d7f1b616334be6f3e683651fcf6e0da38ad89",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T09:00:16.888102+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_divide_labview.py",
+    "source_script_sha256": "51bccbb58b2105a44d0a26d419e020fd1dea29f486e1c8ec14e1f0087940bbd7",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "positive_over_positive_zero",
+      "effective_inputs": {
+        "numerator": 1.0,
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "id": "positive_over_negative_zero",
+      "effective_inputs": {
+        "numerator": 1.0,
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "negative_over_positive_zero",
+      "effective_inputs": {
+        "numerator": -1.0,
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "negative_over_negative_zero",
+      "effective_inputs": {
+        "numerator": -1.0,
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "id": "positive_zero_over_positive_zero",
+      "effective_inputs": {
+        "numerator": 0.0,
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "positive_zero_over_negative_zero",
+      "effective_inputs": {
+        "numerator": 0.0,
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "negative_zero_over_positive_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "-0.0"
+        },
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "negative_zero_over_negative_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "-0.0"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "nan_over_positive_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "nan"
+        },
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "nan_over_negative_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "nan"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "positive_inf_over_positive_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "inf"
+        },
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "id": "positive_inf_over_negative_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "inf"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "negative_inf_over_positive_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "-inf"
+        },
+        "denominator": 0.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "negative_inf_over_negative_zero",
+      "effective_inputs": {
+        "numerator": {
+          "float": "-inf"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "id": "positive_finite",
+      "effective_inputs": {
+        "numerator": 2.0,
+        "denominator": 4.0
+      },
+      "outputs": {
+        "quotient": 0.5
+      }
+    },
+    {
+      "id": "negative_finite",
+      "effective_inputs": {
+        "numerator": -2.0,
+        "denominator": 4.0
+      },
+      "outputs": {
+        "quotient": -0.5
+      }
+    },
+    {
+      "id": "positive_zero_over_negative",
+      "effective_inputs": {
+        "numerator": 0.0,
+        "denominator": -2.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "negative_zero_over_negative",
+      "effective_inputs": {
+        "numerator": {
+          "float": "-0.0"
+        },
+        "denominator": -2.0
+      },
+      "outputs": {
+        "quotient": 0.0
+      }
+    },
+    {
+      "id": "infinity_over_infinity",
+      "effective_inputs": {
+        "numerator": {
+          "float": "inf"
+        },
+        "denominator": {
+          "float": "inf"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "finite_over_positive_inf",
+      "effective_inputs": {
+        "numerator": 2.0,
+        "denominator": {
+          "float": "inf"
+        }
+      },
+      "outputs": {
+        "quotient": 0.0
+      }
+    },
+    {
+      "id": "finite_over_negative_inf",
+      "effective_inputs": {
+        "numerator": 2.0,
+        "denominator": {
+          "float": "-inf"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "nan_over_finite",
+      "effective_inputs": {
+        "numerator": {
+          "float": "nan"
+        },
+        "denominator": 2.0
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "finite_over_nan",
+      "effective_inputs": {
+        "numerator": 2.0,
+        "denominator": {
+          "float": "nan"
+        }
+      },
+      "outputs": {
+        "quotient": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "finite_overflow",
+      "effective_inputs": {
+        "numerator": 1e+308,
+        "denominator": 1e-308
+      },
+      "outputs": {
+        "quotient": {
+          "float": "inf"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "id": "real64_divide",
+  "vi_file": "real64_divide.vi",
+  "function": "real64_divide",
+  "description": "Two DBL inputs passed to native Divide; one DBL output.",
+  "inputs": {
+    "numerator": {
+      "type": "float64"
+    },
+    "denominator": {
+      "type": "float64"
+    }
+  },
+  "outputs": {
+    "quotient": {
+      "type": "float64",
+      "comparison": "numeric_classification_and_zero_sign"
+    }
+  },
+  "cases": [
+    {
+      "id": "positive_over_positive_zero",
+      "inputs": {
+        "numerator": 1.0,
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "positive_over_negative_zero",
+      "inputs": {
+        "numerator": 1.0,
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "negative_over_positive_zero",
+      "inputs": {
+        "numerator": -1.0,
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "negative_over_negative_zero",
+      "inputs": {
+        "numerator": -1.0,
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "positive_zero_over_positive_zero",
+      "inputs": {
+        "numerator": 0.0,
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "positive_zero_over_negative_zero",
+      "inputs": {
+        "numerator": 0.0,
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "negative_zero_over_positive_zero",
+      "inputs": {
+        "numerator": {
+          "float": "-0.0"
+        },
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "negative_zero_over_negative_zero",
+      "inputs": {
+        "numerator": {
+          "float": "-0.0"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "nan_over_positive_zero",
+      "inputs": {
+        "numerator": {
+          "float": "nan"
+        },
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "nan_over_negative_zero",
+      "inputs": {
+        "numerator": {
+          "float": "nan"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "positive_inf_over_positive_zero",
+      "inputs": {
+        "numerator": {
+          "float": "inf"
+        },
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "positive_inf_over_negative_zero",
+      "inputs": {
+        "numerator": {
+          "float": "inf"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "negative_inf_over_positive_zero",
+      "inputs": {
+        "numerator": {
+          "float": "-inf"
+        },
+        "denominator": 0.0
+      }
+    },
+    {
+      "id": "negative_inf_over_negative_zero",
+      "inputs": {
+        "numerator": {
+          "float": "-inf"
+        },
+        "denominator": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "positive_finite",
+      "inputs": {
+        "numerator": 2.0,
+        "denominator": 4.0
+      }
+    },
+    {
+      "id": "negative_finite",
+      "inputs": {
+        "numerator": -2.0,
+        "denominator": 4.0
+      }
+    },
+    {
+      "id": "positive_zero_over_negative",
+      "inputs": {
+        "numerator": 0.0,
+        "denominator": -2.0
+      }
+    },
+    {
+      "id": "negative_zero_over_negative",
+      "inputs": {
+        "numerator": {
+          "float": "-0.0"
+        },
+        "denominator": -2.0
+      }
+    },
+    {
+      "id": "infinity_over_infinity",
+      "inputs": {
+        "numerator": {
+          "float": "inf"
+        },
+        "denominator": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "id": "finite_over_positive_inf",
+      "inputs": {
+        "numerator": 2.0,
+        "denominator": {
+          "float": "inf"
+        }
+      }
+    },
+    {
+      "id": "finite_over_negative_inf",
+      "inputs": {
+        "numerator": 2.0,
+        "denominator": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "nan_over_finite",
+      "inputs": {
+        "numerator": {
+          "float": "nan"
+        },
+        "denominator": 2.0
+      }
+    },
+    {
+      "id": "finite_over_nan",
+      "inputs": {
+        "numerator": 2.0,
+        "denominator": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "finite_overflow",
+      "inputs": {
+        "numerator": 1e+308,
+        "denominator": 1e-308
+      }
+    }
+  ],
+  "limits": [
+    "DBL scalar native behavior only; array broadcasting uses synthetic tests.",
+    "NaN payload/sign and floating-point status flags are not compared.",
+    "Other representations and LabVIEW versions are outside native evidence."
+  ]
+}

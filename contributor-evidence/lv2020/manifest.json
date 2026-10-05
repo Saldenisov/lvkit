@@ -3,6 +3,10 @@
     "bytes": 146,
     "sha256": "589476afa451c0ca402920c70cc58fc79d4a4c438d83b8bd46a82f7827464a41"
   },
+  "capture_divide_labview.py": {
+    "bytes": 3476,
+    "sha256": "51bccbb58b2105a44d0a26d419e020fd1dea29f486e1c8ec14e1f0087940bbd7"
+  },
   "capture_labview.py": {
     "bytes": 4504,
     "sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"
@@ -183,6 +187,58 @@
     "bytes": 5376,
     "sha256": "8b209f4c568f9e8fd0168cc87fb1b140b2f28fadfae32cd31e7fa2e797dffad3"
   },
+  "evidence/real64_divide/patched-0.8.7/conversion.log": {
+    "bytes": 449,
+    "sha256": "1f362fd379f0b11ff32d52f1c5d87b14b321178c600f15f0a653260f9a4a7bf8"
+  },
+  "evidence/real64_divide/patched-0.8.7/generated/real64_divide/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/real64_divide/patched-0.8.7/generated/real64_divide/devpyconlysetoolslvkit_upstreamfixturesreal64_dividereal64_divide.py": {
+    "bytes": 367,
+    "sha256": "a85bea2810ef14efadc798a95f8dc08bdf7a392c661e30d939bcad072da9a208"
+  },
+  "evidence/real64_divide/patched-0.8.7/report.json": {
+    "bytes": 7307,
+    "sha256": "9b8d8485576b2824bca4f400aa40a05ff3282acc0c2ef6f0a0f77752edadabab"
+  },
+  "evidence/real64_divide/pytest/divide-baseline.xml": {
+    "bytes": 8288,
+    "sha256": "e5bb970dc12a533c65f1f5a04069cb0b357eff6ad4185056bc10d7947627c6b4"
+  },
+  "evidence/real64_divide/pytest/divide-native-baseline.xml": {
+    "bytes": 5550,
+    "sha256": "055205e9ce6eb41a89ed44b801cd5e8db55ba31e895062201d83c6db1aa6f059"
+  },
+  "evidence/real64_divide/pytest/divide-native-patched.xml": {
+    "bytes": 3799,
+    "sha256": "944705449342b9e13b6170fa96dfec27494aab15c5c7e0fe0a50f317d9c12443"
+  },
+  "evidence/real64_divide/pytest/divide-related.xml": {
+    "bytes": 19402,
+    "sha256": "d781823f8271f5add6a7d153e262e2ce036f06a479319145258b278083d7b348"
+  },
+  "evidence/real64_divide/pytest/summary.json": {
+    "bytes": 592,
+    "sha256": "accd678e79a344e705c24682228a146f9a9f437ce52be9deb15b2d61fc5e2596"
+  },
+  "evidence/real64_divide/upstream-0.8.7/conversion.log": {
+    "bytes": 681,
+    "sha256": "0d770c9888a61c43ca0cced9b831a8894d59490cda766ffdebefacb127f2c184"
+  },
+  "evidence/real64_divide/upstream-0.8.7/generated/real64_divide/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/real64_divide/upstream-0.8.7/generated/real64_divide/devpyconlysetoolslvkit_upstreamfixturesreal64_dividereal64_divide.py": {
+    "bytes": 287,
+    "sha256": "9c94ed42fc458d65c91cfb0ea13164f158346d5d67b63664bea1e6edc099323d"
+  },
+  "evidence/real64_divide/upstream-0.8.7/report.json": {
+    "bytes": 7440,
+    "sha256": "cc3adf9c19d83d02e26288c1d829af76c5a0cb3c325f284b8bf4b67b0c41ca9c"
+  },
   "evidence/underscore_output/patched-0.8.7/conversion.log": {
     "bytes": 720,
     "sha256": "28f8d391786b8de4bc30cfc35ec0259e86c4cd32d0e801df80a7037f97dd52ed"
@@ -275,6 +331,22 @@
     "bytes": 1060,
     "sha256": "71cac753bab55fd321a05ac08127f7d8db89ecae26b7e8b7c9cbd6736f406223"
   },
+  "fixtures/real64_divide/golden_labview.json": {
+    "bytes": 7108,
+    "sha256": "0ad66c83219040e8dcda5e7c06806d28f4266fd9569f56d0096615e39cbf5d33"
+  },
+  "fixtures/real64_divide/README.md": {
+    "bytes": 3051,
+    "sha256": "2b3062fd2f6bd25c8c96aae1c79341936c7158d3ef21243a199d19235edc4383"
+  },
+  "fixtures/real64_divide/real64_divide.vi": {
+    "bytes": 6457,
+    "sha256": "e771ed6df3f9932513f423e1c55d7f1b616334be6f3e683651fcf6e0da38ad89"
+  },
+  "fixtures/real64_divide/spec.json": {
+    "bytes": 4893,
+    "sha256": "b748f2ddde8e36d9a2dc10fe5c8c3514b1c94560f198beacf4df43ab5c5ff4e0"
+  },
   "fixtures/underscore_output/golden_labview.json": {
     "bytes": 824,
     "sha256": "57d97303eeb36438cdaf5996309ce6e2cffdcf14a0ef7797d8b2b2d95ce96309"
@@ -307,13 +379,21 @@
     "bytes": 5456,
     "sha256": "2eec8f22a11b91bdc733043efeaf10710276c7a676dde0d46a2dd5501aed8676"
   },
+  "patches/real64-divide.patch": {
+    "bytes": 9225,
+    "sha256": "d46ca4158d656bcf9ebdb2d86c6582f57123291a758e6cecfe872574f3094036"
+  },
   "patches/result-field-names.patch": {
     "bytes": 5017,
     "sha256": "3613734f7184231462248342ae68bab70e3b0b66a6400e78f9b1d7b5a8d24498"
   },
   "README.md": {
-    "bytes": 14178,
-    "sha256": "97ec4851fad2f60a99074baa4255b8a34e5f1d7572c4b39e6b7c94e2bab7ba36"
+    "bytes": 14336,
+    "sha256": "83217a6cde39a8d24a871f9378c845767c362405053cd51db50649c88ff099b4"
+  },
+  "test_divide_native.py": {
+    "bytes": 1478,
+    "sha256": "d180b86ec6bc4366fa666a87c9e45d659a15609d3a26615d0ee02a83d65f8c67"
   },
   "test_native_fixture.py": {
     "bytes": 1742,

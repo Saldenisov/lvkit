@@ -1,0 +1,231 @@
+{
+  "fixture_id": "array_add_literal",
+  "vi_sha256": "d3be5966ead3d5121b6b16866d44977336ffcec3f75b1de11cf5d92921a06d65",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\array_add_literal\\upstream-0.8.7\\generated\\array_add_literal\\devpyconlysetoolslvkit_upstreamfixturesarray_add_literalarray_add_literal.py",
+  "generated_sha256": "f299a23bfbc4ef76299dc1ff98b53f9ed10ffe62ba4352d1bfcc8d71e92ea468",
+  "conversion_command": [
+    "C:\\dev\\pyconlyse\\Supervision\\analysis\\lvkit_eval\\.venv\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\array_add_literal\\array_add_literal.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\array_add_literal\\upstream-0.8.7\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 0,
+  "total": 10,
+  "cases": [
+    {
+      "id": "typical",
+      "passed": false,
+      "expected": {
+        "result": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          1.0,
+          4.0,
+          5.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "empty",
+      "passed": false,
+      "expected": {
+        "result": []
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "one_element",
+      "passed": false,
+      "expected": {
+        "result": [
+          9.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          9.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "two_elements",
+      "passed": false,
+      "expected": {
+        "result": [
+          9.0,
+          5.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          9.0,
+          7.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "longer_than_literal",
+      "passed": false,
+      "expected": {
+        "result": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          1.0,
+          4.0,
+          5.0,
+          99.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "negative",
+      "passed": false,
+      "expected": {
+        "result": [
+          -1.0,
+          -6.0,
+          -7.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          -1.0,
+          -4.0,
+          -5.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "fractional",
+      "passed": false,
+      "expected": {
+        "result": [
+          0.125,
+          0.25,
+          1.5
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          0.125,
+          2.25,
+          3.5
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "zero",
+      "passed": false,
+      "expected": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "cancellation",
+      "passed": false,
+      "expected": {
+        "result": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          0.0,
+          2.0,
+          2.0
+        ]
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "large_finite",
+      "passed": false,
+      "expected": {
+        "result": [
+          1e+100,
+          1e+100,
+          -1e+100
+        ]
+      },
+      "actual": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0,
+          1e+100,
+          1e+100,
+          -1e+100
+        ]
+      },
+      "input_unchanged": true
+    }
+  ]
+}

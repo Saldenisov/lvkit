@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "fixture_id": "array_add_literal",
+  "vi_sha256": "d3be5966ead3d5121b6b16866d44977336ffcec3f75b1de11cf5d92921a06d65",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "application_directory": "C:\\program files\\national instruments\\labview 2020",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T07:25:13.058781+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(wait_until_done=True) / GetControlValue",
+    "source_script": "capture_labview.py",
+    "source_script_sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"
+  },
+  "cases": [
+    {
+      "id": "typical",
+      "effective_inputs": {
+        "bank": [
+          1.0,
+          4.0,
+          5.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "empty",
+      "effective_inputs": {
+        "bank": []
+      },
+      "outputs": {
+        "result": []
+      }
+    },
+    {
+      "id": "one_element",
+      "effective_inputs": {
+        "bank": [
+          9.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "two_elements",
+      "effective_inputs": {
+        "bank": [
+          9.0,
+          7.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          9.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "longer_than_literal",
+      "effective_inputs": {
+        "bank": [
+          1.0,
+          4.0,
+          5.0,
+          99.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "negative",
+      "effective_inputs": {
+        "bank": [
+          -1.0,
+          -4.0,
+          -5.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          -1.0,
+          -6.0,
+          -7.0
+        ]
+      }
+    },
+    {
+      "id": "fractional",
+      "effective_inputs": {
+        "bank": [
+          0.125,
+          2.25,
+          3.5
+        ]
+      },
+      "outputs": {
+        "result": [
+          0.125,
+          0.25,
+          1.5
+        ]
+      }
+    },
+    {
+      "id": "zero",
+      "effective_inputs": {
+        "bank": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          0.0,
+          -2.0,
+          -2.0
+        ]
+      }
+    },
+    {
+      "id": "cancellation",
+      "effective_inputs": {
+        "bank": [
+          0.0,
+          2.0,
+          2.0
+        ]
+      },
+      "outputs": {
+        "result": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "large_finite",
+      "effective_inputs": {
+        "bank": [
+          1e+100,
+          1e+100,
+          -1e+100
+        ]
+      },
+      "outputs": {
+        "result": [
+          1e+100,
+          1e+100,
+          -1e+100
+        ]
+      }
+    }
+  ]
+}

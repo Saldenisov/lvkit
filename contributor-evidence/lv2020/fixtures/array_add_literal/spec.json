@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "array_add_literal",
+  "vi_file": "array_add_literal.vi",
+  "labview_version": "2020",
+  "function": "array_add_literal",
+  "inputs": {"bank": {"type": "array<float64>", "dimensions": 1}},
+  "outputs": {"result": {"type": "array<float64>", "dimensions": 1}},
+  "diagram": {
+    "primitive": "Add",
+    "left_operand": "bank",
+    "right_operand": [0.0, -2.0, -2.0],
+    "dependencies": []
+  },
+  "contract": {
+    "operation": "elementwise_add",
+    "array_array_length": "minimum_operand_length",
+    "input_mutation": false,
+    "comparison": "exact_for_these_finite_vectors"
+  },
+  "cases": [
+    {"id": "typical", "inputs": {"bank": [1.0, 4.0, 5.0]}},
+    {"id": "empty", "inputs": {"bank": []}},
+    {"id": "one_element", "inputs": {"bank": [9.0]}},
+    {"id": "two_elements", "inputs": {"bank": [9.0, 7.0]}},
+    {"id": "longer_than_literal", "inputs": {"bank": [1.0, 4.0, 5.0, 99.0]}},
+    {"id": "negative", "inputs": {"bank": [-1.0, -4.0, -5.0]}},
+    {"id": "fractional", "inputs": {"bank": [0.125, 2.25, 3.5]}},
+    {"id": "zero", "inputs": {"bank": [0.0, 0.0, 0.0]}},
+    {"id": "cancellation", "inputs": {"bank": [0.0, 2.0, 2.0]}},
+    {"id": "large_finite", "inputs": {"bank": [1e+100, 1e+100, -1e+100]}}
+  ]
+}

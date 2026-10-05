@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "fixture_id": "enum_saved_default",
+  "vi_sha256": "0dfbab2b083abf16b7ae1bdf6206c99f5d3d18f7e83383fa7e17f6e82fcd49f6",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "application_directory": "C:\\program files\\national instruments\\labview 2020",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T07:25:12.518103+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(wait_until_done=True) / GetControlValue",
+    "source_script": "capture_labview.py",
+    "source_script_sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"
+  },
+  "cases": [
+    {
+      "id": "explicit_idle",
+      "effective_inputs": {
+        "mode": 0
+      },
+      "outputs": {
+        "result": 0
+      }
+    },
+    {
+      "id": "default_after_explicit_idle",
+      "effective_inputs": {
+        "mode": 1
+      },
+      "outputs": {
+        "result": 1
+      }
+    },
+    {
+      "id": "explicit_run",
+      "effective_inputs": {
+        "mode": 1
+      },
+      "outputs": {
+        "result": 1
+      }
+    },
+    {
+      "id": "default_run",
+      "effective_inputs": {
+        "mode": 1
+      },
+      "outputs": {
+        "result": 1
+      }
+    }
+  ]
+}

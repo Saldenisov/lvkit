@@ -1,0 +1,13 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\enum_saved_default\enum_saved_default.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\enum_saved_default\enum_saved_default.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesenum_saved_defaultenum_saved_default.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\enum_saved_default\upstream-0.8.7\generated\enum_saved_default
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0
+C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\enum_saved_default\enum_saved_default.vi: Warning: Block b'VICD' section 0 patches parse exception: No parsing made for MCLVRTPatches.
+Warning: Identifier has more than one special character.

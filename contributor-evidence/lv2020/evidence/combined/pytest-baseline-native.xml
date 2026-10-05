@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="12" skipped="0" tests="14" time="1.028" timestamp="2026-10-05T09:30:20.151653+02:00" hostname="everest"><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/typical]" time="0.067"><failure message="AssertionError: assert {'result': [0....0, 4.0, 5.0]} == {'result': [1.0, 2.0, 3.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 1.0, 4.0, 5.0]} != {'result': [1.0, 2.0, 3.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0....0, 4.0, 5.0]} == {'result': [1.0, 2.0, 3.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 1.0, 4.0, 5.0]} != {'result': [1.0, 2.0, 3.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/empty]" time="0.001"><failure message="AssertionError: assert {'result': [0.0, -2.0, -2.0]} == {'result': []}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0]} != {'result': []}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0.0, -2.0, -2.0]} == {'result': []}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0]} != {'result': []}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/one_element]" time="0.002"><failure message="AssertionError: assert {'result': [0...0, -2.0, 9.0]} == {'result': [9.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 9.0]} != {'result': [9.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0...0, -2.0, 9.0]} == {'result': [9.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 9.0]} != {'result': [9.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/two_elements]" time="0.001"><failure message="AssertionError: assert {'result': [0....0, 9.0, 7.0]} == {'result': [9.0, 5.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 9.0, 7.0]} != {'result': [9.0, 5.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0....0, 9.0, 7.0]} == {'result': [9.0, 5.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 9.0, 7.0]} != {'result': [9.0, 5.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/longer_than_literal]" time="0.001"><failure message="AssertionError: assert {'result': [0....0, 5.0, ...]} == {'result': [1.0, 2.0, 3.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 1.0, 4.0, 5.0, ...]} != {'result': [1.0, 2.0, 3.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0....0, 5.0, ...]} == {'result': [1.0, 2.0, 3.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 1.0, 4.0, 5.0, ...]} != {'result': [1.0, 2.0, 3.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/negative]" time="0.001"><failure message="AssertionError: assert {'result': [0..., -4.0, -5.0]} == {'result': [-1.0, -6.0, -7.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, -1.0, -4.0, -5.0]} != {'result': [-1.0, -6.0, -7.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0..., -4.0, -5.0]} == {'result': [-1.0, -6.0, -7.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, -1.0, -4.0, -5.0]} != {'result': [-1.0, -6.0, -7.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/fractional]" time="0.002"><failure message="AssertionError: assert {'result': [0...5, 2.25, 3.5]} == {'result': [0.125, 0.25, 1.5]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 0.125, 2.25, 3.5]} != {'result': [0.125, 0.25, 1.5]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0...5, 2.25, 3.5]} == {'result': [0.125, 0.25, 1.5]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 0.125, 2.25, 3.5]} != {'result': [0.125, 0.25, 1.5]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/zero]" time="0.002"><failure message="AssertionError: assert {'result': [0....0, 0.0, 0.0]} == {'result': [0.0, -2.0, -2.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 0.0, 0.0, 0.0]} != {'result': [0.0, -2.0, -2.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0....0, 0.0, 0.0]} == {'result': [0.0, -2.0, -2.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 0.0, 0.0, 0.0]} != {'result': [0.0, -2.0, -2.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/cancellation]" time="0.001"><failure message="AssertionError: assert {'result': [0....0, 2.0, 2.0]} == {'result': [0.0, 0.0, 0.0]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 0.0, 2.0, 2.0]} != {'result': [0.0, 0.0, 0.0]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0....0, 2.0, 2.0]} == {'result': [0.0, 0.0, 0.0]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 0.0, 2.0, 2.0]} != {'result': [0.0, 0.0, 0.0]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[array_add_literal/large_finite]" time="0.001"><failure message="AssertionError: assert {'result': [0...100, -1e+100]} == {'result': [1...100, -1e+100]}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': [0.0, -2.0, -2.0, 1e+100, 1e+100, -1e+100]} != {'result': [1e+100, 1e+100, -1e+100]}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': [0...100, -1e+100]} == {'result': [1...100, -1e+100]}
+      
+      Differing items:
+      {'result': [0.0, -2.0, -2.0, 1e+100, 1e+100, -1e+100]} != {'result': [1e+100, 1e+100, -1e+100]}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[enum_saved_default/explicit_idle]" time="0.068" /><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[enum_saved_default/default_after_explicit_idle]" time="0.002"><failure message="AssertionError: assert {'result': 0} == {'result': 1}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 0} != {'result': 1}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 0} == {'result': 1}
+      
+      Differing items:
+      {'result': 0} != {'result': 1}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[enum_saved_default/explicit_run]" time="0.001" /><testcase classname="tools.lvkit_upstream.test_native_fixture" name="test_real_vi_matches_native_labview[enum_saved_default/default_run]" time="0.001"><failure message="AssertionError: assert {'result': 0} == {'result': 1}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 0} != {'result': 1}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 0} == {'result': 1}
+      
+      Differing items:
+      {'result': 0} != {'result': 1}
+      Use -v to get more diff</failure></testcase></testsuite></testsuites>

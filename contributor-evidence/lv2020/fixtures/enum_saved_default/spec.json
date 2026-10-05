@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "enum_saved_default",
+  "vi_file": "enum_saved_default.vi",
+  "labview_version": "2020",
+  "function": "enum_saved_default",
+  "inputs": {"mode": {"type": "enum<uint16>", "members": {"Idle": 0, "Run": 1}, "saved_default": 1}},
+  "outputs": {"result": {"type": "enum<uint16>", "members": {"Idle": 0, "Run": 1}}},
+  "diagram": {"operation": "direct_wire", "source": "mode", "destination": "result", "dependencies": []},
+  "contract": {"omitted_input": "saved_vi_default", "explicit_zero_preserved": true, "input_mutation": false, "comparison": "exact_integer"},
+  "cases": [
+    {"id": "explicit_idle", "inputs": {"mode": 0}},
+    {"id": "default_after_explicit_idle", "inputs": {}},
+    {"id": "explicit_run", "inputs": {"mode": 1}},
+    {"id": "default_run", "inputs": {}}
+  ]
+}

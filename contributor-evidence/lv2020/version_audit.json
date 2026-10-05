@@ -1,0 +1,80 @@
+{
+  "baseline_tag": "v0.8.7",
+  "baseline_commit": "27ce18682e3f402e43368be9c0cd19ec669ffba4",
+  "comparison_tag": "v0.8.6",
+  "comparison_commit": "d8058677e15c47094e725439bd72417fe9527754",
+  "numeric_codegen_runtime_changed_paths": [],
+  "array_literal_add": {
+    "status": "prepared_with_native_fixture",
+    "patch": "patches/0001-numeric-add-array-literals.patch",
+    "patch_sha256": "6b0d13ddf5c77708a50db6bc453ac783972424cd5ed6a2c76f0515d7a60d7a86",
+    "patch_apply_check": "passed",
+    "native_match_baseline": {
+      "passed": 0,
+      "total": 10
+    },
+    "native_match_patched": {
+      "passed": 10,
+      "total": 10
+    },
+    "pytest_baseline_new_cases": {
+      "tests": 25,
+      "failures": 23,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pytest_patched_related": {
+      "tests": 247,
+      "failures": 7,
+      "errors": 0,
+      "skipped": 1
+    },
+    "pytest_baseline_existing_array_ops": {
+      "tests": 22,
+      "failures": 7,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "enum_saved_default": {
+    "status": "prepared_with_native_fixture",
+    "patch": "patches/0002-preserve-enum-parameter-default.patch",
+    "patch_sha256": "17b29de8f6243a59731eecd83e6cbd485430f236913a2bd8d198c6428a5ef1cf",
+    "patch_apply_check": "passed",
+    "kind": "enum",
+    "native_fixture_underlying_type": "UnitUInt16",
+    "synthetic_reproducer_underlying_type": "UnitUInt32",
+    "saved_default": "1",
+    "baseline_generated_default": "0",
+    "native_match_baseline": {
+      "passed": 2,
+      "total": 4
+    },
+    "native_match_patched": {
+      "passed": 4,
+      "total": 4
+    },
+    "pytest_baseline_new_cases": {
+      "tests": 19,
+      "failures": 14,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pytest_patched_related": {
+      "tests": 124,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    }
+  },
+  "loop_nested_flat_sequence": {
+    "status": "already_addressed_in_v0.8.7",
+    "release_test": "tests/test_loop_zplane.py"
+  },
+  "combined_patches_pytest": {
+    "tests": 248,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  }
+}

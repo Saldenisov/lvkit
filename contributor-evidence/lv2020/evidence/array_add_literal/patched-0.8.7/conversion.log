@@ -1,0 +1,11 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\array_add_literal\array_add_literal.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\array_add_literal\array_add_literal.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesarray_add_literalarray_add_literal.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\array_add_literal\patched-0.8.7\generated\array_add_literal
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0

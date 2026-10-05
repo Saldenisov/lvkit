@@ -1,0 +1,67 @@
+{
+  "fixture_id": "enum_saved_default",
+  "vi_sha256": "0dfbab2b083abf16b7ae1bdf6206c99f5d3d18f7e83383fa7e17f6e82fcd49f6",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\enum_saved_default\\upstream-0.8.7\\generated\\enum_saved_default\\devpyconlysetoolslvkit_upstreamfixturesenum_saved_defaultenum_saved_default.py",
+  "generated_sha256": "f182d774480ee3e9f3245120fdf6ab9e359335601cbc4c5cea005fe1b317d376",
+  "conversion_command": [
+    "C:\\dev\\pyconlyse\\Supervision\\analysis\\lvkit_eval\\.venv\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\enum_saved_default\\enum_saved_default.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\enum_saved_default\\upstream-0.8.7\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 2,
+  "total": 4,
+  "cases": [
+    {
+      "id": "explicit_idle",
+      "passed": true,
+      "expected": {
+        "result": 0
+      },
+      "actual": {
+        "result": 0
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "default_after_explicit_idle",
+      "passed": false,
+      "expected": {
+        "result": 1
+      },
+      "actual": {
+        "result": 0
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "explicit_run",
+      "passed": true,
+      "expected": {
+        "result": 1
+      },
+      "actual": {
+        "result": 1
+      },
+      "input_unchanged": true
+    },
+    {
+      "id": "default_run",
+      "passed": false,
+      "expected": {
+        "result": 1
+      },
+      "actual": {
+        "result": 0
+      },
+      "input_unchanged": true
+    }
+  ]
+}

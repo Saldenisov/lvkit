@@ -1,0 +1,32 @@
+{
+  "fixture_id": "underscore_output",
+  "vi_sha256": "1b5e43caec48f9a9bcb5dd8d01557150d0bb0506a9ce38603617fbc0704127be",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\underscore_output\\upstream-0.8.7\\generated\\underscore_output\\devpyconlysetoolslvkit_upstreamfixturesunderscore_outputunderscore_output.py",
+  "generated_sha256": "c824f9e1ecac116171d146aaec7bc38f09eefddb2cef568ca3c6cfaa7930d643",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\underscore_output\\underscore_output.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\underscore_output\\upstream-0.8.7\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 0,
+  "total": 1,
+  "comparisons": [
+    {
+      "case": "constant_output",
+      "output": "_status",
+      "expected": 42.0,
+      "actual": null,
+      "error": "ValueError: Field names cannot start with an underscore: '_status'",
+      "input_unchanged": true,
+      "passed": false
+    }
+  ]
+}

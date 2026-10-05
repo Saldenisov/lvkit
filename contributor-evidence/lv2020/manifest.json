@@ -11,6 +11,10 @@
     "bytes": 3391,
     "sha256": "60e3a93cdadc582e556c241a8d5affd8f8264804e75a29803287bc147059d8e4"
   },
+  "capture_underscore_labview.py": {
+    "bytes": 3480,
+    "sha256": "8c129d6e76ec8f8e62975bb227cf93a8a803594ed3b15d45b230b705bcf7866b"
+  },
   "evidence/array_add_literal/patched-0.8.7/conversion.log": {
     "bytes": 481,
     "sha256": "c4a161e477da21219fea4f27713dd815dc97ce6715993b234bf343b319574985"
@@ -179,6 +183,58 @@
     "bytes": 5376,
     "sha256": "8b209f4c568f9e8fd0168cc87fb1b140b2f28fadfae32cd31e7fa2e797dffad3"
   },
+  "evidence/underscore_output/patched-0.8.7/conversion.log": {
+    "bytes": 720,
+    "sha256": "28f8d391786b8de4bc30cfc35ec0259e86c4cd32d0e801df80a7037f97dd52ed"
+  },
+  "evidence/underscore_output/patched-0.8.7/generated/underscore_output/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/underscore_output/patched-0.8.7/generated/underscore_output/devpyconlysetoolslvkit_upstreamfixturesunderscore_outputunderscore_output.py": {
+    "bytes": 250,
+    "sha256": "89501f16e6929766a50c92018c1e7de48825dbc61faf685bad4613ebfdbcee66"
+  },
+  "evidence/underscore_output/patched-0.8.7/report.json": {
+    "bytes": 1247,
+    "sha256": "db570d974eae6f4ab530be2dc013e874f4ba029ba05e5c152adcab5dcf3cda12"
+  },
+  "evidence/underscore_output/pytest/result-fields-baseline.xml": {
+    "bytes": 5698,
+    "sha256": "b5e8f4d51fd61bcbb40aefee62ef825e9a281755ca8d1acb64955a2c250ec7f9"
+  },
+  "evidence/underscore_output/pytest/result-fields-native-baseline.xml": {
+    "bytes": 552,
+    "sha256": "63d25cb34b0c1bcbcf53134e45ca99d36e7c0b3ec7624b546ace5c7e17a7f335"
+  },
+  "evidence/underscore_output/pytest/result-fields-native-patched.xml": {
+    "bytes": 377,
+    "sha256": "f983ae1c760ea17077380244aef5db096f1441a80ac7a0e7382542d79931aede"
+  },
+  "evidence/underscore_output/pytest/result-fields-related.xml": {
+    "bytes": 14241,
+    "sha256": "0892a8109093d51b953cc7a9049aa69e9d028ddef1ae72249168fec153cc8cf4"
+  },
+  "evidence/underscore_output/pytest/summary.json": {
+    "bytes": 617,
+    "sha256": "ff508dea3b998eeb442b3e1b3f8d9aaeaa79fa79d3560f179976b0390a17463e"
+  },
+  "evidence/underscore_output/upstream-0.8.7/conversion.log": {
+    "bytes": 482,
+    "sha256": "c66d061b8c9a77ad82c4e9d279dd273f4bf01694d0c288f0055ab57ec3b403c3"
+  },
+  "evidence/underscore_output/upstream-0.8.7/generated/underscore_output/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/underscore_output/upstream-0.8.7/generated/underscore_output/devpyconlysetoolslvkit_upstreamfixturesunderscore_outputunderscore_output.py": {
+    "bytes": 238,
+    "sha256": "c824f9e1ecac116171d146aaec7bc38f09eefddb2cef568ca3c6cfaa7930d643"
+  },
+  "evidence/underscore_output/upstream-0.8.7/report.json": {
+    "bytes": 1303,
+    "sha256": "84e1f1afbf6c0764b5e0dd0a19306f6e1cf98befcb9e8cf1a38a76bca1d09327"
+  },
   "fixtures/array_add_literal/array_add_literal.vi": {
     "bytes": 7677,
     "sha256": "d3be5966ead3d5121b6b16866d44977336ffcec3f75b1de11cf5d92921a06d65"
@@ -219,6 +275,22 @@
     "bytes": 1060,
     "sha256": "71cac753bab55fd321a05ac08127f7d8db89ecae26b7e8b7c9cbd6736f406223"
   },
+  "fixtures/underscore_output/golden_labview.json": {
+    "bytes": 824,
+    "sha256": "57d97303eeb36438cdaf5996309ce6e2cffdcf14a0ef7797d8b2b2d95ce96309"
+  },
+  "fixtures/underscore_output/README.md": {
+    "bytes": 2811,
+    "sha256": "0a1b628357031f4e2df5342aed684fc18ea10398a24dca0b5b885d0bbcefa97e"
+  },
+  "fixtures/underscore_output/spec.json": {
+    "bytes": 510,
+    "sha256": "735d88847999418ca80fe9933cc90f72dc0c3111391f7cfa0540085890d20a7f"
+  },
+  "fixtures/underscore_output/underscore_output.vi": {
+    "bytes": 6025,
+    "sha256": "1b5e43caec48f9a9bcb5dd8d01557150d0bb0506a9ce38603617fbc0704127be"
+  },
   "numeric_values.py": {
     "bytes": 737,
     "sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
@@ -235,9 +307,13 @@
     "bytes": 5456,
     "sha256": "2eec8f22a11b91bdc733043efeaf10710276c7a676dde0d46a2dd5501aed8676"
   },
+  "patches/result-field-names.patch": {
+    "bytes": 5017,
+    "sha256": "3613734f7184231462248342ae68bab70e3b0b66a6400e78f9b1d7b5a8d24498"
+  },
   "README.md": {
-    "bytes": 14012,
-    "sha256": "0bd37f0c50a7b4afb76f19d0334e2ee08896c4ee2192237dd77ab533baac70f4"
+    "bytes": 14178,
+    "sha256": "97ec4851fad2f60a99074baa4255b8a34e5f1d7572c4b39e6b7c94e2bab7ba36"
   },
   "test_native_fixture.py": {
     "bytes": 1742,
@@ -247,6 +323,10 @@
     "bytes": 1317,
     "sha256": "283e81bd3db40a3228d3e117c03e8d62c86d6ac46845ac56eee85e6aeeda9877"
   },
+  "test_result_field_native.py": {
+    "bytes": 1073,
+    "sha256": "c31aed1bd42d367fd16c3b16bf4bd08092d6aac812435022c8b31bd450ea4f70"
+  },
   "verify_fixture.py": {
     "bytes": 3930,
     "sha256": "98ffa9b54b1b71690618d6a88d18dcb92f589e94929f2a972e4cc904099cda33"
@@ -254,6 +334,10 @@
   "verify_numeric_fixture.py": {
     "bytes": 3940,
     "sha256": "ac349bf4bb18bd97ab3361d083e7fab8e2219de16515fa237642ff5477b59f83"
+  },
+  "verify_result_field_fixture.py": {
+    "bytes": 4456,
+    "sha256": "5d6fd370d9aaf587453daff42e6847f063478dfb7d7dd1f559e311d3010214c8"
   },
   "version_audit.json": {
     "bytes": 2183,

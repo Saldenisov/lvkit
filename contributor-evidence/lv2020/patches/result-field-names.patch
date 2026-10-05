@@ -1,0 +1,146 @@
+diff --git a/src/lvkit/codegen/builder.py b/src/lvkit/codegen/builder.py
+index 9258b7e..ff890e4 100644
+--- a/src/lvkit/codegen/builder.py
++++ b/src/lvkit/codegen/builder.py
+@@ -568,6 +568,12 @@ def topological_sort_tiered(
+     return tiers
+ 
+ 
++def result_field_name(name: str) -> str:
++    """Normalize output labels for NamedTuple's stricter field-name rules."""
++    name = to_var_name(name or "output")
++    return "output" + name if name.startswith("_") else name
++
++
+ def build_return_stmt(vi_context: VIContext, ctx: CodeGenContext) -> ast.Return | None:
+     """Build return statement for function.
+ 
+@@ -588,7 +594,7 @@ def build_return_stmt(vi_context: VIContext, ctx: CodeGenContext) -> ast.Return
+ 
+         out_id = out.id
+         out_name = out.name or "output"
+-        var_name = to_var_name(out_name)
++        var_name = result_field_name(out_name)
+ 
+         # Try to resolve from context. resolve() returns an EXPRESSION string
+         # (often compound, e.g. "low_000 + product" from an inlined output), so
+@@ -706,10 +712,13 @@ def build_result_class(vi_context: VIContext) -> ast.ClassDef | None:
+         if out.is_error_cluster:
+             continue
+ 
+-        name = to_var_name(out.name or "output")
++        name = result_field_name(out.name or "output")
+         type_hint = out.python_type()
+         fields.append((name, type_hint))
+ 
++    if len({name for name, _ in fields}) != len(fields):
++        raise ValueError("Output labels collide after Python field normalization")
++
+     # If all outputs were error clusters, no result class needed
+     if not fields:
+         return None
+diff --git a/tests/test_result_field_names.py b/tests/test_result_field_names.py
+new file mode 100644
+index 0000000..f641c97
+--- /dev/null
++++ b/tests/test_result_field_names.py
+@@ -0,0 +1,99 @@
++"""Executable result fields for legal LabVIEW output labels."""
++
++from __future__ import annotations
++
++import pytest
++
++from lvkit.codegen.builder import build_module, build_result_class
++from lvkit.graph.models import Constant, VIContext, Wire
++from lvkit.models import ClusterField, FPTerminal, LVType, LVTypeKind
++from tests.helpers import build_graph
++
++
++def output(label: str, index: int = 0) -> FPTerminal:
++    return FPTerminal(
++        id=f"out:{index}",
++        index=index,
++        direction="output",
++        name=label,
++        is_indicator=True,
++        is_public=True,
++        lv_type=LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="NumFloat64"),
++    )
++
++
++@pytest.mark.parametrize(
++    "label,field",
++    [
++        ("_status", "output_status"),
++        ("__status", "output__status"),
++        ("_", "output_"),
++        ("_0", "output_0"),
++        (" _Status", "output__status"),
++        ("-status", "output_status"),
++        ("_class", "output_class"),
++        ("_asdict", "output_asdict"),
++        ("status", "status"),
++        ("Output Value", "output_value"),
++        ("2nd result", "var_2nd_result"),
++        ("class", "class_"),
++        ("sum", "sum_"),
++        ("", "output"),
++        ("!", "var"),
++    ],
++)
++def test_result_field_and_return_agree(label: str, field: str):
++    terminal = output(label)
++    context = VIContext(
++        name="Result Field.vi",
++        outputs=[terminal],
++        constants=[Constant(id="const:1", value=42.0)],
++        data_flow=[
++            Wire.from_terminals(
++                from_terminal_id="const:1",
++                to_terminal_id=terminal.id,
++                from_parent_kind="constant",
++                to_parent_kind="vi",
++            )
++        ],
++    )
++    graph = build_graph(context, context.name, [])
++    source = build_module(context, context.name, graph=graph)
++    namespace = {}
++    exec(compile(source, context.name, "exec"), namespace)
++    result = namespace["result_field"]()
++    assert result._fields == (field,)
++    assert result._asdict() == {field: 42.0}
++
++
++@pytest.mark.parametrize(
++    "labels",
++    [
++        ("_status", "output_status"),
++        ("-status", "_status"),
++        ("A B", "A-B"),
++        ("", "output"),
++        ("!", "?"),
++    ],
++)
++def test_colliding_fields_fail_during_generation(labels: tuple[str, str]):
++    context = VIContext(
++        name="Collision.vi",
++        outputs=[output(label, index) for index, label in enumerate(labels)],
++    )
++    with pytest.raises(ValueError, match="Output labels collide"):
++        build_module(context, context.name)
++
++
++def test_error_cluster_is_excluded_before_collision_check():
++    regular = output("error out")
++    regular.lv_type = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="String")
++    error = output("error out", 1)
++    error.lv_type = LVType(
++        kind=LVTypeKind.CLUSTER,
++        fields=[ClusterField(name=name) for name in ("status", "code", "source")],
++    )
++    context = VIContext(name="Error Output.vi", outputs=[regular, error])
++    result_class = build_result_class(context)
++    assert result_class is not None
++    assert len(result_class.body) == 1

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "fixture_id": "underscore_output",
+  "vi_sha256": "1b5e43caec48f9a9bcb5dd8d01557150d0bb0506a9ce38603617fbc0704127be",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T08:45:51.864582+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_underscore_labview.py",
+    "source_script_sha256": "8c129d6e76ec8f8e62975bb227cf93a8a803594ed3b15d45b230b705bcf7866b",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "constant_output",
+      "effective_inputs": {},
+      "outputs": {
+        "_status": 42.0
+      }
+    }
+  ]
+}

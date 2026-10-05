@@ -253,3 +253,6 @@ The reset method is listed in NI's public
 [Scalar NaN and infinity constants](fixtures/nonfinite_constants/README.md):
 new native LabVIEW 2020 VI, strict JSON specification, native receipts,
 37 synthetic cases and an independent source patch.
+
+[underscore_output](fixtures/underscore_output/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

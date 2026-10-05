@@ -1,0 +1,32 @@
+{
+  "fixture_id": "underscore_output",
+  "vi_sha256": "1b5e43caec48f9a9bcb5dd8d01557150d0bb0506a9ce38603617fbc0704127be",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-result-field-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\underscore_output\\patched-0.8.7\\generated\\underscore_output\\devpyconlysetoolslvkit_upstreamfixturesunderscore_outputunderscore_output.py",
+  "generated_sha256": "89501f16e6929766a50c92018c1e7de48825dbc61faf685bad4613ebfdbcee66",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\underscore_output\\underscore_output.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\underscore_output\\patched-0.8.7\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 1,
+  "total": 1,
+  "comparisons": [
+    {
+      "case": "constant_output",
+      "output": "_status",
+      "expected": 42.0,
+      "actual": 42.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "27ce18682e3f402e43368be9c0cd19ec669ffba4",
+  "python": "3.12.14",
+  "runs": {
+    "result-fields-baseline": {
+      "tests": 21,
+      "failures": 13,
+      "errors": 0,
+      "skipped": 0
+    },
+    "result-fields-related": {
+      "tests": 122,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "result-fields-native-baseline": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "result-fields-native-patched": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

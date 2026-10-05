@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.922" timestamp="2026-10-05T10:47:41.511539+02:00" hostname="everest"><testcase classname="tools.lvkit_upstream.test_result_field_native" name="test_underscore_output_matches_native_value" time="0.031" /></testsuite></testsuites>

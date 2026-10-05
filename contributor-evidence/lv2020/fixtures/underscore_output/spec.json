@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "underscore_output",
+  "vi_file": "underscore_output.vi",
+  "function": "underscore_output",
+  "description": "One DBL constant 42 wired directly to a connector-pane output labelled _status.",
+  "inputs": {},
+  "outputs": {
+    "_status": {"type": "float64", "python_field": "output_status", "comparison": "exact"}
+  },
+  "cases": [{"id": "constant_output", "inputs": {}}],
+  "limits": ["One native output label; additional naming and collision cases use synthetic graphs."]
+}

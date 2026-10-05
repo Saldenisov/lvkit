@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "id": "nested_cluster_fields",
+  "vi_file": "nested_cluster_fields.vi",
+  "function": "nested_cluster_fields",
+  "authorship": "Independently authored through the LabVIEW 2020 64-bit front panel and block diagram; no application VI or subVI is included.",
+  "inputs": {
+    "cluster_in": {
+      "type": "cluster<float64,cluster<float64,float64>>",
+      "fields": [
+        "marker",
+        {
+          "inner": [
+            "left",
+            "right"
+          ]
+        }
+      ]
+    },
+    "replacement": {
+      "type": "float64"
+    }
+  },
+  "outputs": {
+    "cluster_out": {
+      "type": "cluster<float64,cluster<float64,float64>>"
+    },
+    "original_right": {
+      "type": "float64"
+    }
+  },
+  "diagram": {
+    "operations": [
+      {
+        "operation": "Bundle by Name",
+        "field": "inner.right",
+        "source": "cluster_in",
+        "value": "replacement",
+        "output": "cluster_out"
+      },
+      {
+        "operation": "Unbundle by Name",
+        "field": "inner.right",
+        "source": "cluster_in",
+        "output": "original_right"
+      }
+    ],
+    "subvis": []
+  },
+  "comparison": "Exact tagged JSON values and unchanged inputs; Python anonymous clusters are positional tuples, including nested clusters.",
+  "cases": [
+    {
+      "id": "asymmetric",
+      "inputs": {
+        "cluster_in": [
+          10.0,
+          [
+            20.0,
+            30.0
+          ]
+        ],
+        "replacement": 40.0
+      }
+    },
+    {
+      "id": "negative",
+      "inputs": {
+        "cluster_in": [
+          -10.0,
+          [
+            -20.0,
+            -30.0
+          ]
+        ],
+        "replacement": -40.0
+      }
+    },
+    {
+      "id": "zeros",
+      "inputs": {
+        "cluster_in": [
+          0.0,
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "replacement": 5.0
+      }
+    },
+    {
+      "id": "same_value",
+      "inputs": {
+        "cluster_in": [
+          1.0,
+          [
+            2.0,
+            3.0
+          ]
+        ],
+        "replacement": 3.0
+      }
+    },
+    {
+      "id": "signed_zeros",
+      "inputs": {
+        "cluster_in": [
+          {
+            "float": "-0.0"
+          },
+          [
+            {
+              "float": "-0.0"
+            },
+            {
+              "float": "-0.0"
+            }
+          ]
+        ],
+        "replacement": 0.0
+      }
+    },
+    {
+      "id": "nonfinite_untouched",
+      "inputs": {
+        "cluster_in": [
+          {
+            "float": "inf"
+          },
+          [
+            {
+              "float": "nan"
+            },
+            {
+              "float": "-inf"
+            }
+          ]
+        ],
+        "replacement": 42.0
+      }
+    },
+    {
+      "id": "nonfinite_replacement",
+      "inputs": {
+        "cluster_in": [
+          7.0,
+          [
+            8.0,
+            9.0
+          ]
+        ],
+        "replacement": {
+          "float": "nan"
+        }
+      }
+    },
+    {
+      "id": "large_small",
+      "inputs": {
+        "cluster_in": [
+          1e+300,
+          [
+            1e-300,
+            2e+300
+          ]
+        ],
+        "replacement": -1e-300
+      }
+    }
+  ]
+}

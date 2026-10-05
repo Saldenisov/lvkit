@@ -23,6 +23,10 @@
     "bytes": 3549,
     "sha256": "ebb1747aebcc157c1a9a24ee75ebb798643e0dfaa0eb0240388402766aac7025"
   },
+  "capture_nested_cluster_labview.py": {
+    "bytes": 3917,
+    "sha256": "855ecbaa5e8745779ba4ebe4e9a78e2ecb1d52679a5729924aff279279199e41"
+  },
   "capture_numeric_labview.py": {
     "bytes": 3391,
     "sha256": "60e3a93cdadc582e556c241a8d5affd8f8264804e75a29803287bc147059d8e4"
@@ -230,6 +234,58 @@
   "evidence/expanded_index_array/pytest/summary.json": {
     "bytes": 588,
     "sha256": "7332964f007f6984053f8c3b051a4a7c6bd8dfa50ce0edec1821d37a59fd62b5"
+  },
+  "evidence/nested_cluster_fields/baseline/conversion.log": {
+    "bytes": 755,
+    "sha256": "e7e12f24fd7b34b3d36f3b842f1d98e3b33bf0b8ea24e5df8bcba196c0ce1347"
+  },
+  "evidence/nested_cluster_fields/baseline/generated/nested_cluster_fields/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/nested_cluster_fields/baseline/generated/nested_cluster_fields/devpyconlysetoolslvkit_upstreamfixturesnested_cluster_fieldsnested_cluster_fields.py": {
+    "bytes": 422,
+    "sha256": "9cf4bc25cdb18c3dcfea75ca758f73a53815c61fc79355849d539b0162ce5364"
+  },
+  "evidence/nested_cluster_fields/baseline/report.json": {
+    "bytes": 6033,
+    "sha256": "439d38acbda4b5bae738ddbd75d8dc97214c91c715e7e968e38196e963cc644c"
+  },
+  "evidence/nested_cluster_fields/patched/conversion.log": {
+    "bytes": 507,
+    "sha256": "e4589b793b786835a81b2a95343807292a428e200d8d085aeb81c0ce701cccb5"
+  },
+  "evidence/nested_cluster_fields/patched/generated/nested_cluster_fields/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/nested_cluster_fields/patched/generated/nested_cluster_fields/devpyconlysetoolslvkit_upstreamfixturesnested_cluster_fieldsnested_cluster_fields.py": {
+    "bytes": 515,
+    "sha256": "e199fd9d7cd28f66da8e42b15949f4fc900594739f90910969442c6f32c3ae79"
+  },
+  "evidence/nested_cluster_fields/patched/report.json": {
+    "bytes": 6036,
+    "sha256": "d2cffd7d883a28c9538d43f06b83b65c3136f63a79c4102a77350342f5835ad3"
+  },
+  "evidence/nested_cluster_fields/pytest/nested-cluster-baseline.xml": {
+    "bytes": 9829,
+    "sha256": "f5b1c620973dc2c7d16e99f2ed8b79542c56ba4757fea5e0a11b6bf677e51310"
+  },
+  "evidence/nested_cluster_fields/pytest/nested-cluster-native-baseline.xml": {
+    "bytes": 2619,
+    "sha256": "907ea2d934cb32c9f91adeb0a1026affaccf6212e73afac822b58cd9298e9a80"
+  },
+  "evidence/nested_cluster_fields/pytest/nested-cluster-native-patched.xml": {
+    "bytes": 1395,
+    "sha256": "ef8b4c86b2a2097b90fe80f4da33b31f9bd46ccdde56ace80be88d81d2ca0e71"
+  },
+  "evidence/nested_cluster_fields/pytest/nested-cluster-related.xml": {
+    "bytes": 26103,
+    "sha256": "b07e2ba5c25a2fd2c19cebbad381e630900dfdb1ea17dbd9a35f5474a4eb0317"
+  },
+  "evidence/nested_cluster_fields/pytest/summary.json": {
+    "bytes": 621,
+    "sha256": "e3f2a082a6331d156143741d051171631b492de08e77ae39ee2f33ed100045ee"
   },
   "evidence/nonfinite_constants/patched-0.8.7/conversion.log": {
     "bytes": 497,
@@ -519,6 +575,22 @@
     "bytes": 3359,
     "sha256": "458e57784829b29d53572c2fcf72d1f5b4c250860f38600b389c684a1b00c49b"
   },
+  "fixtures/nested_cluster_fields/golden_labview.json": {
+    "bytes": 4522,
+    "sha256": "4cafb46fa7e6c02bf670a075393b69096a408df7ba475a0817b13b76ac7f72f8"
+  },
+  "fixtures/nested_cluster_fields/nested_cluster_fields.vi": {
+    "bytes": 7745,
+    "sha256": "3d335da6d98575309a1bde5d352cae0e9fbe41076ca2d496bf3827c0cc858fca"
+  },
+  "fixtures/nested_cluster_fields/README.md": {
+    "bytes": 3951,
+    "sha256": "28b2427ae0a1c24c33421af9a04ca579a3ff530e399b79df7e2d3080892f68a0"
+  },
+  "fixtures/nested_cluster_fields/spec.json": {
+    "bytes": 3380,
+    "sha256": "7cc70a9c6cd7c44345e6eb8115b6d8559ee2d6398265177d0c4291dbe0616307"
+  },
   "fixtures/nonfinite_constants/golden_labview.json": {
     "bytes": 992,
     "sha256": "47a7ddcda97b0fa8c6a0ee39fe45079bb91b2b13ef38f8032074c8a9d9102416"
@@ -607,6 +679,10 @@
     "bytes": 16281,
     "sha256": "039d8e34852c877def56e7c401179e51745e747f200d3feb10c5a403b5f8919b"
   },
+  "patches/nested-anonymous-clusters.patch": {
+    "bytes": 19790,
+    "sha256": "e8fdaa07d459012e129807699462936284479d0546a5a5d20adf0934dcb73e8c"
+  },
   "patches/nonfinite-constants.patch": {
     "bytes": 5456,
     "sha256": "2eec8f22a11b91bdc733043efeaf10710276c7a676dde0d46a2dd5501aed8676"
@@ -620,8 +696,8 @@
     "sha256": "3613734f7184231462248342ae68bab70e3b0b66a6400e78f9b1d7b5a8d24498"
   },
   "README.md": {
-    "bytes": 14860,
-    "sha256": "a6749aecd38e53ffe87ac1a507e7707d182a299b3ae8ff5fdb851a6b6718e33d"
+    "bytes": 15034,
+    "sha256": "0ffa770d54b3eba9bc45c3de7dc888e91f2e81547d78ef58117b5af402e0d54e"
   },
   "test_cluster_types_native.py": {
     "bytes": 2319,
@@ -643,6 +719,10 @@
     "bytes": 1742,
     "sha256": "987527bda609055ac4f55e225fdec73d6f2fefaa0d6d5d661c1679f89b8b8bee"
   },
+  "test_nested_cluster_native.py": {
+    "bytes": 2094,
+    "sha256": "46c5ee81735c2e941c5b687358f611f18fbf9fa1632987a47d30fbceb7d75d86"
+  },
   "test_nonfinite_native.py": {
     "bytes": 1317,
     "sha256": "283e81bd3db40a3228d3e117c03e8d62c86d6ac46845ac56eee85e6aeeda9877"
@@ -662,6 +742,10 @@
   "verify_log10_fixture.py": {
     "bytes": 5031,
     "sha256": "790f5bd0260e9cfaa846f9f5c0a72fb5c29ca6b8268267635c530b207abe6e4c"
+  },
+  "verify_nested_cluster_fixture.py": {
+    "bytes": 4308,
+    "sha256": "19a43710c60da6c781b7f332180ab494282f42086ddb7907e5f47742521e82dd"
   },
   "verify_numeric_fixture.py": {
     "bytes": 3940,

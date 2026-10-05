@@ -1,0 +1,13 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\nested_cluster_fields\nested_cluster_fields.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\nested_cluster_fields\nested_cluster_fields.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesnested_cluster_fieldsnested_cluster_fields.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\nested_cluster_fields\baseline\generated\nested_cluster_fields
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0
+C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\nested_cluster_fields\nested_cluster_fields.vi: Warning: Block b'VICD' section 0 patches parse exception: No parsing made for MCLVRTPatches.
+Warning: Identifier has more than one special character.

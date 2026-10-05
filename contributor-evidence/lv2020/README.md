@@ -268,3 +268,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [expanded_index_array](fixtures/expanded_index_array/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[nested_cluster_fields](fixtures/nested_cluster_fields/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

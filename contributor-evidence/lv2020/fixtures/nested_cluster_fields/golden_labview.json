@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "fixture_id": "nested_cluster_fields",
+  "vi_sha256": "3d335da6d98575309a1bde5d352cae0e9fbe41076ca2d496bf3827c0cc858fca",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T11:01:51.285268+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_nested_cluster_labview.py",
+    "source_script_sha256": "855ecbaa5e8745779ba4ebe4e9a78e2ecb1d52679a5729924aff279279199e41",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "asymmetric",
+      "effective_inputs": {
+        "cluster_in": [
+          10.0,
+          [
+            20.0,
+            30.0
+          ]
+        ],
+        "replacement": 40.0
+      },
+      "outputs": {
+        "cluster_out": [
+          10.0,
+          [
+            20.0,
+            40.0
+          ]
+        ],
+        "original_right": 30.0
+      }
+    },
+    {
+      "id": "negative",
+      "effective_inputs": {
+        "cluster_in": [
+          -10.0,
+          [
+            -20.0,
+            -30.0
+          ]
+        ],
+        "replacement": -40.0
+      },
+      "outputs": {
+        "cluster_out": [
+          -10.0,
+          [
+            -20.0,
+            -40.0
+          ]
+        ],
+        "original_right": -30.0
+      }
+    },
+    {
+      "id": "zeros",
+      "effective_inputs": {
+        "cluster_in": [
+          0.0,
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "replacement": 5.0
+      },
+      "outputs": {
+        "cluster_out": [
+          0.0,
+          [
+            0.0,
+            5.0
+          ]
+        ],
+        "original_right": 0.0
+      }
+    },
+    {
+      "id": "same_value",
+      "effective_inputs": {
+        "cluster_in": [
+          1.0,
+          [
+            2.0,
+            3.0
+          ]
+        ],
+        "replacement": 3.0
+      },
+      "outputs": {
+        "cluster_out": [
+          1.0,
+          [
+            2.0,
+            3.0
+          ]
+        ],
+        "original_right": 3.0
+      }
+    },
+    {
+      "id": "signed_zeros",
+      "effective_inputs": {
+        "cluster_in": [
+          {
+            "float": "-0.0"
+          },
+          [
+            {
+              "float": "-0.0"
+            },
+            {
+              "float": "-0.0"
+            }
+          ]
+        ],
+        "replacement": 0.0
+      },
+      "outputs": {
+        "cluster_out": [
+          {
+            "float": "-0.0"
+          },
+          [
+            {
+              "float": "-0.0"
+            },
+            0.0
+          ]
+        ],
+        "original_right": {
+          "float": "-0.0"
+        }
+      }
+    },
+    {
+      "id": "nonfinite_untouched",
+      "effective_inputs": {
+        "cluster_in": [
+          {
+            "float": "inf"
+          },
+          [
+            {
+              "float": "nan"
+            },
+            {
+              "float": "-inf"
+            }
+          ]
+        ],
+        "replacement": 42.0
+      },
+      "outputs": {
+        "cluster_out": [
+          {
+            "float": "inf"
+          },
+          [
+            {
+              "float": "nan"
+            },
+            42.0
+          ]
+        ],
+        "original_right": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "nonfinite_replacement",
+      "effective_inputs": {
+        "cluster_in": [
+          7.0,
+          [
+            8.0,
+            9.0
+          ]
+        ],
+        "replacement": {
+          "float": "nan"
+        }
+      },
+      "outputs": {
+        "cluster_out": [
+          7.0,
+          [
+            8.0,
+            {
+              "float": "nan"
+            }
+          ]
+        ],
+        "original_right": 9.0
+      }
+    },
+    {
+      "id": "large_small",
+      "effective_inputs": {
+        "cluster_in": [
+          1e+300,
+          [
+            1e-300,
+            2e+300
+          ]
+        ],
+        "replacement": -1e-300
+      },
+      "outputs": {
+        "cluster_out": [
+          1e+300,
+          [
+            1e-300,
+            -1e-300
+          ]
+        ],
+        "original_right": 2e+300
+      }
+    }
+  ]
+}

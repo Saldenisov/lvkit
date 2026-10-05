@@ -1,0 +1,291 @@
+{
+  "fixture_id": "nested_cluster_fields",
+  "vi_sha256": "3d335da6d98575309a1bde5d352cae0e9fbe41076ca2d496bf3827c0cc858fca",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-nested-cluster-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\nested_cluster_fields\\patched\\generated\\nested_cluster_fields\\devpyconlysetoolslvkit_upstreamfixturesnested_cluster_fieldsnested_cluster_fields.py",
+  "generated_sha256": "e199fd9d7cd28f66da8e42b15949f4fc900594739f90910969442c6f32c3ae79",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\nested_cluster_fields\\nested_cluster_fields.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\nested_cluster_fields\\patched\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 16,
+  "total": 16,
+  "comparisons": [
+    {
+      "case": "asymmetric",
+      "output": "cluster_out",
+      "expected": [
+        10.0,
+        [
+          20.0,
+          40.0
+        ]
+      ],
+      "actual": [
+        10.0,
+        [
+          20.0,
+          40.0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "asymmetric",
+      "output": "original_right",
+      "expected": 30.0,
+      "actual": 30.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative",
+      "output": "cluster_out",
+      "expected": [
+        -10.0,
+        [
+          -20.0,
+          -40.0
+        ]
+      ],
+      "actual": [
+        -10.0,
+        [
+          -20.0,
+          -40.0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative",
+      "output": "original_right",
+      "expected": -30.0,
+      "actual": -30.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "zeros",
+      "output": "cluster_out",
+      "expected": [
+        0.0,
+        [
+          0.0,
+          5.0
+        ]
+      ],
+      "actual": [
+        0.0,
+        [
+          0.0,
+          5.0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "zeros",
+      "output": "original_right",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "same_value",
+      "output": "cluster_out",
+      "expected": [
+        1.0,
+        [
+          2.0,
+          3.0
+        ]
+      ],
+      "actual": [
+        1.0,
+        [
+          2.0,
+          3.0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "same_value",
+      "output": "original_right",
+      "expected": 3.0,
+      "actual": 3.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "signed_zeros",
+      "output": "cluster_out",
+      "expected": [
+        {
+          "float": "-0.0"
+        },
+        [
+          {
+            "float": "-0.0"
+          },
+          0.0
+        ]
+      ],
+      "actual": [
+        {
+          "float": "-0.0"
+        },
+        [
+          {
+            "float": "-0.0"
+          },
+          0.0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "signed_zeros",
+      "output": "original_right",
+      "expected": {
+        "float": "-0.0"
+      },
+      "actual": {
+        "float": "-0.0"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_untouched",
+      "output": "cluster_out",
+      "expected": [
+        {
+          "float": "inf"
+        },
+        [
+          {
+            "float": "nan"
+          },
+          42.0
+        ]
+      ],
+      "actual": [
+        {
+          "float": "inf"
+        },
+        [
+          {
+            "float": "nan"
+          },
+          42.0
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_untouched",
+      "output": "original_right",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_replacement",
+      "output": "cluster_out",
+      "expected": [
+        7.0,
+        [
+          8.0,
+          {
+            "float": "nan"
+          }
+        ]
+      ],
+      "actual": [
+        7.0,
+        [
+          8.0,
+          {
+            "float": "nan"
+          }
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_replacement",
+      "output": "original_right",
+      "expected": 9.0,
+      "actual": 9.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "large_small",
+      "output": "cluster_out",
+      "expected": [
+        1e+300,
+        [
+          1e-300,
+          -1e-300
+        ]
+      ],
+      "actual": [
+        1e+300,
+        [
+          1e-300,
+          -1e-300
+        ]
+      ],
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "large_small",
+      "output": "original_right",
+      "expected": 2e+300,
+      "actual": 2e+300,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

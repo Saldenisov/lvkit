@@ -6,6 +6,7 @@ resolve() queries the graph directly. One graph. No copies.
 from __future__ import annotations
 
 import ast
+import math
 from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -637,6 +638,15 @@ def _bind_inputs_and_constants(
                     ctx.add_import(f"from .{func} import {func}")
 
 
+def _python_float_constant(value: float) -> str:
+    """Emit a float as an executable expression, including NaN and infinity."""
+    if math.isnan(value):
+        return "float('nan')"
+    if math.isinf(value):
+        return "float('-inf')" if value < 0 else "float('inf')"
+    return repr(value)
+
+
 def _decode_numeric_constant(value: str, underlying_type: str) -> str:
     """Decode a numeric constant using its LabVIEW type.
 
@@ -652,7 +662,7 @@ def _decode_numeric_constant(value: str, underlying_type: str) -> str:
     except ValueError:
         pass
     try:
-        return str(float(value))
+        return _python_float_constant(float(value))
     except ValueError:
         pass
 
@@ -667,11 +677,11 @@ def _decode_numeric_constant(value: str, underlying_type: str) -> str:
     if "Float64" in underlying_type or "DBL" in underlying_type:
         hex_padded = value.zfill(16)
         float_val = struct.unpack(">d", bytes.fromhex(hex_padded))[0]
-        return str(float_val)
+        return _python_float_constant(float_val)
     if "Float32" in underlying_type or "SGL" in underlying_type:
         hex_padded = value.zfill(8)
         float_val = struct.unpack(">f", bytes.fromhex(hex_padded))[0]
-        return str(float_val)
+        return _python_float_constant(float_val)
     # Integer types (Int8, Int16, Int32, Int64, UInt*, etc.)
     return str(int(value, 16))
 
@@ -805,7 +815,9 @@ def _format_constant(const: Constant | ConstantNode) -> str:
             return repr(value)
 
     # Already-decoded Python values
-    if isinstance(value, int | float):
+    if isinstance(value, float):
+        return _python_float_constant(value)
+    if isinstance(value, int):
         return str(value)
 
     # No type info — best-effort fallback
@@ -819,7 +831,7 @@ def _format_constant(const: Constant | ConstantNode) -> str:
         except ValueError:
             pass
         try:
-            return str(float(value))
+            return _python_float_constant(float(value))
         except ValueError:
             pass
         if len(value) == 1 and not value.isprintable():

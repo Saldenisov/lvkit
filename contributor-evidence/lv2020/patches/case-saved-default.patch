@@ -1,0 +1,300 @@
+diff --git a/src/lvkit/parser/nodes/case.py b/src/lvkit/parser/nodes/case.py
+index 2b15ea1..db87458 100644
+--- a/src/lvkit/parser/nodes/case.py
++++ b/src/lvkit/parser/nodes/case.py
+@@ -115,29 +115,9 @@ def extract_case_structures(
+     if selector_tables:
+         _apply_selector_tables(case_structures, selector_tables, table_index_shift)
+ 
+-    for cs in case_structures:
+-        _apply_last_frame_default(cs)
+-
+     return case_structures
+ 
+ 
+-def _apply_last_frame_default(cs: ParsedCaseStructure) -> None:
+-    """An integer/string selector has an infinite domain, so a case on one ALWAYS
+-    has a default frame. When neither ``SelectDefaultCase`` nor a value-less frame
+-    identified it, the default is the LAST frame (validated: every numeric
+-    ``SelectDefaultCase`` in the corpus points at the last frame, and value-less
+-    defaults are the last frame too). LabVIEW writes ``SelectDefaultCase`` only to
+-    RELOCATE the default off that last position. The last frame may also carry an
+-    explicit value ("N, Default"); marking it default is correct because codegen
+-    emits it as the ``case _`` catch-all, which subsumes that value.
+-    """
+-    if cs.selector_type not in ("integer", "string"):
+-        return
+-    if not cs.frames or any(f.is_default for f in cs.frames):
+-        return
+-    cs.frames[-1].is_default = True
+-
+-
+ def _extract_one_case_structure(
+     case_elem: ET.Element,
+     case_uid: str,
+@@ -345,11 +325,10 @@ def _extract_one_case_structure(
+                 except ValueError:
+                     string_labels.append(hex_text)
+ 
+-    # Detect default case: SelectDefaultCase holds the hex diagram index of
+-    # the default frame (FF = none). When it is absent/FF but a diagram has
+-    # NO selector range, that diagram IS the implicit default (it catches all
+-    # values the explicit frames don't) — LabVIEW labels it "Default". Missing
+-    # this is what made non-boolean default frames fall through to "False".
++    # SelectDefaultCase is a hex diagram index (FF = none). The zero-valued
++    # field can be omitted from the heap: integer/string/enum selectors then
++    # default to diagram 0, even when it also carries literal selector ranges.
++    # Symbolic error-cluster ranges identify their own catch-all frame.
+     default_diag_idx: int | None = None
+     default_case_elem = case_elem.findtext("SelectDefaultCase")
+     if default_case_elem and default_case_elem.upper() != "FF":
+@@ -363,6 +342,12 @@ def _extract_one_case_structure(
+         # symbolic frame has no entry in ``ranges_by_diag`` either and would
+         # otherwise be indistinguishable from a No-Error frame there.
+         default_diag_idx = next(iter(default_symbolic_diags))
++    if (
++        not default_case_elem
++        and default_diag_idx is None
++        and selector_type in ("integer", "string", "enum")
++    ):
++        default_diag_idx = 0
+     if default_diag_idx is None:
+         handled = set(ranges_by_diag) | no_error_diags | default_symbolic_diags
+         missing = [i for i in range(num_frames) if i not in handled]
+@@ -382,7 +367,7 @@ def _extract_one_case_structure(
+                 # that ``op_walk.is_no_error_selector``/``_selector_label``
+                 # already recognize (renders "No Error", green border).
+                 resolved_selector = "0"
+-            elif not is_default and ranges:
++            elif ranges:
+                 sv = ranges[0].end if ranges[0].open_start else ranges[0].start
+                 if selector_type == "boolean":
+                     resolved_selector = "True" if sv == 1 else "False"
+@@ -403,10 +388,9 @@ def _extract_one_case_structure(
+                 selector_type,
+             )
+             if frame:
+-                # Ranges are display metadata for numeric/enum selectors; a
+-                # boolean/string frame's ``selector_value`` already is the
+-                # display token, and the default/no-error frame has no range.
+-                if not is_default and selector_type not in ("boolean", "string"):
++                # A default frame can also have explicit selector values.
++                # Numeric/enum ranges and the catch-all flag are independent.
++                if selector_type not in ("boolean", "string"):
+                     frame.selector_ranges = ranges
+                 frames.append(frame)
+ 
+@@ -525,14 +509,13 @@ def _extract_frame(
+     # unique placeholder — the dataspace SelectorTable overrides it when it
+     # correlates.
+     if not selector_value:
+-        if selector_type == "boolean" or selector_type is None:
++        if is_default:
++            selector_value = "Default"
++        elif selector_type == "boolean" or selector_type is None:
+             selector_value = "True" if index == 1 else "False"
+         else:
+             selector_value = str(index)
+ 
+-    if is_default:
+-        selector_value = "Default"
+-
+     # Operations directly on this frame's diagram (nodeList) PLUS any structure
+     # that LabVIEW lists only in the diagram's zPlaneList (a nested flat sequence
+     # box lives there, not in nodeList — see frame_inner_node_uids). We do NOT
+@@ -740,7 +723,6 @@ def _apply_one_table(case: ParsedCaseStructure, table: SelectorTable) -> None:
+     # case's own displayed_frame (from dIdx) rather than overwrite with -1.
+     if table.displayed_frame >= 0:
+         case.displayed_frame = table.displayed_frame
+-    covered: set[int] = {diag for _s, _e, diag in table.ranges}
+     for idx, frame in enumerate(case.frames):
+         my_ranges = [(s, e) for s, e, d in table.ranges if d == idx]
+         if not my_ranges:
+@@ -750,7 +732,7 @@ def _apply_one_table(case: ParsedCaseStructure, table: SelectorTable) -> None:
+             frame.selector_ranges = []
+             frame.selector_strings = []
+             continue
+-        frame.is_default = idx not in covered  # never, but keep flag honest
++        # Literal ranges do not unset the heap's saved default designation.
+         if table.has_strings:
+             strings: list[str] = []
+             for start, end in my_ranges:
+diff --git a/tests/test_case_parser.py b/tests/test_case_parser.py
+index 31dcfad..5d745d9 100644
+--- a/tests/test_case_parser.py
++++ b/tests/test_case_parser.py
+@@ -29,7 +29,7 @@ def _build_case_xml(
+         selector_uid: UID for the selector terminal
+         select_ranges: list of (start, diagramIdx) for SelectRangeArray32
+         string_array: hex-encoded strings for SelectStringArray
+-        default_diag: diagram index of the default case (None = no default)
++        default_diag: stored default diagram index (None omits the field)
+         num_diags: number of diagram frames to create
+         range_types: parallel list of (startRangeType, endRangeType) for each
+             entry in ``select_ranges``. Omitted/None entries default to
+@@ -369,11 +369,7 @@ class TestSymbolicRangeTypes:
+         assert f1.selector_ranges == []
+ 
+     def test_literal_enum_case_unchanged(self):
+-        """Fully-literal ranges (type 0/0) resolve to their literal values. An
+-        INTEGER selector has an infinite domain, so the case always has a default
+-        frame: with no explicit SelectDefaultCase, the last frame is the default
+-        (see _apply_last_frame_default) — it still carries its own value ("1,
+-        Default"), which codegen emits as the ``case _`` catch-all."""
++        """Literal values survive the omitted zero default-diagram field."""
+         root = _build_case_xml(
+             "cs1",
+             "sel1",
+@@ -385,8 +381,8 @@ class TestSymbolicRangeTypes:
+ 
+         assert cs.frames[0].selector_value == "0"
+         assert cs.frames[1].selector_value == "1"
+-        assert cs.frames[0].is_default is False
+-        assert cs.frames[1].is_default is True
++        assert cs.frames[0].is_default is True
++        assert cs.frames[1].is_default is False
+ 
+ 
+ # ---------------------------------------------------------------------------
+@@ -478,6 +474,7 @@ class TestApplySelectorTables:
+             select_ranges=[],
+             num_diags=4,
+             sel_type_id=42,
++            default_diag=3,
+         )
+         tables = [
+             _ds_selector_table_obj(
+@@ -503,6 +500,7 @@ class TestApplySelectorTables:
+             select_ranges=[],
+             num_diags=3,
+             sel_type_id=50,
++            default_diag=2,
+         )
+         tables = [_ds_selector_table_obj(35, 2, [(2, 3, 0), (5, 7, 1)])]
+         ti = _make_terminal_info("sel1", "NumInt32")
+diff --git a/tests/test_case_saved_default.py b/tests/test_case_saved_default.py
+new file mode 100644
+index 0000000..8e01b44
+--- /dev/null
++++ b/tests/test_case_saved_default.py
+@@ -0,0 +1,120 @@
++"""Case defaults are stored diagram indices, independent of selector values."""
++
++from __future__ import annotations
++
++import pytest
++
++from lvkit.parser.nodes.case import extract_case_structures
++from tests.test_case_parser import (
++    _build_case_xml,
++    _ds_selector_table_obj,
++    _make_terminal_info,
++)
++
++
++@pytest.mark.parametrize("type_name", ["NumInt32", "String", "Enum"])
++@pytest.mark.parametrize("default_diag", [None, 0, 1])
++@pytest.mark.parametrize("with_table", [False, True])
++def test_default_index_survives_literal_ranges_and_tables(
++    type_name, default_diag, with_table
++):
++    strings = ["alpha", "beta"] if type_name == "String" else None
++    root = _build_case_xml(
++        "case",
++        "selector",
++        select_ranges=[(0, 0), (1, 1)],
++        string_array=[s.encode().hex() for s in strings] if strings else None,
++        default_diag=default_diag,
++        sel_type_id=42,
++    )
++    tables = (
++        [_ds_selector_table_obj(33, 1, [(0, 0, 0), (1, 1, 1)], strings)]
++        if with_table
++        else None
++    )
++    case = extract_case_structures(
++        root, _make_terminal_info("selector", type_name), tables
++    )[0]
++
++    expected_default = 0 if default_diag is None else default_diag
++    assert [f.is_default for f in case.frames] == [
++        i == expected_default for i in range(2)
++    ]
++    assert [f.selector_value for f in case.frames] == (strings or ["0", "1"])
++    if type_name != "String":
++        assert [[(r.start, r.end) for r in f.selector_ranges] for f in case.frames] == [
++            [(0, 0)],
++            [(1, 1)],
++        ]
++    if with_table:
++        assert case.displayed_frame == 1
++
++
++@pytest.mark.parametrize("type_name", ["NumInt32", "String", "Enum"])
++@pytest.mark.parametrize("with_table", [False, True])
++def test_ff_keeps_fully_covered_frames_without_a_default(type_name, with_table):
++    strings = ["alpha", "beta"] if type_name == "String" else None
++    root = _build_case_xml(
++        "case",
++        "selector",
++        select_ranges=[(0, 0), (1, 1)],
++        string_array=[s.encode().hex() for s in strings] if strings else None,
++        default_diag=255,
++        sel_type_id=42,
++    )
++    tables = (
++        [_ds_selector_table_obj(33, 0, [(0, 0, 0), (1, 1, 1)], strings)]
++        if with_table
++        else None
++    )
++    case = extract_case_structures(
++        root, _make_terminal_info("selector", type_name), tables
++    )[0]
++    assert not any(f.is_default for f in case.frames)
++    assert [f.selector_value for f in case.frames] == (strings or ["0", "1"])
++
++
++@pytest.mark.parametrize("default_diag", [None, 255])
++@pytest.mark.parametrize("with_table", [False, True])
++def test_boolean_frames_keep_their_finite_domain(default_diag, with_table):
++    root = _build_case_xml(
++        "case",
++        "selector",
++        select_ranges=[(0, 0), (1, 1)],
++        default_diag=default_diag,
++        sel_type_id=42,
++    )
++    tables = (
++        [_ds_selector_table_obj(33, 0, [(0, 0, 0), (1, 1, 1)])] if with_table else None
++    )
++    case = extract_case_structures(
++        root, _make_terminal_info("selector", "Boolean"), tables
++    )[0]
++    assert not any(f.is_default for f in case.frames)
++    assert [f.selector_value for f in case.frames] == ["False", "True"]
++
++
++def test_default_retains_several_closed_selector_ranges():
++    root = _build_case_xml(
++        "case",
++        "selector",
++        select_ranges=[(0, 3, 0), (8, 9, 0), (4, 7, 1)],
++    )
++    case = extract_case_structures(root, _make_terminal_info("selector", "NumInt32"))[0]
++    assert [f.is_default for f in case.frames] == [True, False]
++    assert [(r.start, r.end) for r in case.frames[0].selector_ranges] == [
++        (0, 3),
++        (8, 9),
++    ]
++
++
++def test_zero_default_does_not_depend_on_displayed_frame():
++    root = _build_case_xml(
++        "case", "selector", select_ranges=[(0, 0), (1, 1)], sel_type_id=42
++    )
++    tables = [_ds_selector_table_obj(33, 1, [(0, 0, 0), (1, 1, 1)])]
++    case = extract_case_structures(
++        root, _make_terminal_info("selector", "NumInt32"), tables
++    )[0]
++    assert case.displayed_frame == 1
++    assert [f.is_default for f in case.frames] == [True, False]

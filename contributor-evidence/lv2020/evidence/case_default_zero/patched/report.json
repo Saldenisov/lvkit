@@ -1,0 +1,86 @@
+{
+  "fixture_id": "case_default_zero",
+  "vi_sha256": "09ec3e76b6fd4ae5b44b94bb57f63b26fa9ef76399f4c54a906b7e2fdecd86ff",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-case-default-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\case_default_zero\\patched\\generated\\case_default_zero\\devpyconlysetoolslvkit_upstreamfixturescase_default_zerocase_default_zero.py",
+  "generated_sha256": "9274d32a5fdc79cfeb197b84071ee92401bf3ec0e22856e413a79a532aa10cbf",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\case_default_zero\\case_default_zero.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\evidence\\case_default_zero\\patched\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 7,
+  "total": 7,
+  "comparisons": [
+    {
+      "case": "explicit_zero_default",
+      "output": "result",
+      "expected": 10,
+      "actual": 10,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "explicit_one",
+      "output": "result",
+      "expected": 20,
+      "actual": 20,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "unlisted_positive",
+      "output": "result",
+      "expected": 10,
+      "actual": 10,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "unlisted_negative",
+      "output": "result",
+      "expected": 10,
+      "actual": 10,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "unlisted_99",
+      "output": "result",
+      "expected": 10,
+      "actual": 10,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "i32_min",
+      "output": "result",
+      "expected": 10,
+      "actual": 10,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "i32_max",
+      "output": "result",
+      "expected": 10,
+      "actual": 10,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

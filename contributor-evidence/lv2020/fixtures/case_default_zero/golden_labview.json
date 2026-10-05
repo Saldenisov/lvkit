@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "fixture_id": "case_default_zero",
+  "vi_sha256": "09ec3e76b6fd4ae5b44b94bb57f63b26fa9ef76399f4c54a906b7e2fdecd86ff",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T12:18:15.581274+00:00",
+    "method": "ReinitializeAllToDefault / VT_I4 SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_case_labview.py",
+    "source_script_sha256": "71a96c42349ac95ce7e099fd486019844add4deae8f193ee26350b6fd3e2be45",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "explicit_zero_default",
+      "effective_inputs": {
+        "selector": 0
+      },
+      "outputs": {
+        "result": 10
+      }
+    },
+    {
+      "id": "explicit_one",
+      "effective_inputs": {
+        "selector": 1
+      },
+      "outputs": {
+        "result": 20
+      }
+    },
+    {
+      "id": "unlisted_positive",
+      "effective_inputs": {
+        "selector": 2
+      },
+      "outputs": {
+        "result": 10
+      }
+    },
+    {
+      "id": "unlisted_negative",
+      "effective_inputs": {
+        "selector": -1
+      },
+      "outputs": {
+        "result": 10
+      }
+    },
+    {
+      "id": "unlisted_99",
+      "effective_inputs": {
+        "selector": 99
+      },
+      "outputs": {
+        "result": 10
+      }
+    },
+    {
+      "id": "i32_min",
+      "effective_inputs": {
+        "selector": -2147483648
+      },
+      "outputs": {
+        "result": 10
+      }
+    },
+    {
+      "id": "i32_max",
+      "effective_inputs": {
+        "selector": 2147483647
+      },
+      "outputs": {
+        "result": 10
+      }
+    }
+  ]
+}

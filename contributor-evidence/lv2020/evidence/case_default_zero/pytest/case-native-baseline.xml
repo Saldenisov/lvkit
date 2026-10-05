@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="8" time="1.153" timestamp="2026-10-05T14:24:15.058697+02:00" hostname="everest"><testcase classname="tools.lvkit_upstream.test_case_native" name="test_native_first_frame_is_default_and_retains_zero_range" time="0.277"><failure message="assert [False, True] == [True, False]&#x0A;  &#x0A;  At index 0 diff: False != True&#x0A;  Use -v to get more diff">E   assert [False, True] == [True, False]
+      
+      At index 0 diff: False != True
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[explicit_zero_default]" time="0.001" /><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[explicit_one]" time="0.001" /><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[unlisted_positive]" time="0.001"><failure message="AssertionError: assert {'result': 20} == {'result': 10}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 20} != {'result': 10}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 20} == {'result': 10}
+      
+      Differing items:
+      {'result': 20} != {'result': 10}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[unlisted_negative]" time="0.001"><failure message="AssertionError: assert {'result': 20} == {'result': 10}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 20} != {'result': 10}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 20} == {'result': 10}
+      
+      Differing items:
+      {'result': 20} != {'result': 10}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[unlisted_99]" time="0.001"><failure message="AssertionError: assert {'result': 20} == {'result': 10}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 20} != {'result': 10}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 20} == {'result': 10}
+      
+      Differing items:
+      {'result': 20} != {'result': 10}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[i32_min]" time="0.001"><failure message="AssertionError: assert {'result': 20} == {'result': 10}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 20} != {'result': 10}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 20} == {'result': 10}
+      
+      Differing items:
+      {'result': 20} != {'result': 10}
+      Use -v to get more diff</failure></testcase><testcase classname="tools.lvkit_upstream.test_case_native" name="test_generated_integer_case_matches_native[i32_max]" time="0.001"><failure message="AssertionError: assert {'result': 20} == {'result': 10}&#x0A;  &#x0A;  Differing items:&#x0A;  {'result': 20} != {'result': 10}&#x0A;  Use -v to get more diff">E   AssertionError: assert {'result': 20} == {'result': 10}
+      
+      Differing items:
+      {'result': 20} != {'result': 10}
+      Use -v to get more diff</failure></testcase></testsuite></testsuites>

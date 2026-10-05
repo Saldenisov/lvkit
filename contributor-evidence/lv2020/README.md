@@ -274,3 +274,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [llb_stream_lifetime](fixtures/llb_stream_lifetime/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[case_default_zero](fixtures/case_default_zero/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

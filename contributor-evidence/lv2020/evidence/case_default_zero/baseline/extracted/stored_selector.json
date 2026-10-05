@@ -1,0 +1,28 @@
+{
+  "vi_sha256": "09ec3e76b6fd4ae5b44b94bb57f63b26fa9ef76399f4c54a906b7e2fdecd86ff",
+  "select_default_case_field": null,
+  "stored_display_label": "\" 0, Default \"",
+  "heap_ranges": [
+    {
+      "start": 0,
+      "end": 0,
+      "startRangeType": 0,
+      "endRangeType": 0,
+      "diagramIdx": 0
+    },
+    {
+      "start": 1,
+      "end": 1,
+      "startRangeType": 0,
+      "endRangeType": 0,
+      "diagramIdx": 1
+    }
+  ],
+  "selector_tables": [],
+  "xml_sha256": {
+    "vi_BDHb.xml": "a9911977dc9201f1ce25073e4e0162ed592a2d57761e931aed4cface3ec2b897",
+    "vi_FPHb.xml": "49d20e01eea6ca82a19b0c5906226696703b738c3ba46756dba4344a4470092d",
+    "vi.xml": "33641f15bb78000f88449b3d55a56671370092662c5c016bf9161f46be2037d2"
+  },
+  "scope": "Only XML was copied; no extracted icon or rendered NI artwork is exported."
+}

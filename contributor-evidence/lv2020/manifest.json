@@ -3,6 +3,10 @@
     "bytes": 146,
     "sha256": "589476afa451c0ca402920c70cc58fc79d4a4c438d83b8bd46a82f7827464a41"
   },
+  "capture_case_labview.py": {
+    "bytes": 3217,
+    "sha256": "71a96c42349ac95ce7e099fd486019844add4deae8f193ee26350b6fd3e2be45"
+  },
   "capture_cluster_labview.py": {
     "bytes": 3740,
     "sha256": "d3ce1698d3a8f7181119f5da0c48e5c85e07d585fd8206bfb73669e135bcf883"
@@ -138,6 +142,82 @@
   "evidence/array_add_literal/upstream-0.8.7/report.json": {
     "bytes": 4542,
     "sha256": "72cd6ffb674a33fc8fc4c151bb21a88e6b7f4c33a9fff70e76f17c61bcb44c38"
+  },
+  "evidence/case_default_zero/baseline/conversion.log": {
+    "bytes": 715,
+    "sha256": "62b9bdabdbffb6767d12b9015ff590bafafaf23f9d9d695dded237d90a8f1478"
+  },
+  "evidence/case_default_zero/baseline/extracted/stored_selector.json": {
+    "bytes": 854,
+    "sha256": "133ea26c5017b6a28feb6acbbbc44e469acd734230c8cc9e9a7ba944167d02ef"
+  },
+  "evidence/case_default_zero/baseline/extracted/vi.xml": {
+    "bytes": 32989,
+    "sha256": "33641f15bb78000f88449b3d55a56671370092662c5c016bf9161f46be2037d2"
+  },
+  "evidence/case_default_zero/baseline/extracted/vi_BDHb.xml": {
+    "bytes": 21446,
+    "sha256": "a9911977dc9201f1ce25073e4e0162ed592a2d57761e931aed4cface3ec2b897"
+  },
+  "evidence/case_default_zero/baseline/extracted/vi_FPHb.xml": {
+    "bytes": 16501,
+    "sha256": "49d20e01eea6ca82a19b0c5906226696703b738c3ba46756dba4344a4470092d"
+  },
+  "evidence/case_default_zero/baseline/generated/case_default_zero/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/case_default_zero/baseline/generated/case_default_zero/devpyconlysetoolslvkit_upstreamfixturescase_default_zerocase_default_zero.py": {
+    "bytes": 369,
+    "sha256": "96dd2790e5ddb6defba273df72180a456efbf2b01274c5ccebfef71d2a130529"
+  },
+  "evidence/case_default_zero/baseline/report.json": {
+    "bytes": 2389,
+    "sha256": "312c02ca7de2c988c7e5a092ed1b60a63ab26f586c1edc93f122d44f7577e3f8"
+  },
+  "evidence/case_default_zero/patched/conversion.log": {
+    "bytes": 714,
+    "sha256": "b845e85823ba615ab69071bc3a3d2111f979405edfc72f40aebf588485d93315"
+  },
+  "evidence/case_default_zero/patched/generated/case_default_zero/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/case_default_zero/patched/generated/case_default_zero/devpyconlysetoolslvkit_upstreamfixturescase_default_zerocase_default_zero.py": {
+    "bytes": 369,
+    "sha256": "9274d32a5fdc79cfeb197b84071ee92401bf3ec0e22856e413a79a532aa10cbf"
+  },
+  "evidence/case_default_zero/patched/report.json": {
+    "bytes": 2393,
+    "sha256": "0d4efbdfd55de48d54fa4fae4f949d13c6c0ac89fcb5e4736293bd66edfad0d0"
+  },
+  "evidence/case_default_zero/pytest/case-baseline.xml": {
+    "bytes": 12088,
+    "sha256": "f71fb3682a656f80bd548a3452e2eda04d97c8bed798897c09c87c28c1e86ae4"
+  },
+  "evidence/case_default_zero/pytest/case-existing-baseline.xml": {
+    "bytes": 16355,
+    "sha256": "db4c0582bdedbec7da1760f445b9fb7f7996b16d69f19d64af264c27f5de0954"
+  },
+  "evidence/case_default_zero/pytest/case-native-baseline.xml": {
+    "bytes": 3430,
+    "sha256": "64dd01bd02bc39f09ce0ee119db549824d6bd9c51a11177b393ea1f3ca0d7eee"
+  },
+  "evidence/case_default_zero/pytest/case-native-patched.xml": {
+    "bytes": 1364,
+    "sha256": "cf87167da47e098211bfa167245972c6be0f3ef5d17f43a364d3586cf5f217e3"
+  },
+  "evidence/case_default_zero/pytest/case-patched.xml": {
+    "bytes": 4461,
+    "sha256": "2b9b0849e63b7d978a764e1d5ef718b0d2ea1852c583cf08a3d314bf07edd82a"
+  },
+  "evidence/case_default_zero/pytest/case-related.xml": {
+    "bytes": 20815,
+    "sha256": "089d69f619c3d7095baf8794e02563ac87392fb0800af458c846545bc8f3ea37"
+  },
+  "evidence/case_default_zero/pytest/summary.json": {
+    "bytes": 819,
+    "sha256": "3cd1af8db24cdea9d15e9fbec97aed0c91d51a7933d0880bd95998338cc3f9c5"
   },
   "evidence/combined/pytest-baseline-native.xml": {
     "bytes": 8044,
@@ -615,6 +695,22 @@
     "bytes": 1258,
     "sha256": "b4644d4eb23cf52ec267101d3b9edc16fac801c8fd0b20f13218dd59a626baf0"
   },
+  "fixtures/case_default_zero/case_default_zero.vi": {
+    "bytes": 6917,
+    "sha256": "09ec3e76b6fd4ae5b44b94bb57f63b26fa9ef76399f4c54a906b7e2fdecd86ff"
+  },
+  "fixtures/case_default_zero/golden_labview.json": {
+    "bytes": 1820,
+    "sha256": "ca2051958ddd08238f39265361a9f54fdc18b909195a7b508e8b5f623e1ac61d"
+  },
+  "fixtures/case_default_zero/README.md": {
+    "bytes": 4054,
+    "sha256": "5411123188656e63d4a56e85eed30e07d1b3fd0ef4c586b8adb4a23b2d93d179"
+  },
+  "fixtures/case_default_zero/spec.json": {
+    "bytes": 1335,
+    "sha256": "f68b53f5d99feda80b1d26d71ff8c0cdc030c6475597e2e70c5d544bbdfd9b77"
+  },
   "fixtures/enum_saved_default/enum_saved_default.vi": {
     "bytes": 6026,
     "sha256": "0dfbab2b083abf16b7ae1bdf6206c99f5d3d18f7e83383fa7e17f6e82fcd49f6"
@@ -743,6 +839,10 @@
     "bytes": 6025,
     "sha256": "1b5e43caec48f9a9bcb5dd8d01557150d0bb0506a9ce38603617fbc0704127be"
   },
+  "inspect_case_fixture.py": {
+    "bytes": 2297,
+    "sha256": "554ae349247e0f3c83a51340daa1a0e8ff33ba85ac87da92e3d54a67cc01a4dc"
+  },
   "inventory_llb_fixture.py": {
     "bytes": 2509,
     "sha256": "76987741fe168d22d3a2a633f871e8699c077ffe0480c8b793e03f55a3488e13"
@@ -766,6 +866,10 @@
   "patches/07-anonymous-cluster-annotations.patch": {
     "bytes": 6785,
     "sha256": "35e95a9f3c49088977720c56e64f52979ead993273279038b2c4b7d3b5a5131d"
+  },
+  "patches/case-saved-default.patch": {
+    "bytes": 12938,
+    "sha256": "e29b28d6fbc3af28585ce87141bdcccf16b3b498dcbb8b80ae87c265705100c4"
   },
   "patches/index-array-outputs.patch": {
     "bytes": 16281,
@@ -792,8 +896,12 @@
     "sha256": "3613734f7184231462248342ae68bab70e3b0b66a6400e78f9b1d7b5a8d24498"
   },
   "README.md": {
-    "bytes": 15204,
-    "sha256": "3f3d6f2d018f7c27f986ef2274bf33f66e8d8625fa49b8398f53d2f11c78d797"
+    "bytes": 15370,
+    "sha256": "337ee5f449cd6675e87ba859db3340b4f0676068d67b889aed80c1b1406d25a7"
+  },
+  "test_case_native.py": {
+    "bytes": 2045,
+    "sha256": "6d0545c7ad53a47087617bbcb07fce8dfcb18c858bd72259a27d6d5bd106f254"
   },
   "test_cluster_types_native.py": {
     "bytes": 2319,

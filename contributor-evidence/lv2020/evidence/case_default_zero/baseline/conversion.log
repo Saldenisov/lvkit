@@ -1,0 +1,13 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\case_default_zero\case_default_zero.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\case_default_zero\case_default_zero.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturescase_default_zerocase_default_zero.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\evidence\case_default_zero\baseline\generated\case_default_zero
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0
+C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\case_default_zero\case_default_zero.vi: Warning: Block b'VICD' section 0 patches parse exception: No parsing made for MCLVRTPatches.
+Warning: Identifier has more than one special character.

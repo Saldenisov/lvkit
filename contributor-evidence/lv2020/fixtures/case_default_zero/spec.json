@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "case_default_zero",
+  "vi_file": "case_default_zero.vi",
+  "function": "case_default_zero",
+  "labview_version": "2020 (64-bit)",
+  "provenance": "New VI authored in LabVIEW 2020 for this regression; no application VI, typedef, subVI or class was copied.",
+  "inputs": {"selector": {"type": "int32", "connector": "top left"}},
+  "outputs": {"result": {"type": "int32", "connector": "top right"}},
+  "semantics": {
+    "operation": "integer_case_structure",
+    "frames": [
+      {"diagram_index": 0, "selector_values": [0], "is_default": true, "output": 10},
+      {"diagram_index": 1, "selector_values": [1], "is_default": false, "output": 20}
+    ],
+    "description": "Return 20 only for selector == 1; return 10 for every other I32 value. The saved first frame is labelled 0, Default.",
+    "comparison": "Exact integer equality; input must remain unchanged."
+  },
+  "cases": [
+    {"id": "explicit_zero_default", "inputs": {"selector": 0}},
+    {"id": "explicit_one", "inputs": {"selector": 1}},
+    {"id": "unlisted_positive", "inputs": {"selector": 2}},
+    {"id": "unlisted_negative", "inputs": {"selector": -1}},
+    {"id": "unlisted_99", "inputs": {"selector": 99}},
+    {"id": "i32_min", "inputs": {"selector": -2147483648}},
+    {"id": "i32_max", "inputs": {"selector": 2147483647}}
+  ]
+}

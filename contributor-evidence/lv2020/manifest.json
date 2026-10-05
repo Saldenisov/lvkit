@@ -11,6 +11,10 @@
     "bytes": 3476,
     "sha256": "51bccbb58b2105a44d0a26d419e020fd1dea29f486e1c8ec14e1f0087940bbd7"
   },
+  "capture_index_labview.py": {
+    "bytes": 3826,
+    "sha256": "4486eb1d55280586c1e80494ad0e23c9896c91f5420090d9baa3c9c4a1e688ba"
+  },
   "capture_labview.py": {
     "bytes": 4504,
     "sha256": "5837900b6e8dfcb0ded749569759ddb28f39698374398911244a93c5f1048ab9"
@@ -174,6 +178,58 @@
   "evidence/enum_saved_default/upstream-0.8.7/report.json": {
     "bytes": 1866,
     "sha256": "6ac93b9d4dc87744b85b07dd0f43c058f40a074c1f40099f44dd0f2bc4fd0ad9"
+  },
+  "evidence/expanded_index_array/baseline/conversion.log": {
+    "bytes": 509,
+    "sha256": "583b2619a07c1b3e88566eb734a839e4362ed267cc6efe989ed69d95bec95e90"
+  },
+  "evidence/expanded_index_array/baseline/generated/expanded_index_array/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/expanded_index_array/baseline/generated/expanded_index_array/devpyconlysetoolslvkit_upstreamfixturesexpanded_index_arrayexpanded_index_array.py": {
+    "bytes": 488,
+    "sha256": "7c75c19c9e4f0fae31966c72630550d863aed69d07e99e4a6e4a505fa5e72ffe"
+  },
+  "evidence/expanded_index_array/baseline/report.json": {
+    "bytes": 10788,
+    "sha256": "c411f29b6ad9eedcbeed377e115b6f50473605d0baa75c5b5196cc15352dc7c1"
+  },
+  "evidence/expanded_index_array/patched/conversion.log": {
+    "bytes": 508,
+    "sha256": "c0fbd9442f8a70a9788b5f6e0b0f3c0d65c84a97b57c7330d3a90c21d1329fa7"
+  },
+  "evidence/expanded_index_array/patched/generated/expanded_index_array/__init__.py": {
+    "bytes": 26,
+    "sha256": "970f7715d4aeb7ef3c95103b0ac082e357019f6ac617247a6205b5bd30ae0860"
+  },
+  "evidence/expanded_index_array/patched/generated/expanded_index_array/devpyconlysetoolslvkit_upstreamfixturesexpanded_index_arrayexpanded_index_array.py": {
+    "bytes": 766,
+    "sha256": "d7143cae1b58f6ced165f7c30fff6a861e7c5023969ba8cf3632c5d576b4eef2"
+  },
+  "evidence/expanded_index_array/patched/report.json": {
+    "bytes": 8985,
+    "sha256": "691275df4756255e190f4b43e25dec6dbd52c96fdf60abe379e5219589571838"
+  },
+  "evidence/expanded_index_array/pytest/index-baseline.xml": {
+    "bytes": 10170,
+    "sha256": "b4902671910b688db9595b7f17cdaf29972887423213e96ae35fbd0561f918b9"
+  },
+  "evidence/expanded_index_array/pytest/index-native-baseline.xml": {
+    "bytes": 3850,
+    "sha256": "0086a3bd5ead9bdee569d663471b01a9f8a7b62d4a84f5beb14a882ec2982343"
+  },
+  "evidence/expanded_index_array/pytest/index-native-patched.xml": {
+    "bytes": 1990,
+    "sha256": "6aa2d413ba5b56723b6128fa42d70d11edc64a3257d6bbeca1c4e82706a3866f"
+  },
+  "evidence/expanded_index_array/pytest/index-related.xml": {
+    "bytes": 20852,
+    "sha256": "522990f304e565f0c6971c654b13d656f9e8b2be2790f13e3e28969884aea564"
+  },
+  "evidence/expanded_index_array/pytest/summary.json": {
+    "bytes": 588,
+    "sha256": "7332964f007f6984053f8c3b051a4a7c6bd8dfa50ce0edec1821d37a59fd62b5"
   },
   "evidence/nonfinite_constants/patched-0.8.7/conversion.log": {
     "bytes": 497,
@@ -447,6 +503,22 @@
     "bytes": 812,
     "sha256": "6ed022df9c7980869bd2933cc627d3617911761ea7df8cd60eb2c0e3e078880f"
   },
+  "fixtures/expanded_index_array/expanded_index_array.vi": {
+    "bytes": 7516,
+    "sha256": "fcfcddf1a91b46c0f424b975306dac7fa243014c59ae32d8829046ed381f436e"
+  },
+  "fixtures/expanded_index_array/golden_labview.json": {
+    "bytes": 4576,
+    "sha256": "e8a2d90e94193a6ef86431bdd7b52ab1143f53b757380ae18c0653fddc1c98a7"
+  },
+  "fixtures/expanded_index_array/README.md": {
+    "bytes": 3353,
+    "sha256": "0f5da221c29975b415582a48945a59453c12e3658bed636e77b023ac95a7ca72"
+  },
+  "fixtures/expanded_index_array/spec.json": {
+    "bytes": 3359,
+    "sha256": "458e57784829b29d53572c2fcf72d1f5b4c250860f38600b389c684a1b00c49b"
+  },
   "fixtures/nonfinite_constants/golden_labview.json": {
     "bytes": 992,
     "sha256": "47a7ddcda97b0fa8c6a0ee39fe45079bb91b2b13ef38f8032074c8a9d9102416"
@@ -531,6 +603,10 @@
     "bytes": 6785,
     "sha256": "35e95a9f3c49088977720c56e64f52979ead993273279038b2c4b7d3b5a5131d"
   },
+  "patches/index-array-outputs.patch": {
+    "bytes": 16281,
+    "sha256": "039d8e34852c877def56e7c401179e51745e747f200d3feb10c5a403b5f8919b"
+  },
   "patches/nonfinite-constants.patch": {
     "bytes": 5456,
     "sha256": "2eec8f22a11b91bdc733043efeaf10710276c7a676dde0d46a2dd5501aed8676"
@@ -544,8 +620,8 @@
     "sha256": "3613734f7184231462248342ae68bab70e3b0b66a6400e78f9b1d7b5a8d24498"
   },
   "README.md": {
-    "bytes": 14688,
-    "sha256": "538b9b7b9bcb3f9df28e3cbade7c6efb1032e8419ea3acb5f7391d6e3874e67e"
+    "bytes": 14860,
+    "sha256": "a6749aecd38e53ffe87ac1a507e7707d182a299b3ae8ff5fdb851a6b6718e33d"
   },
   "test_cluster_types_native.py": {
     "bytes": 2319,
@@ -554,6 +630,10 @@
   "test_divide_native.py": {
     "bytes": 1478,
     "sha256": "d180b86ec6bc4366fa666a87c9e45d659a15609d3a26615d0ee02a83d65f8c67"
+  },
+  "test_index_native.py": {
+    "bytes": 2259,
+    "sha256": "2ed818d1d2d614c5c2312283ee758bcec0e20cf773c2c594be2eb7a94ae05d3c"
   },
   "test_log10_native.py": {
     "bytes": 1865,

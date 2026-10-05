@@ -1,0 +1,11 @@
+Loading: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\expanded_index_array\expanded_index_array.vi
+
+Conversion order (1 VIs):
+  [1/1] C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\expanded_index_array\expanded_index_array.vi
+         -> AST: devpyconlysetoolslvkit_upstreamfixturesexpanded_index_arrayexpanded_index_array.py
+
+Output: C:\dev\pyconlyse\tools\lvkit_upstream\fixtures\expanded_index_array\evidence\baseline\generated\expanded_index_array
+  vilib: 0
+  ast:   1
+  stub:  0
+  error: 0

@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "27ce18682e3f402e43368be9c0cd19ec669ffba4",
+  "python": "3.12.14",
+  "runs": {
+    "index-baseline": {
+      "tests": 33,
+      "failures": 30,
+      "errors": 0,
+      "skipped": 0
+    },
+    "index-related": {
+      "tests": 171,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "index-native-baseline": {
+      "tests": 13,
+      "failures": 13,
+      "errors": 0,
+      "skipped": 0
+    },
+    "index-native-patched": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

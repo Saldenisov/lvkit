@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "id": "expanded_index_array",
+  "vi_file": "expanded_index_array.vi",
+  "function": "expanded_index_array",
+  "authorship": "Independently authored through LabVIEW 2020 64-bit front panel and block diagram; no application VI or subVI is included.",
+  "inputs": {
+    "values": {
+      "type": "array<float64>",
+      "saved_default": []
+    },
+    "start": {
+      "type": "int32",
+      "saved_default": 0
+    }
+  },
+  "outputs": {
+    "first": {
+      "type": "float64"
+    },
+    "second": {
+      "type": "float64"
+    },
+    "third": {
+      "type": "float64"
+    }
+  },
+  "diagram": {
+    "operation": "Index Array",
+    "node_class": "aIndx",
+    "array_rank": 1,
+    "expanded_rows": 3,
+    "wired_indices": [
+      "start",
+      null,
+      null
+    ],
+    "wired_outputs": [
+      "first",
+      "second",
+      "third"
+    ],
+    "subvis": []
+  },
+  "comparison": "Exact values after tagged JSON encoding, including nonfinite classification and signed zero; inputs must remain unchanged.",
+  "cases": [
+    {
+      "id": "saved_empty_defaults",
+      "inputs": {}
+    },
+    {
+      "id": "explicit_empty",
+      "inputs": {
+        "values": [],
+        "start": 0
+      }
+    },
+    {
+      "id": "singleton",
+      "inputs": {
+        "values": [
+          10.0
+        ],
+        "start": 0
+      }
+    },
+    {
+      "id": "three_elements",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 0
+      }
+    },
+    {
+      "id": "offset",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0,
+          40.0
+        ],
+        "start": 1
+      }
+    },
+    {
+      "id": "last_element",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 2
+      }
+    },
+    {
+      "id": "one_past_end",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 3
+      }
+    },
+    {
+      "id": "far_past_end",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 100
+      }
+    },
+    {
+      "id": "negative_one",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": -1
+      }
+    },
+    {
+      "id": "negative_two",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": -2
+      }
+    },
+    {
+      "id": "far_negative",
+      "inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": -100
+      }
+    },
+    {
+      "id": "nonfinite_elements",
+      "inputs": {
+        "values": [
+          {
+            "float": "nan"
+          },
+          {
+            "float": "inf"
+          },
+          {
+            "float": "-inf"
+          }
+        ],
+        "start": 0
+      }
+    },
+    {
+      "id": "signed_zero_elements",
+      "inputs": {
+        "values": [
+          {
+            "float": "-0.0"
+          },
+          0.0,
+          -1.0
+        ],
+        "start": 0
+      }
+    }
+  ]
+}

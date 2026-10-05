@@ -1,0 +1,382 @@
+{
+  "fixture_id": "expanded_index_array",
+  "vi_sha256": "fcfcddf1a91b46c0f424b975306dac7fa243014c59ae32d8829046ed381f436e",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-clean\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\expanded_index_array\\evidence\\baseline\\generated\\expanded_index_array\\devpyconlysetoolslvkit_upstreamfixturesexpanded_index_arrayexpanded_index_array.py",
+  "generated_sha256": "7c75c19c9e4f0fae31966c72630550d863aed69d07e99e4a6e4a505fa5e72ffe",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\expanded_index_array\\expanded_index_array.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\expanded_index_array\\evidence\\baseline\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 0,
+  "total": 39,
+  "comparisons": [
+    {
+      "case": "saved_empty_defaults",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "saved_empty_defaults",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "saved_empty_defaults",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "explicit_empty",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "explicit_empty",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "explicit_empty",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "singleton",
+      "output": "first",
+      "expected": 10.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "singleton",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "singleton",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "three_elements",
+      "output": "first",
+      "expected": 10.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "three_elements",
+      "output": "second",
+      "expected": 20.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "three_elements",
+      "output": "third",
+      "expected": 30.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "offset",
+      "output": "first",
+      "expected": 20.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "offset",
+      "output": "second",
+      "expected": 30.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "offset",
+      "output": "third",
+      "expected": 40.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "last_element",
+      "output": "first",
+      "expected": 30.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "last_element",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "last_element",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "one_past_end",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "one_past_end",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "one_past_end",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "far_past_end",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "far_past_end",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "far_past_end",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "negative_one",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "negative_one",
+      "output": "second",
+      "expected": 10.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "negative_one",
+      "output": "third",
+      "expected": 20.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "negative_two",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "negative_two",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "negative_two",
+      "output": "third",
+      "expected": 10.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "far_negative",
+      "output": "first",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "far_negative",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "far_negative",
+      "output": "third",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "nonfinite_elements",
+      "output": "first",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "nonfinite_elements",
+      "output": "second",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "nonfinite_elements",
+      "output": "third",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "signed_zero_elements",
+      "output": "first",
+      "expected": {
+        "float": "-0.0"
+      },
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "signed_zero_elements",
+      "output": "second",
+      "expected": 0.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    },
+    {
+      "case": "signed_zero_elements",
+      "output": "third",
+      "expected": -1.0,
+      "actual": null,
+      "error": "TypeError: cannot unpack non-iterable float object",
+      "input_unchanged": true,
+      "passed": false
+    }
+  ]
+}

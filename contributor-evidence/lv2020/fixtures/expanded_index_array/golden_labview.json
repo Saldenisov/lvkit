@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "fixture_id": "expanded_index_array",
+  "vi_sha256": "fcfcddf1a91b46c0f424b975306dac7fa243014c59ae32d8829046ed381f436e",
+  "oracle": {
+    "kind": "native_labview_execution",
+    "version": "20.0.1f1",
+    "python": "3.12.14",
+    "captured_utc": "2026-10-05T10:29:35.012296+00:00",
+    "method": "ReinitializeAllToDefault / SetControlValue / Run(True) / GetControlValue",
+    "source_script": "capture_index_labview.py",
+    "source_script_sha256": "4486eb1d55280586c1e80494ad0e23c9896c91f5420090d9baa3c9c4a1e688ba",
+    "numeric_encoding_script_sha256": "7e2de15dad4309e0a1a5202b1ce5b8fd312b83022dc45d3ef8c00211b39e0680"
+  },
+  "cases": [
+    {
+      "id": "saved_empty_defaults",
+      "effective_inputs": {
+        "values": [],
+        "start": 0
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "explicit_empty",
+      "effective_inputs": {
+        "values": [],
+        "start": 0
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "singleton",
+      "effective_inputs": {
+        "values": [
+          10.0
+        ],
+        "start": 0
+      },
+      "outputs": {
+        "first": 10.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "three_elements",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 0
+      },
+      "outputs": {
+        "first": 10.0,
+        "second": 20.0,
+        "third": 30.0
+      }
+    },
+    {
+      "id": "offset",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0,
+          40.0
+        ],
+        "start": 1
+      },
+      "outputs": {
+        "first": 20.0,
+        "second": 30.0,
+        "third": 40.0
+      }
+    },
+    {
+      "id": "last_element",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 2
+      },
+      "outputs": {
+        "first": 30.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "one_past_end",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 3
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "far_past_end",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": 100
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "negative_one",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": -1
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 10.0,
+        "third": 20.0
+      }
+    },
+    {
+      "id": "negative_two",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": -2
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 0.0,
+        "third": 10.0
+      }
+    },
+    {
+      "id": "far_negative",
+      "effective_inputs": {
+        "values": [
+          10.0,
+          20.0,
+          30.0
+        ],
+        "start": -100
+      },
+      "outputs": {
+        "first": 0.0,
+        "second": 0.0,
+        "third": 0.0
+      }
+    },
+    {
+      "id": "nonfinite_elements",
+      "effective_inputs": {
+        "values": [
+          {
+            "float": "nan"
+          },
+          {
+            "float": "inf"
+          },
+          {
+            "float": "-inf"
+          }
+        ],
+        "start": 0
+      },
+      "outputs": {
+        "first": {
+          "float": "nan"
+        },
+        "second": {
+          "float": "inf"
+        },
+        "third": {
+          "float": "-inf"
+        }
+      }
+    },
+    {
+      "id": "signed_zero_elements",
+      "effective_inputs": {
+        "values": [
+          {
+            "float": "-0.0"
+          },
+          0.0,
+          -1.0
+        ],
+        "start": 0
+      },
+      "outputs": {
+        "first": {
+          "float": "-0.0"
+        },
+        "second": 0.0,
+        "third": -1.0
+      }
+    }
+  ]
+}

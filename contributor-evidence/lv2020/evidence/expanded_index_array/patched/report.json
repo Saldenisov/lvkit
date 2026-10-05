@@ -1,0 +1,390 @@
+{
+  "fixture_id": "expanded_index_array",
+  "vi_sha256": "fcfcddf1a91b46c0f424b975306dac7fa243014c59ae32d8829046ed381f436e",
+  "lvkit_loaded_from": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-index-array-fix\\src\\lvkit\\__init__.py",
+  "generated_module": "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\expanded_index_array\\evidence\\patched\\generated\\expanded_index_array\\devpyconlysetoolslvkit_upstreamfixturesexpanded_index_arrayexpanded_index_array.py",
+  "generated_sha256": "d7143cae1b58f6ced165f7c30fff6a861e7c5023969ba8cf3632c5d576b4eef2",
+  "conversion_command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe",
+    "-m",
+    "lvkit",
+    "generate",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\expanded_index_array\\expanded_index_array.vi",
+    "-o",
+    "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\fixtures\\expanded_index_array\\evidence\\patched\\generated",
+    "--load-mode",
+    "minimal",
+    "--no-auto-vilib"
+  ],
+  "passed": 39,
+  "total": 39,
+  "comparisons": [
+    {
+      "case": "saved_empty_defaults",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "saved_empty_defaults",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "saved_empty_defaults",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "explicit_empty",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "explicit_empty",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "explicit_empty",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "singleton",
+      "output": "first",
+      "expected": 10.0,
+      "actual": 10.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "singleton",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "singleton",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "three_elements",
+      "output": "first",
+      "expected": 10.0,
+      "actual": 10.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "three_elements",
+      "output": "second",
+      "expected": 20.0,
+      "actual": 20.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "three_elements",
+      "output": "third",
+      "expected": 30.0,
+      "actual": 30.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "offset",
+      "output": "first",
+      "expected": 20.0,
+      "actual": 20.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "offset",
+      "output": "second",
+      "expected": 30.0,
+      "actual": 30.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "offset",
+      "output": "third",
+      "expected": 40.0,
+      "actual": 40.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "last_element",
+      "output": "first",
+      "expected": 30.0,
+      "actual": 30.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "last_element",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "last_element",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "one_past_end",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "one_past_end",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "one_past_end",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "far_past_end",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "far_past_end",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "far_past_end",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_one",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_one",
+      "output": "second",
+      "expected": 10.0,
+      "actual": 10.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_one",
+      "output": "third",
+      "expected": 20.0,
+      "actual": 20.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_two",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_two",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "negative_two",
+      "output": "third",
+      "expected": 10.0,
+      "actual": 10.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "far_negative",
+      "output": "first",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "far_negative",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "far_negative",
+      "output": "third",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_elements",
+      "output": "first",
+      "expected": {
+        "float": "nan"
+      },
+      "actual": {
+        "float": "nan"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_elements",
+      "output": "second",
+      "expected": {
+        "float": "inf"
+      },
+      "actual": {
+        "float": "inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "nonfinite_elements",
+      "output": "third",
+      "expected": {
+        "float": "-inf"
+      },
+      "actual": {
+        "float": "-inf"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "signed_zero_elements",
+      "output": "first",
+      "expected": {
+        "float": "-0.0"
+      },
+      "actual": {
+        "float": "-0.0"
+      },
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "signed_zero_elements",
+      "output": "second",
+      "expected": 0.0,
+      "actual": 0.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "signed_zero_elements",
+      "output": "third",
+      "expected": -1.0,
+      "actual": -1.0,
+      "error": null,
+      "input_unchanged": true,
+      "passed": true
+    }
+  ]
+}

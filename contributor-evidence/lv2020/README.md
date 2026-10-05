@@ -265,3 +265,6 @@ baseline/patched conversions, executable tests and source patch.
 
 [anonymous_cluster_identity](fixtures/anonymous_cluster_identity/README.md): independent native VI, specification,
 baseline/patched conversions, executable tests and source patch.
+
+[expanded_index_array](fixtures/expanded_index_array/README.md): independent native VI, specification,
+baseline/patched conversions, executable tests and source patch.

@@ -26,6 +26,7 @@ from ..context import CodeGenContext
 from ..elementwise import LV_IMPORT, arrayify
 from ..fragment import CodeFragment
 from ..unresolved import emit_soft_unresolved
+from .ops.index_array import generate_1d_index_array
 
 
 def _has_array_input(node: PrimitiveNode) -> bool:
@@ -130,6 +131,13 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     # translations in the generator instead of as strings in the data file. Only
     # fires when the data carries no python_code, so existing JSON templates win.
     if resolved.op and not resolved.python_code:
+        if resolved.op == "INDEX_ARRAY" and resolved.confidence not in (
+            "unknown", "placeholder"
+        ):
+            indexed = generate_1d_index_array(node, ctx)
+            if indexed is not None:
+                return indexed
+
         from .ops import get_op_template
 
         op_template = get_op_template(resolved.op)

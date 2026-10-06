@@ -1,4 +1,4 @@
-"""Generated scalar numeric constants must execute without injected names."""
+"""Generated numeric constants must execute without injected names."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import pytest
 
 from lvkit.codegen.context import _decode_numeric_constant, _format_constant
 from lvkit.graph.models import Constant
-from lvkit.models import LVType, LVTypeKind
+from lvkit.models import ClusterField, LVType, LVTypeKind
 
 
 def assert_number(expression, expected):
@@ -71,3 +71,23 @@ def test_string_constants_remain_text(value):
     lv_type = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="String")
     expression = _format_constant(Constant(id="constant", value=value, lv_type=lv_type))
     assert eval(expression, {"__builtins__": {}}) == value
+
+
+def test_array_constant_with_nonfinite_values_executes():
+    # The parser renders aggregate float elements with str(float).
+    lv_type = LVType(kind=LVTypeKind.ARRAY, underlying_type="Array")
+    value = "[nan, inf, -inf, 1.5]"
+    expression = _format_constant(Constant(id="constant", value=value, lv_type=lv_type))
+    actual = eval(expression, {"__builtins__": {"float": float}})
+    assert math.isnan(actual[0])
+    assert actual[1:] == [math.inf, -math.inf, 1.5]
+
+
+def test_anonymous_cluster_constant_with_nonfinite_field_executes():
+    lv_type = LVType(
+        kind=LVTypeKind.CLUSTER, fields=[ClusterField(name="a"), ClusterField(name="b")]
+    )
+    value = "{'a': nan, 'b': -inf}"
+    expression = _format_constant(Constant(id="constant", value=value, lv_type=lv_type))
+    actual = eval(expression, {"__builtins__": {"float": float}})
+    assert math.isnan(actual[0]) and actual[1] == -math.inf

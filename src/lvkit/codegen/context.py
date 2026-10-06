@@ -647,6 +647,40 @@ def _python_float_constant(value: float) -> str:
     return repr(value)
 
 
+class _NonFiniteNames(ast.NodeTransformer):
+    """The parser renders aggregate float elements with ``str(float)``, so NaN
+    and infinity arrive as bare ``nan``/``inf`` names inside the literal."""
+
+    def visit_Name(self, node: ast.Name) -> ast.AST:
+        if node.id in ("nan", "inf"):
+            return ast.Constant(value=float(node.id))
+        return node
+
+
+def _literal_eval(text: str) -> object:
+    """``ast.literal_eval`` that also accepts the parser's ``nan``/``inf``."""
+    tree = _NonFiniteNames().visit(ast.parse(text, mode="eval"))
+    return ast.literal_eval(tree)
+
+
+def _python_literal(value: object) -> str:
+    """``repr`` for constant values, recursing into lists/tuples/dicts so nested
+    NaN and infinity stay executable."""
+    if isinstance(value, float):
+        return _python_float_constant(value)
+    if isinstance(value, list):
+        return "[" + ", ".join(_python_literal(v) for v in value) + "]"
+    if isinstance(value, tuple):
+        trailing = "," if len(value) == 1 else ""
+        return "(" + ", ".join(_python_literal(v) for v in value) + trailing + ")"
+    if isinstance(value, dict):
+        items = [
+            f"{_python_literal(k)}: {_python_literal(v)}" for k, v in value.items()
+        ]
+        return "{" + ", ".join(items) + "}"
+    return repr(value)
+
+
 def _decode_numeric_constant(value: str, underlying_type: str) -> str:
     """Decode a numeric constant using its LabVIEW type.
 
@@ -711,14 +745,14 @@ def _format_cluster_constant(const: Constant | ConstantNode) -> str | None:
     value = const.value
     if isinstance(value, str):
         try:
-            value = ast.literal_eval(value)
+            value = _literal_eval(value)
         except (ValueError, SyntaxError):
             return None
     if not isinstance(value, dict):
         return None
     # Values in field order; a field absent from the parsed dict falls back to
     # None (LabVIEW's cluster default fills every field, so this is defensive).
-    ordered = [(f.name, repr(value.get(f.name))) for f in fields]
+    ordered = [(f.name, _python_literal(value.get(f.name))) for f in fields]
     if anon:
         elts = ", ".join(v for _name, v in ordered)
         trailing = "," if len(ordered) == 1 else ""
@@ -779,11 +813,11 @@ def _format_constant(const: Constant | ConstantNode) -> str:
     # canonically; fall through to scalar handling if it isn't a plain literal.
     if underlying == "Array" and isinstance(value, str):
         try:
-            return repr(ast.literal_eval(value))
+            return _python_literal(_literal_eval(value))
         except (ValueError, SyntaxError):
             pass
     if isinstance(value, list):
-        return repr(value)
+        return _python_literal(value)
 
     # Type-driven decoding: use underlying_type when available.
     if underlying == "Boolean":

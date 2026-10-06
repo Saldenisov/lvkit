@@ -3,7 +3,7 @@
 LabVIEW numeric functions (Add, Subtract, Sign, comparisons, …) operate
 element-wise on arrays, broadcasting a scalar against an array. Generated
 code uses these helpers for array-valued operands and for
-representation-specific scalar behavior, such as DBL division at signed zero.
+representation-specific scalar behavior, such as floating-point division at signed zero.
 
 Arrays are Python lists (lvkit's array representation); these helpers do not
 change that. Nested arrays broadcast recursively, matching LabVIEW's
@@ -52,7 +52,7 @@ def truediv(a, b):
     return _binop(a, b, _op.truediv)
 
 
-def _real64_divide_scalar(a: float, b: float) -> float:
+def _float_divide_scalar(a: float, b: float) -> float:
     a, b = float(a), float(b)
     if b == 0.0:
         if a == 0.0 or _math.isnan(a):
@@ -62,9 +62,9 @@ def _real64_divide_scalar(a: float, b: float) -> float:
     return a / b
 
 
-def real64_divide(a, b):
-    """DBL division, including IEEE results at signed zero and list broadcast."""
-    return _binop(a, b, _real64_divide_scalar)
+def float_divide(a, b):
+    """Floating-point division with IEEE results at signed zero; broadcasts lists."""
+    return _binop(a, b, _float_divide_scalar)
 
 
 def floordiv(a, b):

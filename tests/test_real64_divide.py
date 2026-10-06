@@ -157,9 +157,19 @@ def test_other_representations_keep_finite_operand_order(underlying):
     assert generated_divide(underlying)(2.0, 4.0).quotient == 0.5
 
 
+@pytest.mark.parametrize("underlying", ["NumFloat32", "NumFloatExt"])
 @pytest.mark.parametrize(
-    "underlying", ["NumFloat32", "NumInt32", "NumComplex128", None]
+    "numerator,denominator,expected",
+    [(1.0, 0.0, math.inf), (1.0, -0.0, -math.inf), (0.0, 0.0, math.nan)],
 )
+def test_other_float_representations_follow_ieee(
+    underlying, numerator, denominator, expected
+):
+    quotient = generated_divide(underlying)(numerator, denominator).quotient
+    assert_numeric(quotient, expected)
+
+
+@pytest.mark.parametrize("underlying", ["NumInt32", "NumComplex128", None])
 def test_other_representations_keep_existing_zero_behavior(underlying):
     with pytest.raises(ZeroDivisionError):
         generated_divide(underlying)(1.0, 0.0)

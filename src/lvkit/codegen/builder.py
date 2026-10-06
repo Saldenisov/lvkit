@@ -16,6 +16,7 @@ from .ast_utils import (
     build_assign,
     default_value_expr,
     parse_expr,
+    result_field_name,
     to_function_name,
     to_var_name,
 )
@@ -566,12 +567,6 @@ def topological_sort_tiered(
         tiers.append(circular)
 
     return tiers
-
-
-def result_field_name(name: str) -> str:
-    """Normalize output labels for NamedTuple's stricter field-name rules."""
-    name = to_var_name(name or "output")
-    return "output" + name if name.startswith("_") else name
 
 
 def build_return_stmt(vi_context: VIContext, ctx: CodeGenContext) -> ast.Return | None:

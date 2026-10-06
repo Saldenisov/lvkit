@@ -5,9 +5,30 @@ from __future__ import annotations
 import pytest
 
 from lvkit.codegen.builder import build_module, build_result_class
-from lvkit.graph.models import Constant, VIContext, Wire
-from lvkit.models import ClusterField, FPTerminal, LVType, LVTypeKind
+from lvkit.codegen.context import CodeGenContext
+from lvkit.codegen.nodes.subvi import _build_output_bindings
+from lvkit.graph.models import Constant, VIContext, VINode, Wire
+from lvkit.models import ClusterField, FPTerminal, LVType, LVTypeKind, Terminal
 from tests.helpers import build_graph
+
+
+@pytest.mark.parametrize("label", ["_status", "status", "class", "2nd result"])
+def test_caller_reads_the_callee_result_field(label: str):
+    """A caller reads a SubVI output by the same field name the callee's
+    NamedTuple declares."""
+    callee = VIContext(name="Callee.vi", outputs=[output(label)])
+    result_class = build_result_class(callee)
+    assert result_class is not None
+    declared = result_class.body[0].target.id  # type: ignore[attr-defined]
+
+    node = VINode(
+        id="op:1",
+        vi_path="Caller.vi",
+        name="Callee.vi",
+        terminals=[Terminal(id="t:out", index=0, direction="output", name=label)],
+    )
+    bindings = _build_output_bindings(node, "callee_result", None, CodeGenContext())
+    assert bindings["t:out"] == f"callee_result.{declared}"
 
 
 def output(label: str, index: int = 0) -> FPTerminal:

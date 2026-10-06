@@ -41,3 +41,9 @@ def test_enum_missing_invalid_or_zero_default(value):
 def test_integer_primitive_saved_default_is_preserved():
     expression = _param_default_expr(terminal("7", "NumUInt16", LVTypeKind.PRIMITIVE))
     assert ast.literal_eval(expression) == 7
+
+
+@pytest.mark.parametrize("value", ["3", 3])
+def test_ring_saved_nonzero_ordinal(value):
+    expression = _param_default_expr(terminal(value, kind=LVTypeKind.RING))
+    assert ast.literal_eval(expression) == 3

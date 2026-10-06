@@ -17,8 +17,9 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     """Use saved dcoList identities and order, separately from fixed ports.
 
     The caller supplies an object implementing the named Python attributes.
-    Implicit control bindings and error-channel execution require a separate
-    runtime model and are rejected instead of fabricating reference values.
+    Implicit control bindings require a separate runtime model and are rejected
+    instead of fabricating reference values. Error-cluster terminals are skipped:
+    errors surface as Python exceptions.
     """
     properties = node.properties or []
     value_ids = node.property_value_terminal_ids
@@ -39,8 +40,6 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     ref_var = ctx.resolve(ref_inputs[0].id)
     if ref_var is None:
         raise CodeGenError("Property object reference is unresolved", node)
-    if any(term.is_error_cluster and ctx.is_wired(term.id) for term in fixed):
-        raise CodeGenError("Property error terminals require an execution model", node)
 
     statements: list[ast.stmt] = []
     bindings: dict[str, str] = {}
@@ -88,6 +87,9 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
             raise CodeGenError("Property value direction is unresolved", node)
 
     for term in fixed:
+        # Error clusters become Python exceptions, so their wires carry nothing.
+        if term.is_error_cluster:
+            continue
         if term.direction != "output" or not ctx.is_wired(term.id):
             continue
         if (

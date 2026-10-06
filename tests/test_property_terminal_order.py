@@ -178,8 +178,6 @@ def test_value_type_does_not_reclassify_a_property_as_fixed_port(value_type):
         "implicit_ref",
         "unwired_write",
         "unresolved_write",
-        "wired_error_in",
-        "wired_error_out",
         "unknown_fixed_output",
     ],
 )
@@ -212,14 +210,20 @@ def test_unresolved_or_unsupported_nodes_fail_without_guessing(failure):
         )
     elif failure == "unresolved_write":
         ctx.bind("peer_row_0", "None")
-    elif failure == "wired_error_in":
-        connect(ctx, "error_in", "input")
-        ctx.bind("peer_error_in", "error")
-    elif failure == "wired_error_out":
-        connect(ctx, "error_out", "output")
     else:
         node.terminals[1].lv_type = None
         connect(ctx, "ref_out", "output")
     with pytest.raises(CodeGenError):
         property_node.generate(node, ctx)
     assert namespace["ref"].events == []
+
+
+def test_wired_error_terminals_are_skipped():
+    """Error clusters become Python exceptions: wired error in/out add nothing."""
+    node, ctx, _namespace = fixture([("Value", "input"), ("Value", "output")])
+    connect(ctx, "error_in", "input")
+    ctx.bind("peer_error_in", "error")
+    connect(ctx, "error_out", "output")
+    fragment = property_node.generate(node, ctx)
+    assert "error_out" not in fragment.bindings
+    assert len(fragment.statements) == 2

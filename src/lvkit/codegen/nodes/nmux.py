@@ -21,6 +21,7 @@ from lvkit.models import (
 
 from ..ast_utils import build_assign, parse_expr, to_var_name
 from ..context import CodeGenContext
+from ..elementwise import LV_IMPORT
 from ..fragment import CodeFragment
 
 
@@ -139,7 +140,11 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
                     build_assign(
                         cluster_var,
                         ast.Call(
-                            func=ast.Name(id="replace_fields", ctx=ast.Load()),
+                            func=ast.Attribute(
+                                value=ast.Name(id="_lv", ctx=ast.Load()),
+                                attr="replace_fields",
+                                ctx=ast.Load(),
+                            ),
                             args=[
                                 parse_expr(agg_var),
                                 ast.Tuple(elts=updates, ctx=ast.Load()),
@@ -153,9 +158,7 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
                 return CodeFragment(
                     statements=statements,
                     bindings=bindings,
-                    imports={
-                        "from lvkit.runtime.positional_cluster import replace_fields"
-                    },
+                    imports={LV_IMPORT},
                 )
             # Assign fields on the aggregate cluster. Bundle By Name mutates the
             # object in place, so the aggregate must be a single materialized

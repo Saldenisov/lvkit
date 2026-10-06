@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lvkit.runtime.positional_cluster import replace_fields
+from lvkit.runtime.lv import replace_fields
 
 
 @pytest.mark.parametrize(

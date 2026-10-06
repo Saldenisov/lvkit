@@ -110,8 +110,8 @@ def test_generated_cluster_annotations_match_explicit_tuple_values(lv_type, valu
         ),
         (
             LVType(kind=LVTypeKind.ARRAY, element_type=PAIR, dimensions=1),
-            "list[dict[str, Any]] | None",
-            "list[dict[str, Any]]",
+            "list[tuple] | None",
+            "list[tuple]",
         ),
         (None, "Any", "Any"),
     ],
@@ -126,5 +126,5 @@ def test_other_annotation_contracts_are_preserved(
     assert ast.unparse(result_class.body[0].annotation) == result_annotation
 
 
-def test_shared_type_model_retains_existing_cluster_contract():
-    assert PAIR.to_python() == "dict[str, Any]"
+def test_shared_type_model_renders_anonymous_cluster_as_tuple():
+    assert PAIR.to_python() == "tuple"

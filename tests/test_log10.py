@@ -137,14 +137,17 @@ def test_generated_dbl_arrays(values, rank, expected):
 
 
 @pytest.mark.parametrize("terminal", ["input", "output"])
-@pytest.mark.parametrize(
-    "underlying", ["NumFloat32", "NumComplex128", "NumFloatExt", "NumInt32", None]
-)
+@pytest.mark.parametrize("underlying", ["NumComplex128", None])
 def test_unqualified_representation_is_rejected(terminal, underlying):
     with pytest.raises(
-        CodeGenError, match="supports resolved DBL scalars and arrays only"
+        CodeGenError, match="supports resolved real numeric scalars and arrays only"
     ):
         generated_log10(**{f"{terminal}_type": underlying})
+
+
+@pytest.mark.parametrize("input_type", ["NumFloat32", "NumFloatExt", "NumInt32"])
+def test_other_real_inputs_generate(input_type):
+    assert generated_log10(input_type=input_type)(100).log_values == 2.0
 
 
 @pytest.mark.parametrize(

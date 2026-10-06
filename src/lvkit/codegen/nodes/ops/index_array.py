@@ -29,9 +29,10 @@ from ...context import CodeGenContext
 from ...elementwise import LV_IMPORT
 from ...fragment import CodeFragment
 from ..base import CodeGenError
-from . import register_op
+from . import register_op, register_op_fragment
 
 
+@register_op_fragment("INDEX_ARRAY")
 def generate_1d_index_array(
     node: PrimitiveNode, ctx: CodeGenContext
 ) -> CodeFragment | None:
@@ -43,15 +44,21 @@ def generate_1d_index_array(
     """
     if node.node_type != "aIndx" or not node.terminals:
         return None
-    array = node.terminals[0]
+    # Roles come from the connector index (0 = array, then output/index pairs at
+    # 2k+1 / 2k+2), never from the terminal list's order.
+    terms = sorted(node.terminals, key=lambda t: t.index)
+    array = terms[0]
     if (
-        array.direction != "input"
+        array.index != 0
+        or array.direction != "input"
         or array.lv_type is None
         or array.lv_type.kind != LVTypeKind.ARRAY
         or array.lv_type.dimensions != 1
     ):
         return None
-    rows = node.terminals[1:]
+    if [t.index for t in terms] != list(range(len(terms))):
+        raise CodeGenError("1D Index Array terminal indices are not contiguous", node)
+    rows = terms[1:]
     if (
         not rows
         or len(rows) % 2

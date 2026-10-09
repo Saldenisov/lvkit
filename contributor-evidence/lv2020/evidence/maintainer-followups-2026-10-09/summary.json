@@ -1,0 +1,188 @@
+{
+  "checked_on": "2026-10-09",
+  "python": "3.12.14",
+  "platform": "Windows x64",
+  "oracle_commit": "d91b647bd26379e30b8dc9f850cbbbdb0daff3c6",
+  "rows": [
+    {
+      "pr": 119,
+      "head": "39eadc9c166a6dc77f5c9618684f8ee081c27a0e",
+      "source_tests": [
+        "tests/test_enum_parameter_defaults.py"
+      ],
+      "source_passed": 21,
+      "source_skipped": 0,
+      "fixture_checks_passed": 4,
+      "supplemental_passed": 0,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 120,
+      "head": "831d57d8daa2f3ef2c2f2969b03b44dcb3bbba27",
+      "source_tests": [
+        "tests/test_nonfinite_constants.py",
+        "tests/test_type_driven_fixes.py"
+      ],
+      "source_passed": 59,
+      "source_skipped": 0,
+      "fixture_checks_passed": 3,
+      "supplemental_passed": 0,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 121,
+      "head": "021178585a5d291d59d54f5a2f479be502281a41",
+      "source_tests": [
+        "tests/test_result_field_names.py"
+      ],
+      "source_passed": 25,
+      "source_skipped": 0,
+      "fixture_checks_passed": 1,
+      "supplemental_passed": 1,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 122,
+      "head": "0335a19d2893ca9765f596465faa59f8a9ed5307",
+      "source_tests": [
+        "tests/test_primitive_resolutions.py",
+        "tests/test_real64_divide.py"
+      ],
+      "source_passed": 71,
+      "source_skipped": 0,
+      "fixture_checks_passed": 24,
+      "supplemental_passed": 6,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 123,
+      "head": "9684746bee21a1d89710205c7662e4ccb457d16d",
+      "source_tests": [
+        "tests/test_log10.py"
+      ],
+      "source_passed": 29,
+      "source_skipped": 0,
+      "fixture_checks_passed": 13,
+      "supplemental_passed": 6,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 124,
+      "head": "896e7dc1793f56750ae672e56170d06476180c49",
+      "source_tests": [
+        "tests/test_anonymous_cluster_annotations.py",
+        "tests/test_ast_builder.py"
+      ],
+      "source_passed": 104,
+      "source_skipped": 1,
+      "fixture_checks_passed": 9,
+      "supplemental_passed": 0,
+      "skip_reasons": [
+        "Sample VI not available"
+      ],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 125,
+      "head": "a9cc4414afb8e9d12a1779ab0cfcba0034c52184",
+      "source_tests": [
+        "tests/test_expanded_index_array.py"
+      ],
+      "source_passed": 33,
+      "source_skipped": 0,
+      "fixture_checks_passed": 13,
+      "supplemental_passed": 3,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 126,
+      "head": "daae50671fb0e9747639a00a1aacabe417420eb2",
+      "source_tests": [
+        "tests/test_nested_anonymous_clusters.py",
+        "tests/test_positional_cluster_runtime.py"
+      ],
+      "source_passed": 47,
+      "source_skipped": 0,
+      "fixture_checks_passed": 8,
+      "supplemental_passed": 0,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 128,
+      "head": "805f928ff8747cc81a5f43d9c43f1aa35cedac4b",
+      "source_tests": [
+        "tests/test_case_parser.py",
+        "tests/test_case_saved_default.py",
+        "tests/test_render.py"
+      ],
+      "source_passed": 220,
+      "source_skipped": 65,
+      "fixture_checks_passed": 8,
+      "supplemental_passed": 0,
+      "skip_reasons": [
+        "JKI-VI-Tester sample corpus not available",
+        "no sequence sample VI available",
+        "sample VI not available",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\JKI-EasyXML\\Source\\Fast Parser\\XML Loop Stack Recursion.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\JKI-EasyXML\\Source\\JKI Reuse Candidates\\Is an Error__JKI Error Handling.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\JKI-VI-Tester\\source\\Prototype\\Test Project\\Method1.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\JKI-VI-Tester\\source\\Utilities\\Get LV Class Members from Path.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\LabVIEW-DAQ\\Fiber Photometry\\TrackDroppedFrames_FP.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\OpenG\\extracted\\File Group 0\\user.lib\\_OpenG.lib\\array\\array.llb\\Reorder 1D Array2 (LVObject)__ogtk.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\OpenG\\extracted\\File Group 0\\user.lib\\_OpenG.lib\\comparison\\comparison.llb\\U16 Changed__ogtk.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\OpenG\\extracted\\File Group 0\\user.lib\\_OpenG.lib\\string\\string.llb\\Number to Proper Engl Text__ogtk.vi",
+        "sample VI not available or failed to load: .lvkit\\cache\\samples\\OpenG\\extracted\\File Group 0\\user.lib\\_OpenG.lib\\variantconfig\\variantconfig.llb\\Write Panel to INI__ogtk.vi",
+        "sample VI not available: .lvkit\\cache\\samples\\JKI-EasyXML\\Source\\Fast Parser\\XML Loop Stack Recursion.vi",
+        "sample VI not available: .lvkit\\cache\\samples\\JKI-EasyXML\\Source\\Fast Parser\\test TCX read (installed 71).vi",
+        "sample VI not available: .lvkit\\cache\\samples\\JKI-VI-Tester\\source\\Classes\\TestResult\\TestResult_Init.vi",
+        "sample VI not available: .lvkit\\cache\\samples\\JKI-VI-Tester\\source\\User Interfaces\\Graphical Test Runner\\Graphical Test Runner - Main UI - .vi",
+        "sample VI not available: .lvkit\\cache\\samples\\JKI-VI-Tester\\source\\Utilities\\Set Front Panel Object Control Value.vi",
+        "sample VI not available: .lvkit\\cache\\samples\\LabVIEW-DAQ\\Fiber Photometry\\TrackDroppedFrames_FP.vi",
+        "sample VI not available: .lvkit\\cache\\samples\\OpenG\\extracted\\File Group 0\\user.lib\\_OpenG.lib\\appcontrol\\appcontrol.llb\\Current VIs Reference__ogtk.vi",
+        "sample VI not available: .lvkit\\cache\\samples\\OpenG\\extracted\\File Group 0\\user.lib\\_OpenG.lib\\string\\string.llb\\Number to Proper Engl Text__ogtk.vi",
+        "sample VI not available: .tmp\\array average 1.vi",
+        "sample corpus absent \u2014 run scripts/pull_samples.sh",
+        "sample structure VIs not available"
+      ],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    },
+    {
+      "pr": 129,
+      "head": "e1ce77780a7af6d64fe3b7de5c61cc8937030b8c",
+      "source_tests": [
+        "tests/test_new_codegen.py",
+        "tests/test_property_terminal_order.py"
+      ],
+      "source_passed": 54,
+      "source_skipped": 0,
+      "fixture_checks_passed": 8,
+      "supplemental_passed": 3,
+      "skip_reasons": [],
+      "ruff_exit_code": 0,
+      "pyright_exit_code": 0
+    }
+  ],
+  "totals": {
+    "source_passed": 663,
+    "source_skipped": 66,
+    "fixture_checks_passed": 91,
+    "supplemental_passed": 19
+  },
+  "scope": "Focused selections at ten independently pinned PR heads, not the full suite or a combined merge. Generated Python was compared with saved LabVIEW 2020 captures; LabVIEW was not rerun. Fixture checks include metadata/annotation checks. Supplemental checks are synthetic or replays of existing captures, not new native measurements."
+}

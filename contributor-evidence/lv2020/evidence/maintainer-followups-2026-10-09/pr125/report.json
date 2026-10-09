@@ -1,0 +1,58 @@
+{
+  "pr": 125,
+  "head": "a9cc4414afb8e9d12a1779ab0cfcba0034c52184",
+  "checkout": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-review-2026-10-09\\pr125",
+  "python": "3.12.14 | packaged by Anaconda, Inc. | (main, Aug 27 2026, 14:37:13) [MSC v.1942 64 bit (AMD64)]",
+  "unit": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "tests/test_expanded_index_array.py",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr125\\unit.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 33,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "native": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\test_index_native.py",
+      "--confcutdir=C:\\dev\\pyconlyse\\tools\\lvkit_upstream",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr125\\native.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "receipts": {
+    "native.log": "966c787c5b84cff1f2940469590ae6aaeac6fc4b1240c747205f8f8b0dff3d82",
+    "native.xml": "fcc881fd0cd9bd3fbc8df66919d972d7b4fd0751d098ecb14260890c1c0dfaa4",
+    "unit.log": "c6ed8638ed92f29c060c76970d90ed82cb69d37b6c9da1f0d67c5e70b3c7771f",
+    "unit.xml": "fdcbe95bfd7916864b1cf7f95976fdc27150efdb0066367d5fa59c663a26fd58"
+  },
+  "scope": "Generated Python compared with previously captured LabVIEW 2020 outputs; LabVIEW was not rerun. Added maintainer behavior is covered by source tests, not new native captures."
+}

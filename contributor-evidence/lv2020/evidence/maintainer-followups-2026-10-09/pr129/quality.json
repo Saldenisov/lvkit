@@ -1,0 +1,25 @@
+{
+  "ruff": {
+    "exit_code": 0,
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "ruff",
+      "check",
+      "."
+    ]
+  },
+  "pyright": {
+    "exit_code": 0,
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "pyright",
+      "src",
+      "--pythonpath",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-venv312\\Scripts\\python.exe"
+    ]
+  }
+}

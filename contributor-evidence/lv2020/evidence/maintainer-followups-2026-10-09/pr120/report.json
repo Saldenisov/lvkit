@@ -1,0 +1,59 @@
+{
+  "pr": 120,
+  "head": "831d57d8daa2f3ef2c2f2969b03b44dcb3bbba27",
+  "checkout": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-review-2026-10-09\\pr120",
+  "python": "3.12.14 | packaged by Anaconda, Inc. | (main, Aug 27 2026, 14:37:13) [MSC v.1942 64 bit (AMD64)]",
+  "unit": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "tests/test_nonfinite_constants.py",
+      "tests/test_type_driven_fixes.py",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr120\\unit.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 59,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "native": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\test_nonfinite_native.py",
+      "--confcutdir=C:\\dev\\pyconlyse\\tools\\lvkit_upstream",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr120\\native.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "receipts": {
+    "native.log": "224a89eacef8d510a0aa5cf9200b0b582e23b54815eb8c7f083da51589eacc1d",
+    "native.xml": "8e681f39debb39fe76e50ab13807862c709e5c6dd391d16d35b58d15385da3df",
+    "unit.log": "06e1e82c6259dae29e486630de12e2b4c802827b8f6affeeecfe959cc23c0e3a",
+    "unit.xml": "d1b9c01423399e1e0cda25e2273ad30fc83f5f228e88fb18b1a6d4e5e3a14c77"
+  },
+  "scope": "Generated Python compared with previously captured LabVIEW 2020 outputs; LabVIEW was not rerun. Added maintainer behavior is covered by source tests, not new native captures."
+}

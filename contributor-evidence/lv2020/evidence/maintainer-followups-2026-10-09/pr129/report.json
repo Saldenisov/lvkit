@@ -1,0 +1,60 @@
+{
+  "pr": 129,
+  "head": "e1ce77780a7af6d64fe3b7de5c61cc8937030b8c",
+  "checkout": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-review-2026-10-09\\pr129",
+  "python": "3.12.14 | packaged by Anaconda, Inc. | (main, Aug 27 2026, 14:37:13) [MSC v.1942 64 bit (AMD64)]",
+  "unit": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "tests/test_new_codegen.py",
+      "tests/test_property_terminal_order.py",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr129\\unit.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "native": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-native-evidence\\contributor-evidence\\lv2020\\test_property_native.py",
+      "--confcutdir=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-native-evidence\\contributor-evidence\\lv2020",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr129\\native.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "native_root": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-0.8.7-native-evidence\\contributor-evidence\\lv2020",
+  "receipts": {
+    "native.log": "2c17f86ccf03037edea14571e9a218e135c00f6f2422f23332f07354c9220283",
+    "native.xml": "fc22b99a77eab5ed3e1e2712288e740c5aeb884ea6dc496f1d4d03fc5d0d3c9e",
+    "unit.log": "8a415d29e4da486b42ecef13f7ed62fa0575a3944afe6da009d8eba18f338fdb",
+    "unit.xml": "82070422b8b6594018ee6ff94954fb86659a4ed5c5d8763a616f7ef39bdd814d"
+  },
+  "scope": "Generated Python compared with previously captured LabVIEW 2020 outputs; LabVIEW was not rerun. Added maintainer behavior is covered by source tests, not new native captures."
+}

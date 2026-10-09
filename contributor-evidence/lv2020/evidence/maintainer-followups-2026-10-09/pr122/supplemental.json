@@ -1,0 +1,25 @@
+{
+  "pr": 122,
+  "head": "0335a19d2893ca9765f596465faa59f8a9ed5307",
+  "command": [
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+    "run",
+    "--no-sync",
+    "python",
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+    "-q",
+    "--tb=short",
+    "-o",
+    "addopts=",
+    "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr122\\test_followup.py",
+    "--confcutdir=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr122",
+    "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr122\\supplemental.xml"
+  ],
+  "exit_code": 0,
+  "counts": {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

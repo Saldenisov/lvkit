@@ -1,0 +1,58 @@
+{
+  "pr": 123,
+  "head": "9684746bee21a1d89710205c7662e4ccb457d16d",
+  "checkout": "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-review-2026-10-09\\pr123",
+  "python": "3.12.14 | packaged by Anaconda, Inc. | (main, Aug 27 2026, 14:37:13) [MSC v.1942 64 bit (AMD64)]",
+  "unit": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "tests/test_log10.py",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr123\\unit.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 29,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "native": {
+    "command": [
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\pr-uv-tools\\bin\\uv.exe",
+      "run",
+      "--no-sync",
+      "python",
+      "C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\run_pytest.py",
+      "-q",
+      "--tb=line",
+      "-o",
+      "addopts=",
+      "C:\\dev\\pyconlyse\\tools\\lvkit_upstream\\test_log10_native.py",
+      "--confcutdir=C:\\dev\\pyconlyse\\tools\\lvkit_upstream",
+      "--junitxml=C:\\dev\\ELYSE-ACQ-analysis\\converter\\lvkit-pr-tools\\status-2026-10-09\\pr123\\native.xml"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "receipts": {
+    "native.log": "67a62dd67d0864265fa543a93459a4de34254f7b6da4c5293ac81580efa379f0",
+    "native.xml": "5cb63b952535ae6077ed5dab2731493b4ccaea12c77550eb5786875ad1a8cadc",
+    "unit.log": "fc944de95332c96acfd1c30af11ef51b01971b933e454d8c8bda03da1a51f464",
+    "unit.xml": "55ba18c5568c3c7fa5211cf72ac3c73a3c5ad00ac1edc5db1684ec216ea86927"
+  },
+  "scope": "Generated Python compared with previously captured LabVIEW 2020 outputs; LabVIEW was not rerun. Added maintainer behavior is covered by source tests, not new native captures."
+}

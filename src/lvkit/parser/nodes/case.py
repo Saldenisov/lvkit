@@ -115,7 +115,27 @@ def extract_case_structures(
     if selector_tables:
         _apply_selector_tables(case_structures, selector_tables, table_index_shift)
 
+    for cs in case_structures:
+        _apply_last_frame_default(cs)
+
     return case_structures
+
+
+def _apply_last_frame_default(cs: ParsedCaseStructure) -> None:
+    """Default an integer/string case whose selector values live only in the
+    dataspace table (pre-2010 VIs) to its LAST frame.
+
+    That format has no ``SelectDefaultCase``, and an integer/string selector has
+    an infinite domain, so the case always has a default frame. When no frame is
+    value-less, the default is the last one; it may also carry an explicit value
+    ("N, Default"), which codegen's ``case _`` catch-all subsumes. Heap-stored
+    cases are skipped: their ``SelectDefaultCase`` is authoritative.
+    """
+    if cs.selector_values_in_heap or cs.selector_type not in ("integer", "string"):
+        return
+    if not cs.frames or any(f.is_default for f in cs.frames):
+        return
+    cs.frames[-1].is_default = True
 
 
 def _extract_one_case_structure(
@@ -325,10 +345,13 @@ def _extract_one_case_structure(
                 except ValueError:
                     string_labels.append(hex_text)
 
-    # SelectDefaultCase is a hex diagram index (FF = none). The zero-valued
-    # field can be omitted from the heap: integer/string/enum selectors then
-    # default to diagram 0, even when it also carries literal selector ranges.
-    # Symbolic error-cluster ranges identify their own catch-all frame.
+    # SelectDefaultCase is a hex diagram index (FF = none). When the heap stores
+    # the selector values, the zero-valued field is omitted: integer/string/enum
+    # selectors then default to diagram 0, even when it also carries literal
+    # selector ranges. When the values live only in the dataspace table, the heap
+    # records no default; ``_apply_one_table`` and ``_apply_last_frame_default``
+    # decide it. Symbolic error-cluster ranges identify their own catch-all frame.
+    values_in_heap = select_range is not None
     default_diag_idx: int | None = None
     default_case_elem = case_elem.findtext("SelectDefaultCase")
     if default_case_elem and default_case_elem.upper() != "FF":
@@ -343,7 +366,8 @@ def _extract_one_case_structure(
         # otherwise be indistinguishable from a No-Error frame there.
         default_diag_idx = next(iter(default_symbolic_diags))
     if (
-        not default_case_elem
+        values_in_heap
+        and not default_case_elem
         and default_diag_idx is None
         and selector_type in ("integer", "string", "enum")
     ):
@@ -410,6 +434,7 @@ def _extract_one_case_structure(
         selector_terminal_uid=selector_terminal_uid,
         selector_type=selector_type,
         selector_vctp_index=selector_vctp_index,
+        selector_values_in_heap=values_in_heap,
         selector_table_offset=selector_table_offset,
         # Case Insensitive Match only applies to string selectors.
         case_insensitive=case_insensitive and selector_type == "string",
@@ -732,7 +757,10 @@ def _apply_one_table(case: ParsedCaseStructure, table: SelectorTable) -> None:
             frame.selector_ranges = []
             frame.selector_strings = []
             continue
-        # Literal ranges do not unset the heap's saved default designation.
+        if not case.selector_values_in_heap:
+            # The heap recorded no default, so a frame with values is not one.
+            # A heap-stored SelectDefaultCase stays authoritative ("0, Default").
+            frame.is_default = False
         if table.has_strings:
             strings: list[str] = []
             for start, end in my_ranges:

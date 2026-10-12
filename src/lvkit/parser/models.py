@@ -235,6 +235,10 @@ class ParsedCaseStructure:
     # the dataspace ``DataFill`` TypeID order — used to correlate each case to
     # its ``SelectorTable``.
     selector_vctp_index: int | None = None
+    # True when the heap stores the selector values (``SelectRangeArray32``,
+    # LabVIEW 2010+), so ``SelectDefaultCase`` is authoritative. False when they
+    # live only in the dataspace table: the heap then records no default at all.
+    selector_values_in_heap: bool = False
     # The select node's ``tdOffset`` — a client index into the dataspace type
     # map (TM80). Adding the TM80 ``IndexShift`` yields the TypeID of THIS case's
     # ``DataFill`` selector table, so each case maps DIRECTLY to its table (no

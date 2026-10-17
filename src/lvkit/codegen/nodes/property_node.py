@@ -10,16 +10,33 @@ from lvkit.graph.op_walk import correlate_property_terminals
 from ..ast_utils import parse_expr, to_var_name
 from ..context import CodeGenContext
 from ..fragment import CodeFragment
-from .base import CodeGenError
+from .base import CodeGenError, resolve_ref_input
+
+
+def _attribute_chain(
+    ref_var: str, segment_names: list[str], ctx: ast.expr_context
+) -> ast.expr:
+    """``ref.seg1.seg2`` -- one ``ast.Attribute`` per path segment; only the
+    outermost attribute carries ``ctx`` (Store for a write)."""
+    expr = parse_expr(ref_var)
+    last = len(segment_names) - 1
+    for i, seg_name in enumerate(segment_names):
+        expr = ast.Attribute(
+            value=expr,
+            attr=to_var_name(seg_name),
+            ctx=ctx if i == last else ast.Load(),
+        )
+    return expr
 
 
 def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     """Use saved dcoList identities and order, separately from fixed ports.
 
-    The caller supplies an object implementing the named Python attributes.
-    Implicit control bindings require a separate runtime model and are rejected
-    instead of fabricating reference values. Error-cluster terminals are skipped:
-    errors surface as Python exceptions.
+    The caller supplies an object implementing the named Python attributes; a
+    nested property is an attribute chain (``ref.label.text``). Implicit
+    control bindings require a separate runtime model and are rejected
+    instead of fabricating reference values. Error-cluster terminals are
+    skipped: errors surface as Python exceptions.
     """
     properties = node.properties or []
     value_ids = node.property_value_terminal_ids
@@ -32,14 +49,9 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     if node.bound_control_uid:
         raise CodeGenError("Implicit property reference requires a binding model", node)
     fixed = [term for term in node.terminals if term.id not in value_ids]
-    ref_inputs = [
-        term for term in fixed if term.direction == "input" and term.index == 0
-    ]
-    if len(ref_inputs) != 1:
-        raise CodeGenError("Property object reference is unresolved", node)
-    ref_var = ctx.resolve(ref_inputs[0].id)
-    if ref_var is None:
-        raise CodeGenError("Property object reference is unresolved", node)
+    # A reference with no Python value -- nothing wired or fed by an unmapped
+    # primitive -- is named after the node's object class (#142).
+    ref_var = resolve_ref_input(node, ctx)
 
     statements: list[ast.stmt] = []
     bindings: dict[str, str] = {}
@@ -49,13 +61,13 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
     ):
         if term is None:
             raise CodeGenError("Property value terminal is missing", node)
-        if not prop.name:
+        segment_names = [seg.name for seg in prop.segments]
+        if not segment_names or not all(segment_names):
             raise CodeGenError("Property name is unresolved", node)
-        attr_name = to_var_name(prop.name)
+        attr_name = to_var_name("_".join(segment_names))
         if attr_name in attr_names and attr_names[attr_name] != prop.name:
             raise CodeGenError("Normalized property names collide", node)
         attr_names[attr_name] = prop.name
-        ref_expr = parse_expr(ref_var)
         if term.direction == "output":
             # Reads execute even when their result is unwired. Repeated accesses
             # to the same property need distinct snapshots, not one shared name.
@@ -63,7 +75,7 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
             statements.append(
                 ast.Assign(
                     targets=[ast.Name(id=var_name, ctx=ast.Store())],
-                    value=ast.Attribute(value=ref_expr, attr=attr_name, ctx=ast.Load()),
+                    value=_attribute_chain(ref_var, segment_names, ast.Load()),
                 )
             )
             bindings[term.id] = var_name
@@ -77,9 +89,7 @@ def generate(node: PrimitiveNode, ctx: CodeGenContext) -> CodeFragment:
                 raise CodeGenError("Property write value is unresolved", node)
             statements.append(
                 ast.Assign(
-                    targets=[
-                        ast.Attribute(value=ref_expr, attr=attr_name, ctx=ast.Store())
-                    ],
+                    targets=[_attribute_chain(ref_var, segment_names, ast.Store())],
                     value=parse_expr(value),
                 )
             )

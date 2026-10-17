@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import types
 
 import pytest
 
@@ -10,7 +11,14 @@ from lvkit.codegen.context import CodeGenContext
 from lvkit.codegen.nodes import property_node
 from lvkit.codegen.nodes.base import CodeGenError
 from lvkit.graph.models import PrimitiveNode, WireEnd
-from lvkit.models import ClusterField, LVType, LVTypeKind, PropertyDef, Terminal
+from lvkit.models import (
+    ClusterField,
+    LVType,
+    LVTypeKind,
+    PropertyDef,
+    PropertySegment,
+    Terminal,
+)
 from tests.helpers import make_graph_with_terminals
 
 REF = LVType(kind=LVTypeKind.PRIMITIVE, underlying_type="Refnum")
@@ -40,6 +48,11 @@ class Reference:
         self.values[name] = value
 
 
+def prop(*names):
+    """A Property Node row whose path is ``names`` (``Label``, ``Text``)."""
+    return PropertyDef(segments=[PropertySegment(name=n, code=0) for n in names])
+
+
 def fixture(rows, *, reverse=False, ref_out=False, unwired=()):
     fixed = [
         Terminal(id="ref_in", index=0, direction="input", lv_type=REF),
@@ -58,7 +71,7 @@ def fixture(rows, *, reverse=False, ref_out=False, unwired=()):
         name="Property Node",
         node_type="propNode",
         terminals=list(reversed(terminals)) if reverse else terminals,
-        properties=[PropertyDef(name=name) for name, _ in rows],
+        properties=[prop(*name.split(".")) for name, _ in rows],
         property_value_terminal_ids=[term.id for term in values],
     )
     ids = [term.id for term in terminals]
@@ -173,8 +186,6 @@ def test_value_type_does_not_reclassify_a_property_as_fixed_port(value_type):
         "duplicate_terminal",
         "missing_name",
         "name_collision",
-        "missing_ref",
-        "unresolved_ref",
         "implicit_ref",
         "unwired_write",
         "unresolved_write",
@@ -192,16 +203,9 @@ def test_unresolved_or_unsupported_nodes_fail_without_guessing(failure):
     elif failure == "duplicate_terminal":
         node.terminals.append(node.terminals[-1].model_copy())
     elif failure == "missing_name":
-        node.properties[0].name = ""
+        node.properties[0] = prop("")
     elif failure == "name_collision":
-        node.properties = [
-            PropertyDef(name="Some Value"),
-            PropertyDef(name="Some_Value"),
-        ]
-    elif failure == "missing_ref":
-        node.terminals = [term for term in node.terminals if term.id != "ref_in"]
-    elif failure == "unresolved_ref":
-        ctx.bind("ref_in", "None")
+        node.properties = [prop("Some Value"), prop("Some_Value")]
     elif failure == "implicit_ref":
         node.bound_control_uid = "stored-control-identity"
     elif failure == "unwired_write":
@@ -227,3 +231,11 @@ def test_wired_error_terminals_are_skipped():
     fragment = property_node.generate(node, ctx)
     assert "error_out" not in fragment.bindings
     assert len(fragment.statements) == 2
+
+
+def test_nested_property_writes_then_reads_its_attribute_chain():
+    """A nested property (``Label.Text``) is one row: an attribute chain."""
+    node, ctx, namespace = fixture([("Label.Text", "input"), ("Label.Text", "output")])
+    namespace["ref"] = types.SimpleNamespace(label=types.SimpleNamespace(text="old"))
+    assert execute(node, ctx, namespace) == {"row_1": 1000}
+    assert namespace["ref"].label.text == 1000

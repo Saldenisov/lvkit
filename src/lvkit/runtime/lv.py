@@ -2,9 +2,8 @@
 
 LabVIEW numeric functions (Add, Subtract, Sign, comparisons, …) operate
 element-wise on arrays, broadcasting a scalar against an array. Generated
-code routes a numeric primitive through these helpers only when one of its
-operands is an array; pure-scalar uses keep the plain operator and never
-touch this module.
+code uses these helpers for array-valued operands and for
+representation-specific scalar behavior, such as floating-point division at signed zero.
 
 Arrays are Python lists (lvkit's array representation); these helpers do not
 change that. Nested arrays broadcast recursively, matching LabVIEW's
@@ -51,6 +50,21 @@ def mul(a, b):
 
 def truediv(a, b):
     return _binop(a, b, _op.truediv)
+
+
+def _float_divide_scalar(a: float, b: float) -> float:
+    a, b = float(a), float(b)
+    if b == 0.0:
+        if a == 0.0 or _math.isnan(a):
+            return _math.nan
+        sign = _math.copysign(1.0, a) * _math.copysign(1.0, b)
+        return _math.copysign(_math.inf, sign)
+    return a / b
+
+
+def float_divide(a, b):
+    """Floating-point division with IEEE results at signed zero; broadcasts lists."""
+    return _binop(a, b, _float_divide_scalar)
 
 
 def floordiv(a, b):
@@ -202,10 +216,15 @@ def ln(x):
     return -_math.inf if x == 0 else _math.nan
 
 
-def log10(x):
+def _log10_scalar(x):
     if x > 0:
         return _math.log10(x)
     return -_math.inf if x == 0 else _math.nan
+
+
+def log10(x):
+    """Real base-10 logarithm, applied element-wise to nested lists."""
+    return _unop(x, _log10_scalar)
 
 
 def log2(x):
@@ -530,3 +549,31 @@ def unflatten_from_string(
         ]
         return value, rest.decode("latin-1")
     raise NotImplementedError(f"Unflatten From String cannot unflatten spec {dst!r}")
+
+
+def replace_fields(
+    cluster: tuple, updates: tuple[tuple[tuple[int, ...], object], ...]
+) -> tuple:
+    """Apply ordered field updates by rebuilding changed tuple branches.
+
+    The input cluster is never mutated. Unchanged branches and leaf values
+    retain their identities; this helper does not deep-copy mutable leaves.
+    """
+    if not isinstance(cluster, tuple):
+        raise TypeError("anonymous cluster must be a tuple")
+    result = cluster
+    for path, value in updates:
+        if not path or any(type(index) is not int or index < 0 for index in path):
+            raise ValueError("nonempty nonnegative cluster index path required")
+        index, *tail = path
+        if index >= len(result):
+            raise IndexError(path)
+        if tail:
+            branch = result[index]
+            if not isinstance(branch, tuple):
+                raise TypeError("anonymous cluster must be a tuple")
+            replacement = replace_fields(branch, ((tuple(tail), value),))
+        else:
+            replacement = value
+        result = result[:index] + (replacement,) + result[index + 1 :]
+    return result

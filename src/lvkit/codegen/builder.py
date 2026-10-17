@@ -16,6 +16,7 @@ from .ast_utils import (
     build_assign,
     default_value_expr,
     parse_expr,
+    result_field_name,
     to_function_name,
     to_var_name,
 )
@@ -588,7 +589,7 @@ def build_return_stmt(vi_context: VIContext, ctx: CodeGenContext) -> ast.Return 
 
         out_id = out.id
         out_name = out.name or "output"
-        var_name = to_var_name(out_name)
+        var_name = result_field_name(out_name)
 
         # Try to resolve from context. resolve() returns an EXPRESSION string
         # (often compound, e.g. "low_000 + product" from an inlined output), so
@@ -706,9 +707,12 @@ def build_result_class(vi_context: VIContext) -> ast.ClassDef | None:
         if out.is_error_cluster:
             continue
 
-        name = to_var_name(out.name or "output")
+        name = result_field_name(out.name or "output")
         type_hint = out.python_type()
         fields.append((name, type_hint))
+
+    if len({name for name, _ in fields}) != len(fields):
+        raise ValueError("Output labels collide after Python field normalization")
 
     # If all outputs were error clusters, no result class needed
     if not fields:
@@ -790,10 +794,9 @@ def build_args(inputs: list[Terminal]) -> ast.arguments:
         if inp.is_error_cluster:
             continue
 
-        # Array inputs default to None (see build_array_input_normalization), so
-        # their annotation is honestly `<type> | None`.
+        # Arrays and anonymous clusters use a conservative None default.
         type_hint = inp.python_type()
-        if _is_array_input(inp):
+        if _is_array_input(inp) or _is_anonymous_cluster(inp):
             type_hint = f"{type_hint} | None"
         args.append(
             ast.arg(
@@ -843,6 +846,8 @@ def _param_default_expr(inp: Terminal) -> ast.expr:
         return default_value_expr(inp.lv_type)
     underlying = inp.lv_type.underlying_type if inp.lv_type else None
     try:
+        if inp.lv_type and inp.lv_type.kind in (LVTypeKind.ENUM, LVTypeKind.RING):
+            return ast.Constant(value=int(dv))
         if underlying and underlying.startswith(("NumInt", "NumUInt")):
             return ast.Constant(value=int(dv))
         if underlying in ("NumFloat32", "NumFloat64"):
@@ -854,6 +859,16 @@ def _param_default_expr(inp: Terminal) -> ast.expr:
     except (ValueError, TypeError):
         pass
     return default_value_expr(inp.lv_type)
+
+
+def _is_anonymous_cluster(term: Terminal) -> bool:
+    lv_type = term.lv_type
+    return (
+        lv_type is not None
+        and lv_type.kind == LVTypeKind.CLUSTER
+        and not lv_type.typedef_name
+        and not lv_type.classname
+    )
 
 
 def build_result_class_name(vi_name: str) -> str:

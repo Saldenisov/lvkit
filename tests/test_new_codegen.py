@@ -10,13 +10,14 @@ from lvkit.codegen.builder import topological_sort_tiered
 from lvkit.codegen.context import CodeGenContext
 from lvkit.codegen.nodes import case, invoke_node, nmux, property_node
 from lvkit.graph import InMemoryVIGraph
-from lvkit.graph.models import CaseStructureNode, PrimitiveNode, WireEnd
+from lvkit.graph.models import CaseStructureNode, PrimitiveNode, Wire, WireEnd
 from lvkit.models import (
     CaseFrame,
     ClusterField,
     LVType,
     LVTypeKind,
     PropertyDef,
+    PropertySegment,
     Terminal,
 )
 from tests.helpers import make_graph_with_edge, make_graph_with_terminals, make_node
@@ -292,9 +293,9 @@ class TestPropertyReads:
                 Terminal(id="out_3", index=6, direction="output"),
             ],
             properties=[
-                PropertyDef(name="controls"),
-                PropertyDef(name="indicator"),
-                PropertyDef(name="value"),
+                PropertyDef(segments=[PropertySegment(name="controls", code=0)]),
+                PropertyDef(segments=[PropertySegment(name="indicator", code=0)]),
+                PropertyDef(segments=[PropertySegment(name="value", code=0)]),
             ],
             property_value_terminal_ids=["out_1", "out_2", "out_3"],
         )
@@ -304,6 +305,127 @@ class TestPropertyReads:
         assert [
             s.value.attr for s in assigns if isinstance(s.value, ast.Attribute)
         ] == ["controls", "indicator", "value"]
+
+    def test_each_property_uses_its_own_terminal(self):
+        """Write ActiveDev, then read DevIsSimulated / ProductType / BusType
+        with only the last two wired (DCAF Config.vi's DAQmx Device node):
+        each wired terminal gets ITS property, not the next one in line."""
+        ctx = CodeGenContext.from_wires(
+            [
+                Wire.from_terminals(
+                    from_terminal_id="ref_src", to_terminal_id="ref_in"
+                ),
+                Wire.from_terminals(from_terminal_id="name_src", to_terminal_id="dev"),
+                Wire.from_terminals(from_terminal_id="prod", to_terminal_id="sink_1"),
+                Wire.from_terminals(from_terminal_id="bus", to_terminal_id="sink_2"),
+            ]
+        )
+        ctx.bind("ref_src", "device")
+        ctx.bind("name_src", "device_name")
+        op = PrimitiveNode(
+            id="prop_1",
+            vi_path="test.vi",
+            name="Property Node",
+            node_type="propNode",
+            terminals=[
+                Terminal(id="ref_in", index=0, direction="input"),
+                Terminal(id="dev", index=4, direction="input"),
+                Terminal(id="sim", index=5, direction="output"),
+                Terminal(id="prod", index=6, direction="output"),
+                Terminal(id="bus", index=7, direction="output"),
+            ],
+            properties=[
+                PropertyDef(segments=[PropertySegment(name=name, code=0)])
+                for name in ("ActiveDev", "DevIsSimulated", "ProductType", "BusType")
+            ],
+            property_value_terminal_ids=["dev", "sim", "prod", "bus"],
+        )
+        fragment = property_node.generate(op, ctx)
+        module = ast.Module(body=fragment.statements, type_ignores=[])
+        code = ast.unparse(ast.fix_missing_locations(module)).splitlines()
+        assert code == [
+            "device.activedev = device_name",
+            "device_devissimulated = device.devissimulated",
+            "device_producttype = device.producttype",
+            "device_bustype = device.bustype",
+        ]
+        assert fragment.bindings["prod"] == "device_producttype"
+        assert fragment.bindings["bus"] == "device_bustype"
+
+
+class TestNestedPropertyChain:
+    """A nested property (``Label.Text``) is an attribute chain."""
+
+    def _node_and_ctx(self, direction: str):
+        graph = make_graph_with_terminals("ref_in", "val")
+        ctx = CodeGenContext(graph=graph)
+        ctx.bind("ref_in", "ref")
+        ctx.bind("val", "'hello'")
+        assert ctx.graph is not None
+        nid_ref = ctx.graph._term_to_node["ref_in"]
+        nid_val = ctx.graph._term_to_node["val"]
+        src, dst = ("ref_in", "val") if direction == "output" else ("val", "ref_in")
+        nid_src, nid_dst = (nid_ref, nid_val) if src == "ref_in" else (nid_val, nid_ref)
+        ctx.graph._graph.add_edge(
+            nid_src,
+            nid_dst,
+            source=WireEnd(terminal_id=src, node_id=nid_src),
+            dest=WireEnd(terminal_id=dst, node_id=nid_dst),
+        )
+        op = PrimitiveNode(
+            id="prop_1",
+            vi_path="test.vi",
+            name="Property Node",
+            node_type="propNode",
+            terminals=[
+                Terminal(id="ref_in", index=0, direction="input"),
+                Terminal(
+                    id="val",
+                    index=1,
+                    direction="input" if direction == "input" else "output",
+                ),
+            ],
+            properties=[
+                PropertyDef(
+                    segments=[
+                        PropertySegment(name="Label", code=104013829),
+                        PropertySegment(name="Text", code=103995392),
+                    ]
+                )
+            ],
+            property_value_terminal_ids=["val"],
+        )
+        return op, ctx
+
+    def test_read_emits_attribute_chain(self):
+        op, ctx = self._node_and_ctx("output")
+        fragment = property_node.generate(op, ctx)
+        source = ast.unparse(
+            ast.fix_missing_locations(
+                ast.Module(body=fragment.statements, type_ignores=[])
+            )
+        )
+        assert source == "ref_label_text = ref.label.text"
+
+    def test_write_emits_attribute_chain_and_executes(self):
+        op, ctx = self._node_and_ctx("input")
+        fragment = property_node.generate(op, ctx)
+        source = ast.unparse(
+            ast.fix_missing_locations(
+                ast.Module(body=fragment.statements, type_ignores=[])
+            )
+        )
+        assert "ref.label.text = " in source
+
+        class _Label:
+            text = ""
+
+        class _Ref:
+            label = _Label()
+
+        ref = _Ref()
+        exec(source, {"ref": ref})
+        assert ref.label.text == "hello"
 
 
 # ── Passthrough elimination ────────────────────────────────────────
